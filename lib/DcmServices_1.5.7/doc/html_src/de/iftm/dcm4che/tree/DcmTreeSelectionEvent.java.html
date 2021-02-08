@@ -1,0 +1,95 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.tree.DcmTreeSelectionEvent (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DcmTreeSelectionEvent</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *
+<A NAME="3"></A> */</FONT>
+<A NAME="4"></A>
+<A NAME="5"></A><FONT ID="Package">package</FONT> <A HREF="../../../../de.iftm.dcm4che.tree.index.html" target="packageFrame">de.iftm.dcm4che.tree</A>;
+<A NAME="6"></A>
+<A NAME="7"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="8"></A>
+<A NAME="9"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="10"></A>
+<A NAME="11"></A>
+<A NAME="12"></A><FONT ID="FormalComment">/**
+<A NAME="13"></A> * @author Thomas Hacklaender
+<A NAME="14"></A> * @version 2006.06.07
+<A NAME="15"></A> */</FONT>
+<A NAME="16"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> DcmTreeSelectionEvent <FONT ID="Extends">extends</FONT> java.util.EventObject {
+<A NAME="17"></A>    
+<A NAME="18"></A>    <FONT ID="FormalComment">/** Initialize logger */</FONT>
+<A NAME="19"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> Logger log = Logger.getLogger(<A HREF="../../../../de/iftm/dcm4che/tree/DcmTreeSelectionEvent.java.html">DcmTreeSelectionEvent</A>.<FONT ID="Class">class</FONT>);
+<A NAME="20"></A>
+<A NAME="21"></A>        
+<A NAME="22"></A>    <FONT ID="Private">private</FONT> Vector selectedFiles = <FONT ID="Null">null</FONT>;
+<A NAME="23"></A> 
+<A NAME="24"></A>    
+<A NAME="25"></A>    <FONT ID="FormalComment">/**
+<A NAME="26"></A>     * Creates a new instance of DcmTreeSelectionEvent
+<A NAME="27"></A>     * 
+<A NAME="28"></A>     * @param source
+<A NAME="29"></A>     */</FONT>
+<A NAME="30"></A>    <FONT ID="Public">public</FONT> DcmTreeSelectionEvent(Object source) {
+<A NAME="31"></A>        <FONT ID="SingleLineComment">// pass the source object to the supercalss
+<A NAME="32"></A></FONT>        <FONT ID="Super">super</FONT>(source);
+<A NAME="33"></A>    }
+<A NAME="34"></A>
+<A NAME="35"></A>    
+<A NAME="36"></A>    <FONT ID="FormalComment">/**
+<A NAME="37"></A>     * Creates a new instance of DcmTreeSelectionEvent
+<A NAME="38"></A>     * 
+<A NAME="39"></A>     * @param source
+<A NAME="40"></A>     * @param selectedFiles
+<A NAME="41"></A>     */</FONT>
+<A NAME="42"></A>    <FONT ID="Public">public</FONT> DcmTreeSelectionEvent(Object source, Vector selectedFiles) {
+<A NAME="43"></A>        <FONT ID="SingleLineComment">// pass the source object to the supercalss
+<A NAME="44"></A></FONT>        <FONT ID="Super">super</FONT>(source);
+<A NAME="45"></A>        setSelectedFiles(selectedFiles);
+<A NAME="46"></A>    }
+<A NAME="47"></A>    
+<A NAME="48"></A>    
+<A NAME="49"></A>    <FONT ID="FormalComment">/**
+<A NAME="50"></A>     *
+<A NAME="51"></A>     * @param selectedFiles
+<A NAME="52"></A>     */</FONT>
+<A NAME="53"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setSelectedFiles(Vector selectedFiles) {
+<A NAME="54"></A>        <FONT ID="This">this</FONT>.selectedFiles = selectedFiles;
+<A NAME="55"></A>    }
+<A NAME="56"></A>    
+<A NAME="57"></A>    
+<A NAME="58"></A>    <FONT ID="FormalComment">/**
+<A NAME="59"></A>     * 
+<A NAME="60"></A>     * @return 
+<A NAME="61"></A>     */</FONT>
+<A NAME="62"></A>    <FONT ID="Public">public</FONT> Vector getSelectedFiles() {
+<A NAME="63"></A>        <FONT ID="Return">return</FONT> selectedFiles;
+<A NAME="64"></A>    }
+<A NAME="65"></A> 
+<A NAME="66"></A>}
+<A NAME="67"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DcmTreeSelectionEvent</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

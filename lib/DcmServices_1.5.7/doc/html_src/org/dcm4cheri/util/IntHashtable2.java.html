@@ -1,0 +1,390 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>org.dcm4cheri.util.IntHashtable2 (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">IntHashtable2</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/* 
+<A NAME="2"></A> * Based on java.text.IntHashtable in Sun's JDK1.3 java.
+<A NAME="3"></A> * Replaces value type from int to Object and defaultValue to null,
+<A NAME="4"></A> * add an optional keymask, modify add and remove methode to return
+<A NAME="5"></A> * (previous) value  (gunter.zeilinger@tiani.com)
+<A NAME="6"></A> *
+<A NAME="7"></A> * @(#)IntHashtable2.java 1.6 00/01/19
+<A NAME="8"></A> *
+<A NAME="9"></A> * Copyright 1998-2000 Sun Microsystems, Inc. All Rights Reserved.
+<A NAME="10"></A> * 
+<A NAME="11"></A> * This software is the proprietary information of Sun Microsystems, Inc.  
+<A NAME="12"></A> * Use is subject to license terms.
+<A NAME="13"></A> * 
+<A NAME="14"></A> */</FONT>
+<A NAME="15"></A>
+<A NAME="16"></A><FONT ID="MultiLineComment">/*
+<A NAME="17"></A> * (C) Copyright Taligent, Inc. 1996,1997 - All Rights Reserved
+<A NAME="18"></A> * (C) Copyright IBM Corp. 1996, 1997 - All Rights Reserved
+<A NAME="19"></A> */</FONT>
+<A NAME="20"></A>
+<A NAME="21"></A><FONT ID="Package">package</FONT> <A HREF="../../../org.dcm4cheri.util.index.html" target="packageFrame">org.dcm4cheri.util</A>;
+<A NAME="22"></A>
+<A NAME="23"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="24"></A>
+<A NAME="25"></A><FONT ID="FormalComment">/** Simple internal class for doing hash mapping. Much, much faster than the
+<A NAME="26"></A> * standard Hashtable for integer to integer mappings,
+<A NAME="27"></A> * and doesn't require object creation.&lt;br&gt;
+<A NAME="28"></A> * If a key is not found, the null is returned.
+<A NAME="29"></A> * Note: the keys are limited to values above Integer.MIN_VALUE+1.&lt;br&gt;
+<A NAME="30"></A> */</FONT>
+<A NAME="31"></A><FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Class">class</FONT> IntHashtable2 {
+<A NAME="32"></A>
+<A NAME="33"></A>    <FONT ID="Public">public</FONT> IntHashtable2() {
+<A NAME="34"></A>        initialize(<FONT ID="IntegerLiteral">3</FONT>);
+<A NAME="35"></A>    }
+<A NAME="36"></A>
+<A NAME="37"></A>    <FONT ID="Public">public</FONT> IntHashtable2(<FONT ID="Int">int</FONT> initialSize) {
+<A NAME="38"></A>        initialize(leastGreaterPrimeIndex((<FONT ID="Int">int</FONT>)(initialSize/highWaterFactor)));
+<A NAME="39"></A>    }
+<A NAME="40"></A>
+<A NAME="41"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> clear() {
+<A NAME="42"></A>        initialize(<FONT ID="IntegerLiteral">3</FONT>);
+<A NAME="43"></A>    }
+<A NAME="44"></A>
+<A NAME="45"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> size() {
+<A NAME="46"></A>        <FONT ID="Return">return</FONT> count;
+<A NAME="47"></A>    }
+<A NAME="48"></A>
+<A NAME="49"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> mask(<FONT ID="Int">int</FONT> mask) {
+<A NAME="50"></A>        <FONT ID="This">this</FONT>.mask = mask;
+<A NAME="51"></A>    }
+<A NAME="52"></A>
+<A NAME="53"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> mask() {
+<A NAME="54"></A>        <FONT ID="Return">return</FONT> mask;
+<A NAME="55"></A>    }
+<A NAME="56"></A>        
+<A NAME="57"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> isEmpty() {
+<A NAME="58"></A>        <FONT ID="Return">return</FONT> count == <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="59"></A>    }
+<A NAME="60"></A>    
+<A NAME="61"></A>    <FONT ID="Public">public</FONT> Iterator iterator() {
+<A NAME="62"></A>        <FONT ID="Return">return</FONT> <FONT ID="New">new</FONT> Iter();
+<A NAME="63"></A>    }
+<A NAME="64"></A>    
+<A NAME="65"></A>    <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> <FONT ID="Class">class</FONT> Iter <FONT ID="Implements">implements</FONT> Iterator {
+<A NAME="66"></A>        <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> remain = count;
+<A NAME="67"></A>        <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> index = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="68"></A>        
+<A NAME="69"></A>        <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> hasNext() {
+<A NAME="70"></A>            <FONT ID="Return">return</FONT> remain &gt; <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="71"></A>        }
+<A NAME="72"></A>        
+<A NAME="73"></A>        <FONT ID="Public">public</FONT> Object next() {
+<A NAME="74"></A>            <FONT ID="If">if</FONT> (remain &lt;= <FONT ID="IntegerLiteral">0</FONT>)
+<A NAME="75"></A>                <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> NoSuchElementException();
+<A NAME="76"></A>            
+<A NAME="77"></A>            <FONT ID="For">for</FONT> (;keyList[index] &lt;= MAX_UNUSED;++index)
+<A NAME="78"></A>                ;<FONT ID="SingleLineComment">// no body
+<A NAME="79"></A></FONT>            
+<A NAME="80"></A>            --remain;
+<A NAME="81"></A>            <FONT ID="Return">return</FONT> values[index++];
+<A NAME="82"></A>        }
+<A NAME="83"></A>        
+<A NAME="84"></A>        <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> remove() {
+<A NAME="85"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> UnsupportedOperationException();
+<A NAME="86"></A>        }
+<A NAME="87"></A>    }
+<A NAME="88"></A>
+<A NAME="89"></A>    <FONT ID="Public">public</FONT> Object put(<FONT ID="Int">int</FONT> key, Object value) {
+<A NAME="90"></A>        <FONT ID="If">if</FONT> (count &gt; highWaterMark) {
+<A NAME="91"></A>            rehash();
+<A NAME="92"></A>        }
+<A NAME="93"></A>        <FONT ID="Int">int</FONT> index = find(key &amp; mask);
+<A NAME="94"></A>        <FONT ID="If">if</FONT> (keyList[index] &lt;= MAX_UNUSED) {      <FONT ID="SingleLineComment">// deleted or empty
+<A NAME="95"></A></FONT>            keyList[index] = key &amp; mask;
+<A NAME="96"></A>            ++count;
+<A NAME="97"></A>        }
+<A NAME="98"></A>        Object tmp = values[index];
+<A NAME="99"></A>        values[index] = value;                                  <FONT ID="SingleLineComment">// reset value
+<A NAME="100"></A></FONT>        <FONT ID="Return">return</FONT> tmp;
+<A NAME="101"></A>    }
+<A NAME="102"></A>
+<A NAME="103"></A>    <FONT ID="Public">public</FONT> Object get(<FONT ID="Int">int</FONT> key) {
+<A NAME="104"></A>        <FONT ID="Return">return</FONT> values[find(key &amp; mask)];
+<A NAME="105"></A>    }
+<A NAME="106"></A>
+<A NAME="107"></A>    <FONT ID="Public">public</FONT> Object remove(<FONT ID="Int">int</FONT> key) {
+<A NAME="108"></A>        <FONT ID="Int">int</FONT> index = find(key &amp; mask);
+<A NAME="109"></A>        Object value = values[index];
+<A NAME="110"></A>        <FONT ID="If">if</FONT> (keyList[index] &gt; MAX_UNUSED) {       <FONT ID="SingleLineComment">// neither deleted nor empty
+<A NAME="111"></A></FONT>            keyList[index] = DELETED;                        <FONT ID="SingleLineComment">// set to deleted
+<A NAME="112"></A></FONT>            values[index] = <FONT ID="Null">null</FONT>;                        <FONT ID="SingleLineComment">// set to deleted
+<A NAME="113"></A></FONT>            --count;
+<A NAME="114"></A>            <FONT ID="If">if</FONT> (count &lt; lowWaterMark) {
+<A NAME="115"></A>                rehash();
+<A NAME="116"></A>            }
+<A NAME="117"></A>        }
+<A NAME="118"></A>        <FONT ID="Return">return</FONT> value;
+<A NAME="119"></A>    }
+<A NAME="120"></A>
+<A NAME="121"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> equals (Object that) {
+<A NAME="122"></A>        <FONT ID="If">if</FONT> (that.getClass() != <FONT ID="This">this</FONT>.getClass()) <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="123"></A>
+<A NAME="124"></A>        <A HREF="../../../org/dcm4cheri/util/IntHashtable2.java.html">IntHashtable2</A> other = (<A HREF="../../../org/dcm4cheri/util/IntHashtable2.java.html">IntHashtable2</A>) that;
+<A NAME="125"></A>        <FONT ID="If">if</FONT> (other.size() != count) {
+<A NAME="126"></A>                <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="127"></A>        }
+<A NAME="128"></A>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; keyList.length; ++i) {
+<A NAME="129"></A>            <FONT ID="Int">int</FONT> key = keyList[i];
+<A NAME="130"></A>            <FONT ID="If">if</FONT> (key &gt; MAX_UNUSED) { 
+<A NAME="131"></A>              Object otherValue = other.get(key);
+<A NAME="132"></A>              <FONT ID="If">if</FONT> (otherValue == <FONT ID="Null">null</FONT> 
+<A NAME="133"></A>                  ? values[i] != <FONT ID="Null">null</FONT>
+<A NAME="134"></A>                  : !otherValue.equals(values[i])) {
+<A NAME="135"></A>                  <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="136"></A>              }
+<A NAME="137"></A>            }
+<A NAME="138"></A>        }
+<A NAME="139"></A>        <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="140"></A>    }
+<A NAME="141"></A>
+<A NAME="142"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> hashCode() {
+<A NAME="143"></A>        <FONT ID="SingleLineComment">// NOTE:  This function isn't actually used anywhere in this package, but it's here
+<A NAME="144"></A></FONT>        <FONT ID="SingleLineComment">// in case this class is ever used to make sure we uphold the invariants about
+<A NAME="145"></A></FONT>        <FONT ID="SingleLineComment">// hashCode() and equals()
+<A NAME="146"></A></FONT>
+<A NAME="147"></A>        <FONT ID="SingleLineComment">// WARNING:  This function hasn't undergone rigorous testing to make sure it actually
+<A NAME="148"></A></FONT>        <FONT ID="SingleLineComment">// gives good distribution.  We've eyeballed the results, and they appear okay, but
+<A NAME="149"></A></FONT>        <FONT ID="SingleLineComment">// you copy this algorithm (or these seed and multiplier values) at your own risk.
+<A NAME="150"></A></FONT>        <FONT ID="SingleLineComment">//                                        --rtg 8/17/99
+<A NAME="151"></A></FONT>        
+<A NAME="152"></A>        <FONT ID="Int">int</FONT> result = <FONT ID="IntegerLiteral">465</FONT>;   <FONT ID="SingleLineComment">// an arbitrary seed value
+<A NAME="153"></A></FONT>        <FONT ID="Int">int</FONT> scrambler = <FONT ID="IntegerLiteral">1362796821</FONT>; <FONT ID="SingleLineComment">// an arbitrary multiplier.
+<A NAME="154"></A></FONT>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; keyList.length; ++i) {
+<A NAME="155"></A>            <FONT ID="SingleLineComment">// this line just scrambles the bits as each value is added into the
+<A NAME="156"></A></FONT>            <FONT ID="SingleLineComment">// has value.  This helps to make sure we affect all the bits and that
+<A NAME="157"></A></FONT>            <FONT ID="SingleLineComment">// the same values in a different order will produce a different hash value
+<A NAME="158"></A></FONT>            result = (<FONT ID="Int">int</FONT>)(result * scrambler + <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="159"></A>            result += keyList[i];
+<A NAME="160"></A>        }
+<A NAME="161"></A>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; values.length; ++i) {
+<A NAME="162"></A>            result = (<FONT ID="Int">int</FONT>)(result * scrambler + <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="163"></A>            result += values[i].hashCode();
+<A NAME="164"></A>        }
+<A NAME="165"></A>        <FONT ID="Return">return</FONT> result;
+<A NAME="166"></A>    }
+<A NAME="167"></A>
+<A NAME="168"></A>    <FONT ID="Public">public</FONT> Object clone ()
+<A NAME="169"></A>                    <FONT ID="Throws">throws</FONT> CloneNotSupportedException {
+<A NAME="170"></A>        <A HREF="../../../org/dcm4cheri/util/IntHashtable2.java.html">IntHashtable2</A> result = (<A HREF="../../../org/dcm4cheri/util/IntHashtable2.java.html">IntHashtable2</A>) <FONT ID="Super">super</FONT>.clone();
+<A NAME="171"></A>        values = (Object[]) values.clone();
+<A NAME="172"></A>        keyList = (<FONT ID="Int">int</FONT>[])keyList.clone();
+<A NAME="173"></A>        <FONT ID="Return">return</FONT> result;
+<A NAME="174"></A>    }
+<A NAME="175"></A>    
+<A NAME="176"></A>    <FONT ID="SingleLineComment">// =======================PRIVATES============================
+<A NAME="177"></A></FONT>    <FONT ID="SingleLineComment">// the tables have to have prime-number lengths. Rather than compute
+<A NAME="178"></A></FONT>    <FONT ID="SingleLineComment">// primes, we just keep a table, with the current index we are using.
+<A NAME="179"></A></FONT>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> primeIndex;
+<A NAME="180"></A>
+<A NAME="181"></A>    <FONT ID="SingleLineComment">// highWaterFactor determines the maximum number of elements before
+<A NAME="182"></A></FONT>    <FONT ID="SingleLineComment">// a rehash. Can be tuned for different performance/storage characteristics.
+<A NAME="183"></A></FONT>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Float">float</FONT> highWaterFactor = <FONT ID="FloatPointLiteral">0.4F</FONT>;
+<A NAME="184"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> highWaterMark;
+<A NAME="185"></A>
+<A NAME="186"></A>    <FONT ID="SingleLineComment">// lowWaterFactor determines the minimum number of elements before
+<A NAME="187"></A></FONT>    <FONT ID="SingleLineComment">// a rehash. Can be tuned for different performance/storage characteristics.
+<A NAME="188"></A></FONT>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Float">float</FONT> lowWaterFactor = <FONT ID="FloatPointLiteral">0.0F</FONT>;
+<A NAME="189"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> lowWaterMark;
+<A NAME="190"></A>
+<A NAME="191"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> count;
+<A NAME="192"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> mask = <FONT ID="IntegerLiteral">0xFFFFFFFF</FONT>;
+<A NAME="193"></A>
+<A NAME="194"></A>    <FONT ID="SingleLineComment">// we use two arrays to minimize allocations
+<A NAME="195"></A></FONT>    <FONT ID="Private">private</FONT> Object[] values;
+<A NAME="196"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT>[] keyList;
+<A NAME="197"></A>
+<A NAME="198"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> EMPTY   = Integer.MIN_VALUE;
+<A NAME="199"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> DELETED = EMPTY + <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="200"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> MAX_UNUSED = DELETED;
+<A NAME="201"></A>
+<A NAME="202"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> initialize (<FONT ID="Int">int</FONT> primeIndex) {
+<A NAME="203"></A>        <FONT ID="If">if</FONT> (primeIndex &lt; <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="204"></A>            primeIndex = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="205"></A>        } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (primeIndex &gt;= PRIMES.length) {
+<A NAME="206"></A>            System.out.println(<FONT ID="StringLiteral">"TOO BIG"</FONT>);
+<A NAME="207"></A>            primeIndex = PRIMES.length - <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="208"></A>            <FONT ID="SingleLineComment">// throw new java.util.IllegalArgumentError();
+<A NAME="209"></A></FONT>        }
+<A NAME="210"></A>        <FONT ID="This">this</FONT>.primeIndex = primeIndex;
+<A NAME="211"></A>        <FONT ID="Int">int</FONT> initialSize = PRIMES[primeIndex];
+<A NAME="212"></A>        values = <FONT ID="New">new</FONT> Object[initialSize];
+<A NAME="213"></A>        keyList = <FONT ID="New">new</FONT> <FONT ID="Int">int</FONT>[initialSize];
+<A NAME="214"></A>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; initialSize; ++i) {
+<A NAME="215"></A>            keyList[i] = EMPTY;
+<A NAME="216"></A>            values[i] = <FONT ID="Null">null</FONT>;
+<A NAME="217"></A>        }
+<A NAME="218"></A>        count = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="219"></A>        lowWaterMark = (<FONT ID="Int">int</FONT>)(initialSize * lowWaterFactor);
+<A NAME="220"></A>        highWaterMark = (<FONT ID="Int">int</FONT>)(initialSize * highWaterFactor);
+<A NAME="221"></A>    }
+<A NAME="222"></A>
+<A NAME="223"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> rehash() {
+<A NAME="224"></A>        Object[] oldValues = values;
+<A NAME="225"></A>        <FONT ID="Int">int</FONT>[] oldkeyList = keyList;
+<A NAME="226"></A>        <FONT ID="Int">int</FONT> newPrimeIndex = primeIndex;
+<A NAME="227"></A>        <FONT ID="If">if</FONT> (count &gt; highWaterMark) {
+<A NAME="228"></A>            ++newPrimeIndex;
+<A NAME="229"></A>        } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (count &lt; lowWaterMark) {
+<A NAME="230"></A>            newPrimeIndex -= <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="231"></A>        }
+<A NAME="232"></A>        initialize(newPrimeIndex);
+<A NAME="233"></A>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = oldValues.length - <FONT ID="IntegerLiteral">1</FONT>; i &gt;= <FONT ID="IntegerLiteral">0</FONT>; --i) {
+<A NAME="234"></A>            <FONT ID="Int">int</FONT> key = oldkeyList[i];
+<A NAME="235"></A>            <FONT ID="If">if</FONT> (key &gt; MAX_UNUSED) {
+<A NAME="236"></A>                    putInternal(key, oldValues[i]);
+<A NAME="237"></A>            }
+<A NAME="238"></A>        }
+<A NAME="239"></A>    }
+<A NAME="240"></A>
+<A NAME="241"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> putInternal (<FONT ID="Int">int</FONT> key, Object value) {
+<A NAME="242"></A>        <FONT ID="Int">int</FONT> index = find(key);
+<A NAME="243"></A>        <FONT ID="If">if</FONT> (keyList[index] &lt; MAX_UNUSED) {      <FONT ID="SingleLineComment">// deleted or empty
+<A NAME="244"></A></FONT>            keyList[index] = key;
+<A NAME="245"></A>            ++count;
+<A NAME="246"></A>        }
+<A NAME="247"></A>        values[index] = value;                                  <FONT ID="SingleLineComment">// reset value
+<A NAME="248"></A></FONT>    }
+<A NAME="249"></A>
+<A NAME="250"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> find (<FONT ID="Int">int</FONT> key) {
+<A NAME="251"></A>        <FONT ID="If">if</FONT> (key &lt;= MAX_UNUSED)
+<A NAME="252"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> IllegalArgumentException(<FONT ID="StringLiteral">"key can't be less than 0xFFFFFFFE"</FONT>);
+<A NAME="253"></A>        <FONT ID="Int">int</FONT> firstDeleted = -<FONT ID="IntegerLiteral">1</FONT>;  <FONT ID="SingleLineComment">// assume invalid index
+<A NAME="254"></A></FONT>        <FONT ID="Int">int</FONT> index = (key ^ <FONT ID="IntegerLiteral">0x4000000</FONT>) % keyList.length;
+<A NAME="255"></A>        <FONT ID="If">if</FONT> (index &lt; <FONT ID="IntegerLiteral">0</FONT>) index = -index; <FONT ID="SingleLineComment">// positive only
+<A NAME="256"></A></FONT>        <FONT ID="Int">int</FONT> jump = <FONT ID="IntegerLiteral">0</FONT>; <FONT ID="SingleLineComment">// lazy evaluate
+<A NAME="257"></A></FONT>        <FONT ID="While">while</FONT> (<FONT ID="True">true</FONT>) {
+<A NAME="258"></A>            <FONT ID="Int">int</FONT> tableHash = keyList[index];
+<A NAME="259"></A>            <FONT ID="If">if</FONT> (tableHash == key) {                    <FONT ID="SingleLineComment">// quick check
+<A NAME="260"></A></FONT>                <FONT ID="Return">return</FONT> index;
+<A NAME="261"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (tableHash &gt; MAX_UNUSED) {    <FONT ID="SingleLineComment">// neither correct nor unused
+<A NAME="262"></A></FONT>                <FONT ID="SingleLineComment">// ignore
+<A NAME="263"></A></FONT>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (tableHash == EMPTY) {        <FONT ID="SingleLineComment">// empty, end o' the line
+<A NAME="264"></A></FONT>                <FONT ID="If">if</FONT> (firstDeleted &gt;= <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="265"></A>                        index = firstDeleted;           <FONT ID="SingleLineComment">// reset if had deleted slot
+<A NAME="266"></A></FONT>                }
+<A NAME="267"></A>                <FONT ID="Return">return</FONT> index;
+<A NAME="268"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (firstDeleted &lt; <FONT ID="IntegerLiteral">0</FONT>) {  <FONT ID="SingleLineComment">// remember first deleted
+<A NAME="269"></A></FONT>                    firstDeleted = index;
+<A NAME="270"></A>            }
+<A NAME="271"></A>            <FONT ID="SingleLineComment">// System.out.println("Collision at: " + index);
+<A NAME="272"></A></FONT>            <FONT ID="If">if</FONT> (jump == <FONT ID="IntegerLiteral">0</FONT>) {                                                        <FONT ID="SingleLineComment">// lazy compute jump
+<A NAME="273"></A></FONT>                jump = (key % (keyList.length - <FONT ID="IntegerLiteral">1</FONT>));
+<A NAME="274"></A>                <FONT ID="If">if</FONT> (jump &lt; <FONT ID="IntegerLiteral">0</FONT>) jump = -jump;
+<A NAME="275"></A>                ++jump;
+<A NAME="276"></A>            }
+<A NAME="277"></A>            <FONT ID="SingleLineComment">//*/
+<A NAME="278"></A></FONT>            index = (index + jump) % keyList.length;
+<A NAME="279"></A>            <FONT ID="SingleLineComment">//System.out.print(" =&gt; " + index);
+<A NAME="280"></A></FONT>            <FONT ID="If">if</FONT> (index == firstDeleted) <FONT ID="SingleLineComment">// not found in possible slots =&gt; it was deleted
+<A NAME="281"></A></FONT>               <FONT ID="Return">return</FONT> index;
+<A NAME="282"></A>        }
+<A NAME="283"></A>    }
+<A NAME="284"></A>
+<A NAME="285"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Int">int</FONT> leastGreaterPrimeIndex(<FONT ID="Int">int</FONT> source) {
+<A NAME="286"></A>        <FONT ID="Int">int</FONT> i;
+<A NAME="287"></A>        <FONT ID="For">for</FONT> (i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; PRIMES.length; ++i) {
+<A NAME="288"></A>            <FONT ID="If">if</FONT> (source &lt; PRIMES[i]) {
+<A NAME="289"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="290"></A>            }
+<A NAME="291"></A>        }
+<A NAME="292"></A>        <FONT ID="Return">return</FONT> (i == <FONT ID="IntegerLiteral">0</FONT>) ? <FONT ID="IntegerLiteral">0</FONT> : (i - <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="293"></A>    }
+<A NAME="294"></A>
+<A NAME="295"></A>    <FONT ID="SingleLineComment">// This list is the result of buildList below. Can be tuned for different
+<A NAME="296"></A></FONT>    <FONT ID="SingleLineComment">// performance/storage characteristics.
+<A NAME="297"></A></FONT>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT>[] PRIMES = {
+<A NAME="298"></A>        <FONT ID="IntegerLiteral">17</FONT>, <FONT ID="IntegerLiteral">37</FONT>, <FONT ID="IntegerLiteral">67</FONT>, <FONT ID="IntegerLiteral">131</FONT>, <FONT ID="IntegerLiteral">257</FONT>,
+<A NAME="299"></A>        <FONT ID="IntegerLiteral">521</FONT>, <FONT ID="IntegerLiteral">1031</FONT>, <FONT ID="IntegerLiteral">2053</FONT>, <FONT ID="IntegerLiteral">4099</FONT>, <FONT ID="IntegerLiteral">8209</FONT>, <FONT ID="IntegerLiteral">16411</FONT>, <FONT ID="IntegerLiteral">32771</FONT>, <FONT ID="IntegerLiteral">65537</FONT>,
+<A NAME="300"></A>        <FONT ID="IntegerLiteral">131101</FONT>, <FONT ID="IntegerLiteral">262147</FONT>, <FONT ID="IntegerLiteral">524309</FONT>, <FONT ID="IntegerLiteral">1048583</FONT>, <FONT ID="IntegerLiteral">2097169</FONT>, <FONT ID="IntegerLiteral">4194319</FONT>, <FONT ID="IntegerLiteral">8388617</FONT>, <FONT ID="IntegerLiteral">16777259</FONT>,
+<A NAME="301"></A>        <FONT ID="IntegerLiteral">33554467</FONT>, <FONT ID="IntegerLiteral">67108879</FONT>, <FONT ID="IntegerLiteral">134217757</FONT>, <FONT ID="IntegerLiteral">268435459</FONT>, <FONT ID="IntegerLiteral">536870923</FONT>, <FONT ID="IntegerLiteral">1073741827</FONT>, <FONT ID="IntegerLiteral">2147483647</FONT>
+<A NAME="302"></A>
+<A NAME="303"></A>        <FONT ID="SingleLineComment">// finer-grained table
+<A NAME="304"></A></FONT>        <FONT ID="MultiLineComment">/*11, 37, 71, 127, 179, 257, 359, 491, 661, 887, 1181, 1553,
+<A NAME="305"></A>        2053, 2683, 3517, 4591, 6007, 7817, 10193, 13291, 17291,
+<A NAME="306"></A>        22481, 29251, 38053, 49499, 64373, 83701, 108863, 141511,
+<A NAME="307"></A>        184003, 239231, 310997, 404321, 525649, 683377, 888397,
+<A NAME="308"></A>        1154947, 1501447, 1951949, 2537501, 3298807, 4288439,
+<A NAME="309"></A>        5575001, 7247533, 9421793, 12248389, 15922903, 20699753,
+<A NAME="310"></A>        26909713, 34982639, 45477503, 59120749, 76856959, 99914123,
+<A NAME="311"></A>        129888349, 168854831, 219511301, 285364721, 370974151,
+<A NAME="312"></A>        482266423, 626946367, 815030309, 1059539417, 1377401287,
+<A NAME="313"></A>        1790621681, 2147483647
+<A NAME="314"></A>        //*/</FONT>
+<A NAME="315"></A>    };
+<A NAME="316"></A>
+<A NAME="317"></A>    <FONT ID="MultiLineComment">/*
+<A NAME="318"></A>    public static void buildList() {
+<A NAME="319"></A>        String currentLine = "";
+<A NAME="320"></A>        for (double target = 8; target &lt; 0x7FFFFFFF; target = 2 * target) {
+<A NAME="321"></A>                int nextPrime = leastPrimeAsLargeAs((int)target);
+<A NAME="322"></A>                if (nextPrime &lt;= 0) break;
+<A NAME="323"></A>                String addition = nextPrime + ", ";
+<A NAME="324"></A>                if (currentLine.length() + addition.length() &gt; 60) {
+<A NAME="325"></A>                        System.out.println(currentLine);
+<A NAME="326"></A>                        currentLine = addition;
+<A NAME="327"></A>                } else {
+<A NAME="328"></A>                        currentLine += addition;
+<A NAME="329"></A>                }
+<A NAME="330"></A>        }
+<A NAME="331"></A>        System.out.print(currentLine);
+<A NAME="332"></A>        System.out.println(greatestPrimeAsSmallAs(Integer.MAX_VALUE));
+<A NAME="333"></A>    }
+<A NAME="334"></A>
+<A NAME="335"></A>    public static boolean isPrime(int candidate) {
+<A NAME="336"></A>        int sqrt = (int) Math.sqrt(candidate) + 1;
+<A NAME="337"></A>        for (int i = 2; i &lt;= sqrt; ++i) {
+<A NAME="338"></A>                if (candidate % i == 0) {
+<A NAME="339"></A>                        return false;
+<A NAME="340"></A>                }
+<A NAME="341"></A>        }
+<A NAME="342"></A>        return true;
+<A NAME="343"></A>    }
+<A NAME="344"></A>
+<A NAME="345"></A>    public static int leastPrimeAsLargeAs(int target) {
+<A NAME="346"></A>            for (int i = target; i &lt; Integer.MAX_VALUE; ++i) {
+<A NAME="347"></A>                    if (isPrime(i))
+<A NAME="348"></A>                            return i;
+<A NAME="349"></A>            }
+<A NAME="350"></A>            return 0;
+<A NAME="351"></A>    }
+<A NAME="352"></A>    public static int greatestPrimeAsSmallAs(int target) {
+<A NAME="353"></A>            for (int i = target; i &gt; 0 ; --i) {
+<A NAME="354"></A>                    if (isPrime(i))
+<A NAME="355"></A>                            return i;
+<A NAME="356"></A>            }
+<A NAME="357"></A>            return 0;
+<A NAME="358"></A>    }
+<A NAME="359"></A>    //*/</FONT>
+<A NAME="360"></A>}
+<A NAME="361"></A>
+<A NAME="362"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">IntHashtable2</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

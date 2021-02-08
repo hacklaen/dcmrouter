@@ -1,0 +1,881 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.plugin.Annotation (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">Annotation</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/* ***** BEGIN LICENSE BLOCK *****
+<A NAME="2"></A> * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+<A NAME="3"></A> *
+<A NAME="4"></A> * The contents of this file are subject to the Mozilla Public License Version
+<A NAME="5"></A> * 1.1 (the "License"); you may not use this file except in compliance with
+<A NAME="6"></A> * the License. You may obtain a copy of the License at
+<A NAME="7"></A> * http://www.mozilla.org/MPL/
+<A NAME="8"></A> *
+<A NAME="9"></A> * Software distributed under the License is distributed on an "AS IS" basis,
+<A NAME="10"></A> * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+<A NAME="11"></A> * for the specific language governing rights and limitations under the
+<A NAME="12"></A> * License.
+<A NAME="13"></A> *
+<A NAME="14"></A> * The initial developer of the original code is
+<A NAME="15"></A> * Dr. Thomas Hacklaender
+<A NAME="16"></A> * Copyright (C) 2006. All rights reserved.
+<A NAME="17"></A> *
+<A NAME="18"></A> * Contributor(s):
+<A NAME="19"></A> * Dr. Thomas Hacklaender &lt;thomas.hacklaender@iftm.de&gt;
+<A NAME="20"></A> *
+<A NAME="21"></A> * Alternatively, the contents of this file may be used under the terms of
+<A NAME="22"></A> * either the GNU General Public License Version 2 or later (the "GPL"), or
+<A NAME="23"></A> * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+<A NAME="24"></A> * in which case the provisions of the GPL or the LGPL are applicable instead
+<A NAME="25"></A> * of those above. If you wish to allow use of your version of this file only
+<A NAME="26"></A> * under the terms of either the GPL or the LGPL, and not to allow others to
+<A NAME="27"></A> * use your version of this file under the terms of the MPL, indicate your
+<A NAME="28"></A> * decision by deleting the provisions above and replace them with the notice
+<A NAME="29"></A> * and other provisions required by the GPL or the LGPL. If you do not delete
+<A NAME="30"></A> * the provisions above, a recipient may use your version of this file under
+<A NAME="31"></A> * the terms of any one of the MPL, the GPL or the LGPL.
+<A NAME="32"></A> * ***** END LICENSE BLOCK ***** */</FONT>
+<A NAME="33"></A>
+<A NAME="34"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.plugin.index.html" target="packageFrame">de.iftm.dcm4che.router.plugin</A>;
+<A NAME="35"></A>
+<A NAME="36"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="37"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.*;
+<A NAME="38"></A>
+<A NAME="39"></A><FONT ID="Import">import</FONT> java.awt.*;
+<A NAME="40"></A><FONT ID="Import">import</FONT> java.awt.geom.*;
+<A NAME="41"></A><FONT ID="Import">import</FONT> java.awt.image.*;
+<A NAME="42"></A><FONT ID="Import">import</FONT> java.io.*;
+<A NAME="43"></A><FONT ID="Import">import</FONT> java.net.*;
+<A NAME="44"></A><FONT ID="Import">import</FONT> java.text.*;
+<A NAME="45"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="46"></A><FONT ID="Import">import</FONT> javax.swing.*;
+<A NAME="47"></A>
+<A NAME="48"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="49"></A>
+<A NAME="50"></A>
+<A NAME="51"></A><FONT ID="FormalComment">/**
+<A NAME="52"></A> * This class draws annotations on an Graphics2D Object.
+<A NAME="53"></A> *
+<A NAME="54"></A> * @author Thomas Hacklaender
+<A NAME="55"></A> * @version 2006.11.11
+<A NAME="56"></A> */</FONT>
+<A NAME="57"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> Annotation {
+<A NAME="58"></A>    
+<A NAME="59"></A>    <FONT ID="FormalComment">/** Initialize logger */</FONT>
+<A NAME="60"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> Logger log = Logger.getLogger(<A HREF="../../../../../de/iftm/dcm4che/router/plugin/Annotation.java.html">Annotation</A>.<FONT ID="Class">class</FONT>);
+<A NAME="61"></A>    
+<A NAME="62"></A>    
+<A NAME="63"></A>    <FONT ID="FormalComment">/** Value of field type: Don't draw any annotations. */</FONT>
+<A NAME="64"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> ANNOTATION_OFF = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="65"></A>    
+<A NAME="66"></A>    <FONT ID="FormalComment">/** Value of field type: Draw all annotations. */</FONT>
+<A NAME="67"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> ANNOTATION_FULL = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="68"></A>    
+<A NAME="69"></A>    <FONT ID="FormalComment">/** Value of field type: Draw minimal set of annotations. */</FONT>
+<A NAME="70"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> ANNOTATION_MINIMAL = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="71"></A>    
+<A NAME="72"></A>    <FONT ID="FormalComment">/** Value of field type: Draw all annotation besides patient name,
+<A NAME="73"></A>     * patient birth date and patient ID. */</FONT>
+<A NAME="74"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> ANNOTATION_ANONYMOUS = <FONT ID="IntegerLiteral">3</FONT>;
+<A NAME="75"></A>    
+<A NAME="76"></A>    <FONT ID="FormalComment">/** Value of field type: Draw all annotation besides patient birth
+<A NAME="77"></A>     * date and patient ID. Replace the patient name with a pseudonym. */</FONT>
+<A NAME="78"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> ANNOTATION_PSEUDONYM = <FONT ID="IntegerLiteral">4</FONT>;
+<A NAME="79"></A>    
+<A NAME="80"></A>    <FONT ID="FormalComment">/** Value of the row-parameter of method drawString. */</FONT>
+<A NAME="81"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> TOP = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="82"></A>    
+<A NAME="83"></A>    <FONT ID="FormalComment">/** Value of the row-parameter of method drawString. */</FONT>
+<A NAME="84"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> CENTER = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="85"></A>    
+<A NAME="86"></A>    <FONT ID="FormalComment">/** Value of the row-parameter of method drawString. */</FONT>
+<A NAME="87"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> BOTTOM = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="88"></A>    
+<A NAME="89"></A>    <FONT ID="FormalComment">/** Value of the column-parameter of method drawString. */</FONT>
+<A NAME="90"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> LEFT = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="91"></A>    
+<A NAME="92"></A>    <FONT ID="FormalComment">/** Value of the column-parameter of method drawString. */</FONT>
+<A NAME="93"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> MIDDLE = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="94"></A>    
+<A NAME="95"></A>    <FONT ID="FormalComment">/** Value of the column-parameter of method drawString. */</FONT>
+<A NAME="96"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> RIGHT = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="97"></A>    
+<A NAME="98"></A>    <FONT ID="FormalComment">/** Type of image annotation. */</FONT>
+<A NAME="99"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> type = ANNOTATION_FULL;
+<A NAME="100"></A>    
+<A NAME="101"></A>    <FONT ID="FormalComment">/** The margin for image the in pixel. */</FONT>
+<A NAME="102"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> marginSize = <FONT ID="IntegerLiteral">4</FONT>;
+<A NAME="103"></A>    
+<A NAME="104"></A>    <FONT ID="FormalComment">/** The font size for the annotation. */</FONT>
+<A NAME="105"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> fontSize = <FONT ID="IntegerLiteral">11</FONT>;
+<A NAME="106"></A>    
+<A NAME="107"></A>    <FONT ID="FormalComment">/** The name of the font for the annotation. */</FONT>
+<A NAME="108"></A>    <FONT ID="Private">private</FONT> String fontName = <FONT ID="StringLiteral">"Dialog"</FONT>;
+<A NAME="109"></A>    
+<A NAME="110"></A>    <FONT ID="FormalComment">/** The color of the font for the annotation. */</FONT>
+<A NAME="111"></A>    <FONT ID="Private">private</FONT> Color fontColor = Color.orange;
+<A NAME="112"></A>    
+<A NAME="113"></A>    <FONT ID="FormalComment">/** The Graphic2D.*/</FONT>
+<A NAME="114"></A>    <FONT ID="Private">private</FONT> Graphics2D g2D = <FONT ID="Null">null</FONT>;
+<A NAME="115"></A>    
+<A NAME="116"></A>    <FONT ID="FormalComment">/** The width of the Graphic2D.*/</FONT>
+<A NAME="117"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> g2dWidth;
+<A NAME="118"></A>    
+<A NAME="119"></A>    <FONT ID="FormalComment">/**  The height of the Graphic2D.*/</FONT>
+<A NAME="120"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> g2dHeight;
+<A NAME="121"></A>    
+<A NAME="122"></A>    <FONT ID="FormalComment">/** The Dataset. */</FONT>
+<A NAME="123"></A>    <FONT ID="Private">private</FONT> Dataset ds = <FONT ID="Null">null</FONT>;
+<A NAME="124"></A>    
+<A NAME="125"></A>    
+<A NAME="126"></A>    <FONT ID="FormalComment">/**
+<A NAME="127"></A>     * Creates a new Annotation object.
+<A NAME="128"></A>     *
+<A NAME="129"></A>     * @param theImage the image to draw the annotation onto.
+<A NAME="130"></A>     * @param theDataset the Dataset containing the metainforamtion of the annotations.
+<A NAME="131"></A>     */</FONT>
+<A NAME="132"></A>    <FONT ID="Public">public</FONT> Annotation(BufferedImage theImage, Dataset theDataset) {
+<A NAME="133"></A>        <FONT ID="This">this</FONT>(theImage.createGraphics(), theImage.getWidth(), theImage.getHeight(), theDataset);
+<A NAME="134"></A>    }
+<A NAME="135"></A>    
+<A NAME="136"></A>    
+<A NAME="137"></A>    <FONT ID="FormalComment">/**
+<A NAME="138"></A>     * Creates a new Annotation object.
+<A NAME="139"></A>     *
+<A NAME="140"></A>     * @param theG2D the graphic context to draw the annotation onto.
+<A NAME="141"></A>     * @param width the width of the graphic context.
+<A NAME="142"></A>     * @param height the height of the graphic context.
+<A NAME="143"></A>     * @param theDataset the Dataset containing the metainforamtion of the annotations.
+<A NAME="144"></A>     */</FONT>
+<A NAME="145"></A>    <FONT ID="Public">public</FONT> Annotation(Graphics2D theG2D, <FONT ID="Int">int</FONT> width, <FONT ID="Int">int</FONT> height, Dataset theDataset) {
+<A NAME="146"></A>        g2D = theG2D;
+<A NAME="147"></A>        g2dWidth = width;
+<A NAME="148"></A>        g2dHeight = height;
+<A NAME="149"></A>        ds = theDataset;
+<A NAME="150"></A>    }
+<A NAME="151"></A>    
+<A NAME="152"></A>    <FONT ID="FormalComment">/**
+<A NAME="153"></A>     * Set the type of annotation.
+<A NAME="154"></A>     * &lt;p&gt;&lt;CODE&gt;ANNOTATION_OFF&lt;/CODE&gt; = do not display any annotations.
+<A NAME="155"></A>     * &lt;p&gt;&lt;CODE&gt;ANNOTATION_FULL&lt;/CODE&gt; = display all possible annotation.
+<A NAME="156"></A>     * &lt;p&gt;&lt;CODE&gt;ANNOTATION_MINIMAL&lt;/CODE&gt; = displays only a minimal set of annotations.
+<A NAME="157"></A>     * &lt;p&gt;&lt;CODE&gt;ANNOTATION_ANONYMOUS&lt;/CODE&gt; = display all possible annotation, but the patients name.
+<A NAME="158"></A>     * &lt;p&gt;&lt;CODE&gt;ANNOTATION_PSEUDONYM&lt;/CODE&gt; = display all possible annotation, but uses a pseudonym for the patients name.
+<A NAME="159"></A>     *
+<A NAME="160"></A>     * @param theType the type of annotation.
+<A NAME="161"></A>     */</FONT>
+<A NAME="162"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setType(<FONT ID="Int">int</FONT> theType) {
+<A NAME="163"></A>        type = theType;
+<A NAME="164"></A>    }
+<A NAME="165"></A>    
+<A NAME="166"></A>    
+<A NAME="167"></A>    <FONT ID="FormalComment">/**
+<A NAME="168"></A>     * Gets the actual annotation type.
+<A NAME="169"></A>     *
+<A NAME="170"></A>     * @return the actual annotation type.
+<A NAME="171"></A>     */</FONT>
+<A NAME="172"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getType() {
+<A NAME="173"></A>        <FONT ID="Return">return</FONT> type;
+<A NAME="174"></A>    }
+<A NAME="175"></A>    
+<A NAME="176"></A>    
+<A NAME="177"></A>    <FONT ID="FormalComment">/**
+<A NAME="178"></A>     * Sets the margin inside the image where no inforamtion should be drawn.
+<A NAME="179"></A>     *
+<A NAME="180"></A>     * @param theSize the margin.
+<A NAME="181"></A>     */</FONT>
+<A NAME="182"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setMarginSize(<FONT ID="Int">int</FONT> theSize) {
+<A NAME="183"></A>        marginSize = theSize;
+<A NAME="184"></A>    }
+<A NAME="185"></A>    
+<A NAME="186"></A>    
+<A NAME="187"></A>    <FONT ID="FormalComment">/**
+<A NAME="188"></A>     * Gets the margin inside the image where no inforamtion should be drawn.
+<A NAME="189"></A>     *
+<A NAME="190"></A>     * @return the margin.
+<A NAME="191"></A>     */</FONT>
+<A NAME="192"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getMarginSize() {
+<A NAME="193"></A>        <FONT ID="Return">return</FONT> marginSize;
+<A NAME="194"></A>    }
+<A NAME="195"></A>    
+<A NAME="196"></A>    
+<A NAME="197"></A>    <FONT ID="FormalComment">/**
+<A NAME="198"></A>     * Set the size of the font to draw with.
+<A NAME="199"></A>     *
+<A NAME="200"></A>     * @param theSize the size of the font.
+<A NAME="201"></A>     */</FONT>
+<A NAME="202"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setFontSize(<FONT ID="Int">int</FONT> theSize) {
+<A NAME="203"></A>        fontSize = theSize;
+<A NAME="204"></A>    }
+<A NAME="205"></A>    
+<A NAME="206"></A>    
+<A NAME="207"></A>    <FONT ID="FormalComment">/**
+<A NAME="208"></A>     * Gets the size of the font to draw with.
+<A NAME="209"></A>     *
+<A NAME="210"></A>     * @return the size of the font.
+<A NAME="211"></A>     */</FONT>
+<A NAME="212"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getFontSize() {
+<A NAME="213"></A>        <FONT ID="Return">return</FONT> fontSize;
+<A NAME="214"></A>    }
+<A NAME="215"></A>    
+<A NAME="216"></A>    
+<A NAME="217"></A>    <FONT ID="FormalComment">/**
+<A NAME="218"></A>     * Set the name of the font to draw with.
+<A NAME="219"></A>     *
+<A NAME="220"></A>     * @param theName the name of the font.
+<A NAME="221"></A>     */</FONT>
+<A NAME="222"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setFontName(String theName) {
+<A NAME="223"></A>        fontName = theName;
+<A NAME="224"></A>    }
+<A NAME="225"></A>    
+<A NAME="226"></A>    
+<A NAME="227"></A>    <FONT ID="FormalComment">/**
+<A NAME="228"></A>     * Gets the name of the font to draw with.
+<A NAME="229"></A>     *
+<A NAME="230"></A>     * @return the name of the font.
+<A NAME="231"></A>     */</FONT>
+<A NAME="232"></A>    <FONT ID="Public">public</FONT> String getFontName() {
+<A NAME="233"></A>        <FONT ID="Return">return</FONT> fontName;
+<A NAME="234"></A>    }
+<A NAME="235"></A>    
+<A NAME="236"></A>    
+<A NAME="237"></A>    <FONT ID="FormalComment">/**
+<A NAME="238"></A>     * Set the color of the font to draw with.
+<A NAME="239"></A>     *
+<A NAME="240"></A>     * @param theColor the color of the font.
+<A NAME="241"></A>     */</FONT>
+<A NAME="242"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setFontColor(Color theColor) {
+<A NAME="243"></A>        fontColor = theColor;
+<A NAME="244"></A>    }
+<A NAME="245"></A>    
+<A NAME="246"></A>    
+<A NAME="247"></A>    <FONT ID="FormalComment">/**
+<A NAME="248"></A>     * Gets the color of the font to draw with.
+<A NAME="249"></A>     *
+<A NAME="250"></A>     * @return the color of the font.
+<A NAME="251"></A>     */</FONT>
+<A NAME="252"></A>    <FONT ID="Public">public</FONT> Color getFontColor() {
+<A NAME="253"></A>        <FONT ID="Return">return</FONT> fontColor;
+<A NAME="254"></A>    }
+<A NAME="255"></A>    
+<A NAME="256"></A>    
+<A NAME="257"></A>    <FONT ID="FormalComment">/**
+<A NAME="258"></A>     * Draws annotation onto the Graphics2D .
+<A NAME="259"></A>     */</FONT>
+<A NAME="260"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> draw() {
+<A NAME="261"></A>        String[] sa;
+<A NAME="262"></A>        String   sopClassUID;
+<A NAME="263"></A>        
+<A NAME="264"></A>        <FONT ID="SingleLineComment">//  Fuer Bilder ohne Dataset nichts tun
+<A NAME="265"></A></FONT>        <FONT ID="If">if</FONT> ((ds == <FONT ID="Null">null</FONT>) || (g2D == <FONT ID="Null">null</FONT>)) {
+<A NAME="266"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="267"></A>        }
+<A NAME="268"></A>        
+<A NAME="269"></A>        <FONT ID="SingleLineComment">// ANNOTATION_OFF: Keine Annotationen schreiben
+<A NAME="270"></A></FONT>        <FONT ID="If">if</FONT> (type == ANNOTATION_OFF) {
+<A NAME="271"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="272"></A>        }
+<A NAME="273"></A>        
+<A NAME="274"></A>        <FONT ID="SingleLineComment">// C.12.1 SOP Common Module
+<A NAME="275"></A></FONT>        sopClassUID = ds.getString(Tags.SOPClassUID, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="276"></A>        
+<A NAME="277"></A>        drawGeneralAnnotation();
+<A NAME="278"></A>        
+<A NAME="279"></A>        <FONT ID="If">if</FONT> (sopClassUID.equals(UIDs.CTImageStorage)) {
+<A NAME="280"></A>            drawCTAnnotation();
+<A NAME="281"></A>        }
+<A NAME="282"></A>        
+<A NAME="283"></A>        <FONT ID="If">if</FONT> (sopClassUID.equals(UIDs.MRImageStorage)) {
+<A NAME="284"></A>            drawMRAnnotation();
+<A NAME="285"></A>        }
+<A NAME="286"></A>        
+<A NAME="287"></A>        <FONT ID="If">if</FONT> (sopClassUID.equals(UIDs.ComputedRadiographyImageStorage)) {
+<A NAME="288"></A>            drawCRAnnotation();
+<A NAME="289"></A>        }
+<A NAME="290"></A>    }
+<A NAME="291"></A>    
+<A NAME="292"></A>    
+<A NAME="293"></A>    <FONT ID="FormalComment">/**
+<A NAME="294"></A>     * Draws annotation common for all modalities onto the BufferedImage stored
+<A NAME="295"></A>     * in the local field image.
+<A NAME="296"></A>     */</FONT>
+<A NAME="297"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> drawGeneralAnnotation() {
+<A NAME="298"></A>        String acquisitionDate = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="299"></A>        String acquisitionTime = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="300"></A>        String columns = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="301"></A>        String instanceNumber = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="302"></A>        String institutionName = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="303"></A>        String patientBirthDate = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="304"></A>        String patientID = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="305"></A>        String patientName = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="306"></A>        String rows = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="307"></A>        String seriesNumber = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="308"></A>        String studyID = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="309"></A>        
+<A NAME="310"></A>        <FONT ID="SingleLineComment">// C.7.1.1 Patient Module
+<A NAME="311"></A></FONT>        patientName = ds.getString(Tags.PatientName, <FONT ID="StringLiteral">""</FONT>); <FONT ID="SingleLineComment">// Type 2
+<A NAME="312"></A></FONT>        patientID = ds.getString(Tags.PatientID, <FONT ID="StringLiteral">""</FONT>); <FONT ID="SingleLineComment">// Type 2
+<A NAME="313"></A></FONT>        patientBirthDate = formatDate(ds.getString(Tags.PatientBirthDate, <FONT ID="StringLiteral">""</FONT>)); <FONT ID="SingleLineComment">// Type 2
+<A NAME="314"></A></FONT>        
+<A NAME="315"></A>        <FONT ID="SingleLineComment">// C.7.2.1 General Study Module
+<A NAME="316"></A></FONT>        studyID = ds.getString(Tags.StudyID, <FONT ID="StringLiteral">""</FONT>); <FONT ID="SingleLineComment">// Type 2
+<A NAME="317"></A></FONT>        
+<A NAME="318"></A>        <FONT ID="SingleLineComment">// C.7.3.1 General Series Module
+<A NAME="319"></A></FONT>        seriesNumber = ds.getString(Tags.SeriesNumber, <FONT ID="StringLiteral">""</FONT>); <FONT ID="SingleLineComment">// Type 2
+<A NAME="320"></A></FONT>        
+<A NAME="321"></A>        <FONT ID="SingleLineComment">// C.7.5.1 General Equipment Module
+<A NAME="322"></A></FONT>        institutionName = ds.getString(Tags.InstitutionName, <FONT ID="StringLiteral">""</FONT>); <FONT ID="SingleLineComment">// Type 3
+<A NAME="323"></A></FONT>        
+<A NAME="324"></A>        <FONT ID="SingleLineComment">// C.7.6.1 General Image Module
+<A NAME="325"></A></FONT>        instanceNumber = ds.getString(Tags.InstanceNumber, <FONT ID="StringLiteral">""</FONT>); <FONT ID="SingleLineComment">// Typ 1
+<A NAME="326"></A></FONT>        acquisitionDate = formatDate(ds.getString(Tags.AcquisitionDate, <FONT ID="StringLiteral">""</FONT>)); <FONT ID="SingleLineComment">// Typ 3
+<A NAME="327"></A></FONT>        acquisitionTime = formatTime(ds.getString(Tags.AcquisitionTime, <FONT ID="StringLiteral">""</FONT>)); <FONT ID="SingleLineComment">// Typ 3
+<A NAME="328"></A></FONT>        
+<A NAME="329"></A>        <FONT ID="SingleLineComment">// C.7.6.3 Image Pixel Module
+<A NAME="330"></A></FONT>        rows = ds.getString(Tags.Rows, <FONT ID="StringLiteral">""</FONT>); <FONT ID="SingleLineComment">// Typ 1
+<A NAME="331"></A></FONT>        columns = ds.getString(Tags.Columns, <FONT ID="StringLiteral">""</FONT>); <FONT ID="SingleLineComment">// Typ 1
+<A NAME="332"></A></FONT>        
+<A NAME="333"></A>        <FONT ID="Switch">switch</FONT> (type) {
+<A NAME="334"></A>            <FONT ID="Case">case</FONT> ANNOTATION_FULL:
+<A NAME="335"></A>                drawString(patientName, TOP, LEFT, <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="336"></A>                drawString(<FONT ID="StringLiteral">"DoB: "</FONT> + patientBirthDate, TOP, LEFT, <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="337"></A>                drawString(<FONT ID="StringLiteral">"ID: "</FONT> + patientID, TOP, LEFT, <FONT ID="IntegerLiteral">3</FONT>);
+<A NAME="338"></A>                drawString(acquisitionDate, TOP, LEFT, <FONT ID="IntegerLiteral">5</FONT>);
+<A NAME="339"></A>                drawString(acquisitionTime, TOP, LEFT, <FONT ID="IntegerLiteral">6</FONT>);
+<A NAME="340"></A>                drawString(<FONT ID="StringLiteral">"Ima: "</FONT> + seriesNumber + <FONT ID="StringLiteral">" / "</FONT> + instanceNumber, TOP, LEFT, <FONT ID="IntegerLiteral">7</FONT>);
+<A NAME="341"></A>                
+<A NAME="342"></A>                drawString(<FONT ID="StringLiteral">"FoV: "</FONT> + rows + <FONT ID="StringLiteral">"/"</FONT> + columns, BOTTOM, RIGHT, <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="343"></A>                
+<A NAME="344"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="345"></A>                
+<A NAME="346"></A>            <FONT ID="Case">case</FONT> ANNOTATION_MINIMAL:
+<A NAME="347"></A>                drawString(<FONT ID="StringLiteral">"Ima: "</FONT> + seriesNumber + <FONT ID="StringLiteral">" / "</FONT> + instanceNumber, BOTTOM, LEFT, <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="348"></A>                
+<A NAME="349"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="350"></A>                
+<A NAME="351"></A>            <FONT ID="Case">case</FONT> ANNOTATION_ANONYMOUS:
+<A NAME="352"></A>                drawString(acquisitionDate, TOP, LEFT, <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="353"></A>                drawString(acquisitionTime, TOP, LEFT, <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="354"></A>                drawString(<FONT ID="StringLiteral">"Ima: "</FONT> + seriesNumber + <FONT ID="StringLiteral">" / "</FONT> + instanceNumber, TOP, LEFT, <FONT ID="IntegerLiteral">3</FONT>);
+<A NAME="355"></A>                
+<A NAME="356"></A>                drawString(<FONT ID="StringLiteral">"FoV: "</FONT> + rows + <FONT ID="StringLiteral">"/"</FONT> + columns, BOTTOM, RIGHT, <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="357"></A>                
+<A NAME="358"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="359"></A>                
+<A NAME="360"></A>            <FONT ID="Case">case</FONT> ANNOTATION_PSEUDONYM:
+<A NAME="361"></A>                drawString(createPseudonym(ds), TOP, LEFT, <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="362"></A>                drawString(acquisitionDate, TOP, LEFT, <FONT ID="IntegerLiteral">3</FONT>);
+<A NAME="363"></A>                drawString(acquisitionTime, TOP, LEFT, <FONT ID="IntegerLiteral">4</FONT>);
+<A NAME="364"></A>                drawString(<FONT ID="StringLiteral">"Ima: "</FONT> + seriesNumber + <FONT ID="StringLiteral">" / "</FONT> + instanceNumber, TOP, LEFT, <FONT ID="IntegerLiteral">5</FONT>);
+<A NAME="365"></A>                
+<A NAME="366"></A>                drawString(<FONT ID="StringLiteral">"FoV: "</FONT> + rows + <FONT ID="StringLiteral">"/"</FONT> + columns, BOTTOM, RIGHT, <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="367"></A>                
+<A NAME="368"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="369"></A>        }
+<A NAME="370"></A>    }
+<A NAME="371"></A>    
+<A NAME="372"></A>    
+<A NAME="373"></A>    <FONT ID="FormalComment">/**
+<A NAME="374"></A>     * Draws annotation specific for the CT modality onto the BufferedImage
+<A NAME="375"></A>     * stored in the local field image.
+<A NAME="376"></A>     */</FONT>
+<A NAME="377"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> drawCTAnnotation() {
+<A NAME="378"></A>        String[] sa;
+<A NAME="379"></A>        String   convolutionKernel = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="380"></A>        String   exposure = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="381"></A>        String   gantryDetectorTilt = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="382"></A>        String   kvp = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="383"></A>        String   patientPosition = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="384"></A>        String   pixelSpacing = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="385"></A>        String   sliceLocation = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="386"></A>        String   sliceThickness = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="387"></A>        String   windowCenter = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="388"></A>        String   windowWidth = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="389"></A>        
+<A NAME="390"></A>        <FONT ID="SingleLineComment">// Es handelt sich um ein CT Bild
+<A NAME="391"></A></FONT>        <FONT ID="SingleLineComment">// In Common Series IE Module/ C.7.3.1 General Series Module
+<A NAME="392"></A></FONT>        <FONT ID="SingleLineComment">// Mit Type 2C fuer CT und MR vorgeschrieben
+<A NAME="393"></A></FONT>        patientPosition = ds.getString(Tags.PatientPosition, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="394"></A>        
+<A NAME="395"></A>        <FONT ID="SingleLineComment">// In A.3 und A.4 vorgeschrieben: C.7.6.2 Image Plane Module
+<A NAME="396"></A></FONT>        sa = ds.getStrings(Tags.PixelSpacing); <FONT ID="SingleLineComment">// Typ 1
+<A NAME="397"></A></FONT>        
+<A NAME="398"></A>        <FONT ID="If">if</FONT> ((sa != <FONT ID="Null">null</FONT>) &amp;&amp; (sa.length == <FONT ID="IntegerLiteral">2</FONT>)) {
+<A NAME="399"></A>            pixelSpacing = formatDouble(sa[<FONT ID="IntegerLiteral">0</FONT>], <FONT ID="IntegerLiteral">2</FONT>) + <FONT ID="StringLiteral">"/"</FONT> + formatDouble(sa[<FONT ID="IntegerLiteral">1</FONT>], <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="400"></A>        }
+<A NAME="401"></A>        
+<A NAME="402"></A>        sliceThickness = formatDouble(ds.getString(Tags.SliceThickness, <FONT ID="StringLiteral">""</FONT>), <FONT ID="IntegerLiteral">1</FONT>); <FONT ID="SingleLineComment">// Typ 2
+<A NAME="403"></A></FONT>        sliceLocation = formatDouble(ds.getString(Tags.SliceLocation, <FONT ID="StringLiteral">""</FONT>), <FONT ID="IntegerLiteral">1</FONT>); <FONT ID="SingleLineComment">// Typ 3
+<A NAME="404"></A></FONT>        
+<A NAME="405"></A>        kvp = ds.getString(Tags.KVP, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="406"></A>        exposure = ds.getString(Tags.Exposure);
+<A NAME="407"></A>        convolutionKernel = ds.getString(Tags.ConvolutionKernel, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="408"></A>        gantryDetectorTilt = ds.getString(Tags.GantryDetectorTilt, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="409"></A>        
+<A NAME="410"></A>        <FONT ID="SingleLineComment">// In A.3 und A.4 User Option: C.11.2 VOI LUT Module
+<A NAME="411"></A></FONT>        windowCenter = formatDouble(ds.getString(Tags.WindowCenter, <FONT ID="StringLiteral">""</FONT>), <FONT ID="IntegerLiteral">0</FONT>); <FONT ID="SingleLineComment">// Typ 3
+<A NAME="412"></A></FONT>        windowWidth = formatDouble(ds.getString(Tags.WindowWidth, <FONT ID="StringLiteral">""</FONT>), <FONT ID="IntegerLiteral">0</FONT>); <FONT ID="SingleLineComment">// Typ 3
+<A NAME="413"></A></FONT>        
+<A NAME="414"></A>        <FONT ID="Switch">switch</FONT> (type) {
+<A NAME="415"></A>            <FONT ID="Case">case</FONT> ANNOTATION_FULL:
+<A NAME="416"></A>            <FONT ID="Case">case</FONT> ANNOTATION_ANONYMOUS:
+<A NAME="417"></A>            <FONT ID="Case">case</FONT> ANNOTATION_PSEUDONYM:
+<A NAME="418"></A>                drawString(<FONT ID="StringLiteral">"C: "</FONT> + windowCenter, BOTTOM, RIGHT, <FONT ID="IntegerLiteral">6</FONT>);
+<A NAME="419"></A>                drawString(<FONT ID="StringLiteral">"W: "</FONT> + windowWidth, BOTTOM, RIGHT, <FONT ID="IntegerLiteral">5</FONT>);
+<A NAME="420"></A>                drawString(<FONT ID="StringLiteral">"SL: "</FONT> + sliceThickness, BOTTOM, RIGHT, <FONT ID="IntegerLiteral">4</FONT>);
+<A NAME="421"></A>                drawString(<FONT ID="StringLiteral">"SP: "</FONT> + sliceLocation, BOTTOM, RIGHT, <FONT ID="IntegerLiteral">3</FONT>);
+<A NAME="422"></A>                drawString(<FONT ID="StringLiteral">"Pix: "</FONT> + pixelSpacing, BOTTOM, RIGHT, <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="423"></A>                
+<A NAME="424"></A>                drawString(<FONT ID="StringLiteral">"GT: "</FONT> + gantryDetectorTilt, BOTTOM, LEFT, <FONT ID="IntegerLiteral">4</FONT>);
+<A NAME="425"></A>                drawString(<FONT ID="StringLiteral">"kV: "</FONT> + kvp, BOTTOM, LEFT, <FONT ID="IntegerLiteral">3</FONT>);
+<A NAME="426"></A>                drawString(<FONT ID="StringLiteral">"mAs: "</FONT> + exposure, BOTTOM, LEFT, <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="427"></A>                drawString(convolutionKernel, BOTTOM, LEFT, <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="428"></A>                
+<A NAME="429"></A>                drawString(patientPosition, BOTTOM, MIDDLE, <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="430"></A>                
+<A NAME="431"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="432"></A>                
+<A NAME="433"></A>            <FONT ID="Case">case</FONT> ANNOTATION_MINIMAL:
+<A NAME="434"></A>                drawString(patientPosition, BOTTOM, RIGHT, <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="435"></A>                
+<A NAME="436"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="437"></A>        }
+<A NAME="438"></A>    }
+<A NAME="439"></A>    
+<A NAME="440"></A>    
+<A NAME="441"></A>    <FONT ID="FormalComment">/**
+<A NAME="442"></A>     * Draws annotation specific for the MR modality onto the BufferedImage
+<A NAME="443"></A>     * stored in the local field image.
+<A NAME="444"></A>     */</FONT>
+<A NAME="445"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> drawMRAnnotation() {
+<A NAME="446"></A>        String[] sa;
+<A NAME="447"></A>        String   echoTime = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="448"></A>        String   echoTrainLength = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="449"></A>        String   flipAngle = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="450"></A>        String   inversionTime = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="451"></A>        String   mrAcquisitionType = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="452"></A>        String   patientPosition = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="453"></A>        String   pixelSpacing = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="454"></A>        String   repetitionTime = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="455"></A>        String   scanningSeq = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="456"></A>        String   sequenceName = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="457"></A>        String   seqVariant = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="458"></A>        String   sliceLocation = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="459"></A>        String   sliceThickness = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="460"></A>        String   windowCenter = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="461"></A>        String   windowWidth = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="462"></A>        
+<A NAME="463"></A>        <FONT ID="SingleLineComment">// Es handelt sich um ein CMR Bild
+<A NAME="464"></A></FONT>        <FONT ID="SingleLineComment">// In Common Series IE Module/ C.7.3.1 General Series Module
+<A NAME="465"></A></FONT>        <FONT ID="SingleLineComment">// Mit Type 2C fuer CT und MR vorgeschrieben
+<A NAME="466"></A></FONT>        patientPosition = ds.getString(Tags.PatientPosition, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="467"></A>        
+<A NAME="468"></A>        <FONT ID="SingleLineComment">// In A.3 und A.4 vorgeschrieben: C.7.6.2 Image Plane Module
+<A NAME="469"></A></FONT>        sa = ds.getStrings(Tags.PixelSpacing); <FONT ID="SingleLineComment">// Typ 1
+<A NAME="470"></A></FONT>        
+<A NAME="471"></A>        <FONT ID="If">if</FONT> ((sa != <FONT ID="Null">null</FONT>) &amp;&amp; (sa.length == <FONT ID="IntegerLiteral">2</FONT>)) {
+<A NAME="472"></A>            pixelSpacing = formatDouble(sa[<FONT ID="IntegerLiteral">0</FONT>], <FONT ID="IntegerLiteral">2</FONT>) + <FONT ID="StringLiteral">"/"</FONT> + formatDouble(sa[<FONT ID="IntegerLiteral">1</FONT>], <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="473"></A>        }
+<A NAME="474"></A>        
+<A NAME="475"></A>        sliceThickness = formatDouble(ds.getString(Tags.SliceThickness, <FONT ID="StringLiteral">""</FONT>), <FONT ID="IntegerLiteral">1</FONT>); <FONT ID="SingleLineComment">// Typ 2
+<A NAME="476"></A></FONT>        sliceLocation = formatDouble(ds.getString(Tags.SliceLocation, <FONT ID="StringLiteral">""</FONT>), <FONT ID="IntegerLiteral">1</FONT>); <FONT ID="SingleLineComment">// Typ 3
+<A NAME="477"></A></FONT>        
+<A NAME="478"></A>        <FONT ID="SingleLineComment">// C.8.3.1 MR Imager Module
+<A NAME="479"></A></FONT>        scanningSeq = ds.getString(Tags.ScanningSeq, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="480"></A>        seqVariant = ds.getString(Tags.SeqVariant, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="481"></A>        mrAcquisitionType = ds.getString(Tags.MRAcquisitionType, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="482"></A>        flipAngle = formatDouble(ds.getString(Tags.FlipAngle, <FONT ID="StringLiteral">""</FONT>), <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="483"></A>        repetitionTime = formatDouble(ds.getString(Tags.RepetitionTime, <FONT ID="StringLiteral">""</FONT>), <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="484"></A>        echoTime = formatDouble(ds.getString(Tags.EchoTime, <FONT ID="StringLiteral">""</FONT>), <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="485"></A>        inversionTime = formatDouble(ds.getString(Tags.InversionTime, <FONT ID="StringLiteral">""</FONT>), <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="486"></A>        sequenceName = ds.getString(Tags.SequenceName, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="487"></A>        echoTrainLength = ds.getString(Tags.EchoTrainLength, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="488"></A>        
+<A NAME="489"></A>        <FONT ID="SingleLineComment">// In A.3 und A.4 User Option: C.11.2 VOI LUT Module
+<A NAME="490"></A></FONT>        windowCenter = formatDouble(ds.getString(Tags.WindowCenter, <FONT ID="StringLiteral">""</FONT>), <FONT ID="IntegerLiteral">0</FONT>); <FONT ID="SingleLineComment">// Typ 3
+<A NAME="491"></A></FONT>        windowWidth = formatDouble(ds.getString(Tags.WindowWidth, <FONT ID="StringLiteral">""</FONT>), <FONT ID="IntegerLiteral">0</FONT>); <FONT ID="SingleLineComment">// Typ 3
+<A NAME="492"></A></FONT>        
+<A NAME="493"></A>        <FONT ID="Switch">switch</FONT> (type) {
+<A NAME="494"></A>            <FONT ID="Case">case</FONT> ANNOTATION_FULL:
+<A NAME="495"></A>            <FONT ID="Case">case</FONT> ANNOTATION_ANONYMOUS:
+<A NAME="496"></A>            <FONT ID="Case">case</FONT> ANNOTATION_PSEUDONYM:
+<A NAME="497"></A>                drawString(<FONT ID="StringLiteral">"C: "</FONT> + windowCenter, BOTTOM, RIGHT, <FONT ID="IntegerLiteral">6</FONT>);
+<A NAME="498"></A>                drawString(<FONT ID="StringLiteral">"W: "</FONT> + windowWidth, BOTTOM, RIGHT, <FONT ID="IntegerLiteral">5</FONT>);
+<A NAME="499"></A>                drawString(<FONT ID="StringLiteral">"SL: "</FONT> + sliceThickness, BOTTOM, RIGHT, <FONT ID="IntegerLiteral">4</FONT>);
+<A NAME="500"></A>                drawString(<FONT ID="StringLiteral">"SP: "</FONT> + sliceLocation, BOTTOM, RIGHT, <FONT ID="IntegerLiteral">3</FONT>);
+<A NAME="501"></A>                drawString(<FONT ID="StringLiteral">"Pix: "</FONT> + pixelSpacing, BOTTOM, RIGHT, <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="502"></A>                
+<A NAME="503"></A>                drawString(<FONT ID="StringLiteral">"TR: "</FONT> + repetitionTime, BOTTOM, LEFT, <FONT ID="IntegerLiteral">7</FONT>);
+<A NAME="504"></A>                drawString(<FONT ID="StringLiteral">"TE: "</FONT> + echoTime, BOTTOM, LEFT, <FONT ID="IntegerLiteral">6</FONT>);
+<A NAME="505"></A>                drawString(<FONT ID="StringLiteral">"ETL: "</FONT> + echoTrainLength, BOTTOM, LEFT, <FONT ID="IntegerLiteral">5</FONT>);
+<A NAME="506"></A>                drawString(<FONT ID="StringLiteral">"TI: "</FONT> + inversionTime, BOTTOM, LEFT, <FONT ID="IntegerLiteral">4</FONT>);
+<A NAME="507"></A>                drawString(<FONT ID="StringLiteral">"Flp: "</FONT> + flipAngle, BOTTOM, LEFT, <FONT ID="IntegerLiteral">3</FONT>);
+<A NAME="508"></A>                drawString(<FONT ID="StringLiteral">"Seq: "</FONT> + scanningSeq + <FONT ID="StringLiteral">"/"</FONT> + seqVariant + <FONT ID="StringLiteral">"/"</FONT> + mrAcquisitionType, BOTTOM, LEFT, <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="509"></A>                drawString(sequenceName, BOTTOM, LEFT, <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="510"></A>                
+<A NAME="511"></A>                drawString(patientPosition, BOTTOM, MIDDLE, <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="512"></A>                
+<A NAME="513"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="514"></A>                
+<A NAME="515"></A>            <FONT ID="Case">case</FONT> ANNOTATION_MINIMAL:
+<A NAME="516"></A>                drawString(patientPosition, BOTTOM, RIGHT, <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="517"></A>                
+<A NAME="518"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="519"></A>        }
+<A NAME="520"></A>    }
+<A NAME="521"></A>    
+<A NAME="522"></A>    
+<A NAME="523"></A>    <FONT ID="FormalComment">/**
+<A NAME="524"></A>     * Draws annotation specific for the CR modality onto the BufferedImage
+<A NAME="525"></A>     * stored in the local field image.
+<A NAME="526"></A>     */</FONT>
+<A NAME="527"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> drawCRAnnotation() {
+<A NAME="528"></A>        String[] sa;
+<A NAME="529"></A>        String   imagerPixelSpacing = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="530"></A>        
+<A NAME="531"></A>        <FONT ID="SingleLineComment">// Es handelt sich um ein CR Bild
+<A NAME="532"></A></FONT>        <FONT ID="SingleLineComment">// C.8.3.1 CR Image Module
+<A NAME="533"></A></FONT>        sa = ds.getStrings(Tags.ImagerPixelSpacing); <FONT ID="SingleLineComment">// Typ 3
+<A NAME="534"></A></FONT>        
+<A NAME="535"></A>        <FONT ID="If">if</FONT> ((sa != <FONT ID="Null">null</FONT>) &amp;&amp; (sa.length == <FONT ID="IntegerLiteral">2</FONT>)) {
+<A NAME="536"></A>            imagerPixelSpacing = formatDouble(sa[<FONT ID="IntegerLiteral">0</FONT>], <FONT ID="IntegerLiteral">2</FONT>) + <FONT ID="StringLiteral">"/"</FONT> + formatDouble(sa[<FONT ID="IntegerLiteral">1</FONT>], <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="537"></A>        }
+<A NAME="538"></A>        
+<A NAME="539"></A>        <FONT ID="Switch">switch</FONT> (type) {
+<A NAME="540"></A>            <FONT ID="Case">case</FONT> ANNOTATION_FULL:
+<A NAME="541"></A>            <FONT ID="Case">case</FONT> ANNOTATION_ANONYMOUS:
+<A NAME="542"></A>            <FONT ID="Case">case</FONT> ANNOTATION_PSEUDONYM:
+<A NAME="543"></A>                drawString(<FONT ID="StringLiteral">"Pix: "</FONT> + imagerPixelSpacing, BOTTOM, RIGHT, <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="544"></A>                
+<A NAME="545"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="546"></A>                
+<A NAME="547"></A>            <FONT ID="Case">case</FONT> ANNOTATION_MINIMAL:
+<A NAME="548"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="549"></A>        }
+<A NAME="550"></A>    }
+<A NAME="551"></A>    
+<A NAME="552"></A>    
+<A NAME="553"></A>    <FONT ID="FormalComment">/**
+<A NAME="554"></A>     * Draws a string as annotation onto the BufferedImage stored in the local
+<A NAME="555"></A>     * field image. The image is devided in 9 areas (3 rows, 3 columns). The
+<A NAME="556"></A>     * string is placed at the position row/column at the given text line,
+<A NAME="557"></A>     * starting with 1. The text is left/center/right justified depending on the
+<A NAME="558"></A>     * position it is placed.
+<A NAME="559"></A>     *
+<A NAME="560"></A>     * @param s The string to draw.
+<A NAME="561"></A>     * @param row The row of the area where the string should be drawn.
+<A NAME="562"></A>     * @param column The column of the area where the string should be drawn.
+<A NAME="563"></A>     * @param line The text line in the area where the string should be drawn.
+<A NAME="564"></A>     */</FONT>
+<A NAME="565"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> drawString(String s, <FONT ID="Int">int</FONT> row, <FONT ID="Int">int</FONT> column, <FONT ID="Int">int</FONT> line) {
+<A NAME="566"></A>        <FONT ID="Int">int</FONT>         strWidth;
+<A NAME="567"></A>        <FONT ID="Int">int</FONT>         fontAscent;
+<A NAME="568"></A>        <FONT ID="Int">int</FONT>         fontDescent;
+<A NAME="569"></A>        <FONT ID="Int">int</FONT>         fontHeight;
+<A NAME="570"></A>        FontMetrics metrics;
+<A NAME="571"></A>        
+<A NAME="572"></A>        <FONT ID="SingleLineComment">// Nur dann etwas tun, wenn ein Graphics2D Kontext vorhanden ist
+<A NAME="573"></A></FONT>        <FONT ID="If">if</FONT> (g2D == <FONT ID="Null">null</FONT>) {
+<A NAME="574"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="575"></A>        }
+<A NAME="576"></A>        
+<A NAME="577"></A>        <FONT ID="If">if</FONT> (s == <FONT ID="Null">null</FONT>) {
+<A NAME="578"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="579"></A>        }
+<A NAME="580"></A>        
+<A NAME="581"></A>        <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">""</FONT>)) {
+<A NAME="582"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="583"></A>        }
+<A NAME="584"></A>        
+<A NAME="585"></A>        g2D.setFont(<FONT ID="New">new</FONT> Font(fontName, Font.PLAIN, fontSize));
+<A NAME="586"></A>        g2D.setColor(fontColor);
+<A NAME="587"></A>        
+<A NAME="588"></A>        metrics = g2D.getFontMetrics();
+<A NAME="589"></A>        strWidth = metrics.stringWidth(s);
+<A NAME="590"></A>        fontAscent = metrics.getAscent();
+<A NAME="591"></A>        fontDescent = metrics.getDescent();
+<A NAME="592"></A>        fontHeight = metrics.getHeight();
+<A NAME="593"></A>        
+<A NAME="594"></A>        <FONT ID="Switch">switch</FONT> (row) {
+<A NAME="595"></A>            <FONT ID="Case">case</FONT> TOP:
+<A NAME="596"></A>                <FONT ID="Switch">switch</FONT> (column) {
+<A NAME="597"></A>                    <FONT ID="Case">case</FONT> LEFT:
+<A NAME="598"></A>                        g2D.drawString(s, marginSize, marginSize + fontAscent + ((line - <FONT ID="IntegerLiteral">1</FONT>) * fontHeight));
+<A NAME="599"></A>                        
+<A NAME="600"></A>                        <FONT ID="Break">break</FONT>;
+<A NAME="601"></A>                        
+<A NAME="602"></A>                    <FONT ID="Case">case</FONT> MIDDLE:
+<A NAME="603"></A>                        g2D.drawString(s, (g2dWidth - strWidth) / <FONT ID="IntegerLiteral">2</FONT>, marginSize + fontAscent + ((line - <FONT ID="IntegerLiteral">1</FONT>) * fontHeight));
+<A NAME="604"></A>                        
+<A NAME="605"></A>                        <FONT ID="Break">break</FONT>;
+<A NAME="606"></A>                        
+<A NAME="607"></A>                    <FONT ID="Case">case</FONT> RIGHT:
+<A NAME="608"></A>                        g2D.drawString(s, g2dWidth - marginSize - strWidth, marginSize + fontAscent + ((line - <FONT ID="IntegerLiteral">1</FONT>) * fontHeight));
+<A NAME="609"></A>                        
+<A NAME="610"></A>                        <FONT ID="Break">break</FONT>;
+<A NAME="611"></A>                }
+<A NAME="612"></A>                
+<A NAME="613"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="614"></A>                
+<A NAME="615"></A>            <FONT ID="Case">case</FONT> CENTER:
+<A NAME="616"></A>                <FONT ID="Switch">switch</FONT> (column) {
+<A NAME="617"></A>                    <FONT ID="Case">case</FONT> LEFT:
+<A NAME="618"></A>                        g2D.drawString(s, marginSize, (g2dHeight / <FONT ID="IntegerLiteral">2</FONT>) + ((line - <FONT ID="IntegerLiteral">1</FONT>) * fontHeight));
+<A NAME="619"></A>                        
+<A NAME="620"></A>                        <FONT ID="Break">break</FONT>;
+<A NAME="621"></A>                        
+<A NAME="622"></A>                    <FONT ID="Case">case</FONT> MIDDLE:
+<A NAME="623"></A>                        g2D.drawString(s, (g2dWidth - strWidth) / <FONT ID="IntegerLiteral">2</FONT>, (g2dHeight / <FONT ID="IntegerLiteral">2</FONT>) + ((line - <FONT ID="IntegerLiteral">1</FONT>) * fontHeight));
+<A NAME="624"></A>                        
+<A NAME="625"></A>                        <FONT ID="Break">break</FONT>;
+<A NAME="626"></A>                        
+<A NAME="627"></A>                    <FONT ID="Case">case</FONT> RIGHT:
+<A NAME="628"></A>                        g2D.drawString(s, g2dWidth - marginSize - strWidth, (g2dHeight / <FONT ID="IntegerLiteral">2</FONT>) + ((line - <FONT ID="IntegerLiteral">1</FONT>) * fontHeight));
+<A NAME="629"></A>                        
+<A NAME="630"></A>                        <FONT ID="Break">break</FONT>;
+<A NAME="631"></A>                }
+<A NAME="632"></A>                
+<A NAME="633"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="634"></A>                
+<A NAME="635"></A>            <FONT ID="Case">case</FONT> BOTTOM:
+<A NAME="636"></A>                <FONT ID="Switch">switch</FONT> (column) {
+<A NAME="637"></A>                    <FONT ID="Case">case</FONT> LEFT:
+<A NAME="638"></A>                        g2D.drawString(s, marginSize, g2dHeight - marginSize - fontDescent - ((line - <FONT ID="IntegerLiteral">1</FONT>) * fontHeight));
+<A NAME="639"></A>                        
+<A NAME="640"></A>                        <FONT ID="Break">break</FONT>;
+<A NAME="641"></A>                        
+<A NAME="642"></A>                    <FONT ID="Case">case</FONT> MIDDLE:
+<A NAME="643"></A>                        g2D.drawString(s, (g2dWidth - strWidth) / <FONT ID="IntegerLiteral">2</FONT>, g2dHeight - marginSize - fontDescent - ((line - <FONT ID="IntegerLiteral">1</FONT>) * fontHeight));
+<A NAME="644"></A>                        
+<A NAME="645"></A>                        <FONT ID="Break">break</FONT>;
+<A NAME="646"></A>                        
+<A NAME="647"></A>                    <FONT ID="Case">case</FONT> RIGHT:
+<A NAME="648"></A>                        g2D.drawString(s, g2dWidth - marginSize - strWidth, g2dHeight - marginSize - fontDescent - ((line - <FONT ID="IntegerLiteral">1</FONT>) * fontHeight));
+<A NAME="649"></A>                        
+<A NAME="650"></A>                        <FONT ID="Break">break</FONT>;
+<A NAME="651"></A>                }
+<A NAME="652"></A>                
+<A NAME="653"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="654"></A>        }
+<A NAME="655"></A>    }
+<A NAME="656"></A>    
+<A NAME="657"></A>    
+<A NAME="658"></A>    <FONT ID="FormalComment">/**
+<A NAME="659"></A>     * Creates a pseudonym for the patient: It is a 9 character long sting. The
+<A NAME="660"></A>     * first character is the first character of the last name. The second is
+<A NAME="661"></A>     * the first character of the given name or '_', if not present. The third
+<A NAME="662"></A>     * character is allways '_'. The next 6 characters are the birth date of the
+<A NAME="663"></A>     * patient in the foramt yymmdd.
+<A NAME="664"></A>     *
+<A NAME="665"></A>     * @param ds The Dataset to process.
+<A NAME="666"></A>     *
+<A NAME="667"></A>     * @return The pseudonym.
+<A NAME="668"></A>     */</FONT>
+<A NAME="669"></A>    <FONT ID="Protected">protected</FONT> String createPseudonym(Dataset ds) {
+<A NAME="670"></A>        String s;
+<A NAME="671"></A>        <FONT ID="Int">int</FONT>    i;
+<A NAME="672"></A>        String pseudonym = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="673"></A>        String patientName;
+<A NAME="674"></A>        String patientBirthDate;
+<A NAME="675"></A>        
+<A NAME="676"></A>        <FONT ID="SingleLineComment">// C.7.1.1 Patient Module
+<A NAME="677"></A></FONT>        <FONT ID="If">if</FONT> ((patientName = ds.getString(Tags.PatientName)) == <FONT ID="Null">null</FONT>) {
+<A NAME="678"></A>            patientName = <FONT ID="StringLiteral">"Pseudonym"</FONT>;
+<A NAME="679"></A>        }
+<A NAME="680"></A>        
+<A NAME="681"></A>        <FONT ID="If">if</FONT> ((patientBirthDate = ds.getString(Tags.PatientBirthDate)) == <FONT ID="Null">null</FONT>) {
+<A NAME="682"></A>            patientBirthDate = <FONT ID="StringLiteral">"20000101"</FONT>;
+<A NAME="683"></A>        }
+<A NAME="684"></A>        
+<A NAME="685"></A>        pseudonym += patientName.substring(<FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="686"></A>        i = patientName.indexOf(<FONT ID="CharacerLiteral">'^'</FONT>);
+<A NAME="687"></A>        
+<A NAME="688"></A>        <FONT ID="If">if</FONT> ((i != -<FONT ID="IntegerLiteral">1</FONT>) &amp; (patientName.length() &gt; i)) {
+<A NAME="689"></A>            pseudonym += patientName.substring(i + <FONT ID="IntegerLiteral">1</FONT>, i + <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="690"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="691"></A>            pseudonym += <FONT ID="StringLiteral">"_"</FONT>;
+<A NAME="692"></A>        }
+<A NAME="693"></A>        
+<A NAME="694"></A>        pseudonym += (<FONT ID="StringLiteral">"_"</FONT> + patientBirthDate.substring(<FONT ID="IntegerLiteral">2</FONT>, <FONT ID="IntegerLiteral">8</FONT>));
+<A NAME="695"></A>        
+<A NAME="696"></A>        <FONT ID="Return">return</FONT> pseudonym;
+<A NAME="697"></A>    }
+<A NAME="698"></A>    
+<A NAME="699"></A>    
+<A NAME="700"></A>    <FONT ID="FormalComment">/**
+<A NAME="701"></A>     * Formats a string representing a integer number. The resulting string
+<A NAME="702"></A>     * has the given number of digits with leading '0'.
+<A NAME="703"></A>     *
+<A NAME="704"></A>     * @param in The string to process.
+<A NAME="705"></A>     * @param n The number of digits.
+<A NAME="706"></A>     *
+<A NAME="707"></A>     * @return The formatted string.
+<A NAME="708"></A>     */</FONT>
+<A NAME="709"></A>    <FONT ID="Protected">protected</FONT> String formatInteger(String in, <FONT ID="Int">int</FONT> n) {
+<A NAME="710"></A>        <FONT ID="Int">int</FONT> i;
+<A NAME="711"></A>        <FONT ID="Int">int</FONT> end;
+<A NAME="712"></A>        
+<A NAME="713"></A>        <FONT ID="If">if</FONT> (in == <FONT ID="Null">null</FONT>) {
+<A NAME="714"></A>            <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">""</FONT>;
+<A NAME="715"></A>        }
+<A NAME="716"></A>        
+<A NAME="717"></A>        <FONT ID="If">if</FONT> (in.length() &gt;= n) {
+<A NAME="718"></A>            <FONT ID="Return">return</FONT> in.substring(in.length() - n, in.length());
+<A NAME="719"></A>        }
+<A NAME="720"></A>        
+<A NAME="721"></A>        <FONT ID="While">while</FONT> (in.length() &lt; n) {
+<A NAME="722"></A>            in = <FONT ID="StringLiteral">"0"</FONT> + in;
+<A NAME="723"></A>        }
+<A NAME="724"></A>        
+<A NAME="725"></A>        <FONT ID="Return">return</FONT> in;
+<A NAME="726"></A>    }
+<A NAME="727"></A>    
+<A NAME="728"></A>    
+<A NAME="729"></A>    <FONT ID="FormalComment">/**
+<A NAME="730"></A>     * Formats a string representing a floating point number. The resulting string
+<A NAME="731"></A>     * has the given number of decimal places. The floating point number is
+<A NAME="732"></A>     * roundet to that decimal places. If this decimal places is 0, the decimal
+<A NAME="733"></A>     * point is also ommitted. If the input string is null or empty the returned
+<A NAME="734"></A>     * string is the empty string.
+<A NAME="735"></A>     *
+<A NAME="736"></A>     * @param in The string to process.
+<A NAME="737"></A>     * @param n The number of decimal places.
+<A NAME="738"></A>     *
+<A NAME="739"></A>     * @return The formatted string.
+<A NAME="740"></A>     */</FONT>
+<A NAME="741"></A>    <FONT ID="Protected">protected</FONT> String formatDouble(String in, <FONT ID="Int">int</FONT> n) {
+<A NAME="742"></A>        <FONT ID="Double">double</FONT>               d;
+<A NAME="743"></A>        DecimalFormat        df;
+<A NAME="744"></A>        DecimalFormatSymbols dfs;
+<A NAME="745"></A>        String               out;
+<A NAME="746"></A>        
+<A NAME="747"></A>        <FONT ID="If">if</FONT> (in == <FONT ID="Null">null</FONT>) {
+<A NAME="748"></A>            <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">""</FONT>;
+<A NAME="749"></A>        }
+<A NAME="750"></A>        
+<A NAME="751"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="752"></A>            d = (<FONT ID="New">new</FONT> Double(in)).doubleValue();
+<A NAME="753"></A>        } <FONT ID="Catch">catch</FONT> (NumberFormatException e) {
+<A NAME="754"></A>            <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">""</FONT>;
+<A NAME="755"></A>        }
+<A NAME="756"></A>        
+<A NAME="757"></A>        <FONT ID="SingleLineComment">// Keine Exponentialdarstellung
+<A NAME="758"></A></FONT>        df = <FONT ID="New">new</FONT> DecimalFormat(<FONT ID="StringLiteral">"#.#"</FONT>);
+<A NAME="759"></A>        df.setMaximumFractionDigits(n);
+<A NAME="760"></A>        df.setMinimumFractionDigits(n);
+<A NAME="761"></A>        dfs = df.getDecimalFormatSymbols();
+<A NAME="762"></A>        
+<A NAME="763"></A>        <FONT ID="SingleLineComment">// Dezimalseparator soll immer '.' sein
+<A NAME="764"></A></FONT>        dfs.setDecimalSeparator(<FONT ID="CharacerLiteral">'.'</FONT>);
+<A NAME="765"></A>        df.setDecimalFormatSymbols(dfs);
+<A NAME="766"></A>        
+<A NAME="767"></A>        out = df.format(d);
+<A NAME="768"></A>        
+<A NAME="769"></A>        <FONT ID="If">if</FONT> (out.charAt(out.length() - <FONT ID="IntegerLiteral">1</FONT>) == <FONT ID="CharacerLiteral">'.'</FONT>) {
+<A NAME="770"></A>            <FONT ID="Return">return</FONT> out.substring(<FONT ID="IntegerLiteral">0</FONT>, out.length() - <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="771"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="772"></A>            <FONT ID="Return">return</FONT> out;
+<A NAME="773"></A>        }
+<A NAME="774"></A>    }
+<A NAME="775"></A>    
+<A NAME="776"></A>    
+<A NAME="777"></A>    <FONT ID="FormalComment">/**
+<A NAME="778"></A>     * Formats a string representing a date of the format yymmdd or yyyymmdd. 
+<A NAME="779"></A>     * The resulting string has the format yy-mm-dd or yyyy-mm-dd.
+<A NAME="780"></A>     *
+<A NAME="781"></A>     * @param in The string to process.
+<A NAME="782"></A>     *
+<A NAME="783"></A>     * @return The formatted string.
+<A NAME="784"></A>     */</FONT>
+<A NAME="785"></A>    <FONT ID="Static">static</FONT> <FONT ID="Public">public</FONT> String formatDate(String in) {
+<A NAME="786"></A>        <FONT ID="If">if</FONT> (in == <FONT ID="Null">null</FONT>) {
+<A NAME="787"></A>            <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">""</FONT>;
+<A NAME="788"></A>        }
+<A NAME="789"></A>        
+<A NAME="790"></A>        <FONT ID="Switch">switch</FONT> (in.length()) {
+<A NAME="791"></A>            <FONT ID="Case">case</FONT> <FONT ID="IntegerLiteral">6</FONT>:
+<A NAME="792"></A>                <FONT ID="Return">return</FONT> in.substring(<FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">2</FONT>) + <FONT ID="StringLiteral">"-"</FONT> + in.substring(<FONT ID="IntegerLiteral">2</FONT>, <FONT ID="IntegerLiteral">4</FONT>) + <FONT ID="StringLiteral">"-"</FONT> + in.substring(<FONT ID="IntegerLiteral">4</FONT>, <FONT ID="IntegerLiteral">6</FONT>);
+<A NAME="793"></A>                
+<A NAME="794"></A>            <FONT ID="Case">case</FONT> <FONT ID="IntegerLiteral">8</FONT>:
+<A NAME="795"></A>                <FONT ID="Return">return</FONT> in.substring(<FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">4</FONT>) + <FONT ID="StringLiteral">"-"</FONT> + in.substring(<FONT ID="IntegerLiteral">4</FONT>, <FONT ID="IntegerLiteral">6</FONT>) + <FONT ID="StringLiteral">"-"</FONT> + in.substring(<FONT ID="IntegerLiteral">6</FONT>, <FONT ID="IntegerLiteral">8</FONT>);
+<A NAME="796"></A>                
+<A NAME="797"></A>            <FONT ID="Default">default</FONT>:
+<A NAME="798"></A>                <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">""</FONT>;
+<A NAME="799"></A>        }
+<A NAME="800"></A>        
+<A NAME="801"></A>    }
+<A NAME="802"></A>    
+<A NAME="803"></A>    
+<A NAME="804"></A>    <FONT ID="FormalComment">/**
+<A NAME="805"></A>     * Formats a string representing a time of the format hhmmss.sss. The resulting
+<A NAME="806"></A>     * string has the format hh:mm:ss.
+<A NAME="807"></A>     *
+<A NAME="808"></A>     * @param in The string to process.
+<A NAME="809"></A>     *
+<A NAME="810"></A>     * @return The formatted string.
+<A NAME="811"></A>     */</FONT>
+<A NAME="812"></A>    <FONT ID="Static">static</FONT> <FONT ID="Public">public</FONT> String formatTime(String in) {
+<A NAME="813"></A>        <FONT ID="If">if</FONT> (in == <FONT ID="Null">null</FONT>) {
+<A NAME="814"></A>            <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">""</FONT>;
+<A NAME="815"></A>        }
+<A NAME="816"></A>        
+<A NAME="817"></A>        <FONT ID="If">if</FONT> (in.length() &lt; <FONT ID="IntegerLiteral">6</FONT>) {
+<A NAME="818"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="819"></A>        }
+<A NAME="820"></A>        
+<A NAME="821"></A>        <FONT ID="Return">return</FONT> in.substring(<FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">2</FONT>) + <FONT ID="StringLiteral">":"</FONT> + in.substring(<FONT ID="IntegerLiteral">2</FONT>, <FONT ID="IntegerLiteral">4</FONT>) + <FONT ID="StringLiteral">":"</FONT> + in.substring(<FONT ID="IntegerLiteral">4</FONT>, <FONT ID="IntegerLiteral">6</FONT>);
+<A NAME="822"></A>    }
+<A NAME="823"></A>    
+<A NAME="824"></A>    
+<A NAME="825"></A>    <FONT ID="FormalComment">/**
+<A NAME="826"></A>     * Formats a given string, that the resulting string only includes the characters
+<A NAME="827"></A>     * 0..9, A..Z and a..z. Other characters are replaced by the '_'character.
+<A NAME="828"></A>     *
+<A NAME="829"></A>     * @param s The stringto foramt.
+<A NAME="830"></A>     *
+<A NAME="831"></A>     * @return The resulting string.
+<A NAME="832"></A>     */</FONT>
+<A NAME="833"></A>    <FONT ID="Protected">protected</FONT> String string2LetterDigit(String s) {
+<A NAME="834"></A>        <FONT ID="Int">int</FONT>    n;
+<A NAME="835"></A>        <FONT ID="Char">char</FONT>[] ca = s.toCharArray();
+<A NAME="836"></A>        
+<A NAME="837"></A>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; ca.length; i++) {
+<A NAME="838"></A>            n = ca[i];
+<A NAME="839"></A>            
+<A NAME="840"></A>            <FONT ID="If">if</FONT> (((n &gt;= <FONT ID="IntegerLiteral">0x30</FONT>) &amp; (n &lt;= <FONT ID="IntegerLiteral">0x39</FONT>)) | ((n &gt;= <FONT ID="IntegerLiteral">0x41</FONT>) &amp; (n &lt;= <FONT ID="IntegerLiteral">0x5A</FONT>)) | ((n &gt;= <FONT ID="IntegerLiteral">0x61</FONT>) &amp; (n &lt;= <FONT ID="IntegerLiteral">0x7A</FONT>))) {} <FONT ID="Else">else</FONT> {
+<A NAME="841"></A>                ca[i] = <FONT ID="CharacerLiteral">'_'</FONT>;
+<A NAME="842"></A>            }
+<A NAME="843"></A>        }
+<A NAME="844"></A>        
+<A NAME="845"></A>        <FONT ID="Return">return</FONT> <FONT ID="New">new</FONT> String(ca);
+<A NAME="846"></A>    }
+<A NAME="847"></A>}
+<A NAME="848"></A>
+<A NAME="849"></A><FONT ID="SingleLineComment">// Change log:
+<A NAME="850"></A></FONT><FONT ID="SingleLineComment">// 2006.11.11 tha: Added empty string as default value to the methods Dataset.getString() 
+<A NAME="851"></A></FONT><FONT ID="SingleLineComment">// 2006.11.09 tha: Fixed a bug in drawXXAnnotation methods for sa == null.
+<A NAME="852"></A></FONT>
+<A NAME="853"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">Annotation</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

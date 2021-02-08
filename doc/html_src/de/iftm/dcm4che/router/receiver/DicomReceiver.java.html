@@ -1,0 +1,379 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.receiver.DicomReceiver (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DicomReceiver</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  DicomReceiver.java
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Copyright (c) 2003 by
+<A NAME="5"></A> *
+<A NAME="6"></A> *  IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="7"></A> *  VISUS Technology Transfer GmbH
+<A NAME="8"></A> *
+<A NAME="9"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="10"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="11"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="12"></A> *  (at your option) any later version.
+<A NAME="13"></A> *
+<A NAME="14"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="15"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="16"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="17"></A> *  Lesser General Public License for more details.
+<A NAME="18"></A> *
+<A NAME="19"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="20"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="21"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="22"></A> *
+<A NAME="23"></A> *
+<A NAME="24"></A> *****************************************************************************/</FONT>
+<A NAME="25"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.receiver.index.html" target="packageFrame">de.iftm.dcm4che.router.receiver</A>;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.property.index.html" target="packageFrame">de.iftm.dcm4che.router.property.*</A>;
+<A NAME="28"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">de.iftm.dcm4che.router.plugin.DicomRouterPlugin</A>;
+<A NAME="29"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/PluginChain.java.html">de.iftm.dcm4che.router.plugin.PluginChain</A>;
+<A NAME="30"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.util.index.html" target="packageFrame">de.iftm.dcm4che.router.util.*</A>;
+<A NAME="31"></A>
+<A NAME="32"></A><FONT ID="Import">import</FONT> gnu.getopt.Getopt;
+<A NAME="33"></A>
+<A NAME="34"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="35"></A>
+<A NAME="36"></A><FONT ID="Import">import</FONT> java.io.*;
+<A NAME="37"></A><FONT ID="Import">import</FONT> java.net.URI;
+<A NAME="38"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="39"></A><FONT ID="Import">import</FONT> java.security.GeneralSecurityException;
+<A NAME="40"></A>
+<A NAME="41"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="42"></A>
+<A NAME="43"></A>
+<A NAME="44"></A><FONT ID="FormalComment">/**
+<A NAME="45"></A> * Abstract definition of all DicomReceiver's.
+<A NAME="46"></A> * &lt;p&gt; Implementations of this class should send the following DicomRouterEvent's 
+<A NAME="47"></A> * to registered listeners:
+<A NAME="48"></A> * &lt;p&gt;STARTING_EVENT This event should be send before processing the first DICOM object.
+<A NAME="49"></A> * &lt;p&gt;NEXT_OBJECT_EVENT This event should be send for each DICOM object before processing the object in the plugin chain.
+<A NAME="50"></A> * &lt;p&gt;PROGRESS_EVENT If the total number of objects to process is known, this event should be send for each DICOM object before processing the object in the plugin chain.
+<A NAME="51"></A> * &lt;p&gt;FINISHED_EVENT This event should be send after processing the last DICOM object.
+<A NAME="52"></A> *
+<A NAME="53"></A> * @author  hacklaender
+<A NAME="54"></A> * @version 2006.11.10
+<A NAME="55"></A> */</FONT>
+<A NAME="56"></A><FONT ID="Public">public</FONT> <FONT ID="Abstract">abstract</FONT> <FONT ID="Class">class</FONT> DicomReceiver {
+<A NAME="57"></A>    
+<A NAME="58"></A>    <FONT ID="FormalComment">/** DOCUMENT ME! */</FONT>
+<A NAME="59"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger log = Logger.getLogger(<A HREF="../../../../../de/iftm/dcm4che/router/receiver/DicomReceiver.java.html">DicomReceiver</A>.<FONT ID="Class">class</FONT>);
+<A NAME="60"></A>    
+<A NAME="61"></A>    
+<A NAME="62"></A>    <FONT ID="FormalComment">/** Configuration properties. */</FONT>
+<A NAME="63"></A>    <FONT ID="Protected">protected</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">DicomRouterProperties</A> drProperties = <FONT ID="Null">null</FONT>;
+<A NAME="64"></A>    
+<A NAME="65"></A>    <FONT ID="FormalComment">/** Logger properties. */</FONT>
+<A NAME="66"></A>    <FONT ID="Protected">protected</FONT> Properties loggerProperties = <FONT ID="Null">null</FONT>;
+<A NAME="67"></A>    
+<A NAME="68"></A>    <FONT ID="FormalComment">/** The collection of objects listening to DicomRouterEvents */</FONT>
+<A NAME="69"></A>    <FONT ID="Protected">protected</FONT> Vector dicomRouterEventListeners = <FONT ID="New">new</FONT> Vector();
+<A NAME="70"></A>    
+<A NAME="71"></A>    
+<A NAME="72"></A>    <FONT ID="FormalComment">/**
+<A NAME="73"></A>     * Constructor of a DicomReceiver.
+<A NAME="74"></A>     * &lt;p&gt;The properties must specify at least one plugin. The definition
+<A NAME="75"></A>     * &lt;p&gt;key = plugin.1.name, value = de.iftm.dcm4che.router.plugin.NullPlugin
+<A NAME="76"></A>     * &lt;p&gt;is sufficient.
+<A NAME="77"></A>     *
+<A NAME="78"></A>     * @param props the properties for the receiver and plugins.
+<A NAME="79"></A>     */</FONT>
+<A NAME="80"></A>    <FONT ID="Public">public</FONT> DicomReceiver(Properties props) {
+<A NAME="81"></A>        <FONT ID="SingleLineComment">// Setup the properties
+<A NAME="82"></A></FONT>        setDicomRouterProperties(props);
+<A NAME="83"></A>    }
+<A NAME="84"></A>    
+<A NAME="85"></A>    
+<A NAME="86"></A>    <FONT ID="FormalComment">/**
+<A NAME="87"></A>     * Constructor of a DicomReceiver.
+<A NAME="88"></A>     * &lt;p&gt;The referenced property file must specify at least one plugin. The definition
+<A NAME="89"></A>     * &lt;p&gt;plugin.1.name = de.iftm.dcm4che.router.plugin.NullPlugin
+<A NAME="90"></A>     * &lt;p&gt;is sufficient.
+<A NAME="91"></A>     *
+<A NAME="92"></A>     * @param uri the URI of the properties file for the receiver and plugins.
+<A NAME="93"></A>     */</FONT>
+<A NAME="94"></A>    <FONT ID="Public">public</FONT> DicomReceiver(String uri) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="95"></A>        <FONT ID="SingleLineComment">// Setup the properties
+<A NAME="96"></A></FONT>        setDicomRouterProperties(uri);
+<A NAME="97"></A>    }
+<A NAME="98"></A>    
+<A NAME="99"></A>    
+<A NAME="100"></A>    <FONT ID="FormalComment">/**
+<A NAME="101"></A>     * Constructor of a DicomReceiver.
+<A NAME="102"></A>     * &lt;p&gt;The referenced property file must specify at least one plugin. The definition
+<A NAME="103"></A>     * &lt;p&gt;plugin.1.name = de.iftm.dcm4che.router.plugin.NullPlugin
+<A NAME="104"></A>     * &lt;p&gt;is sufficient.
+<A NAME="105"></A>     *
+<A NAME="106"></A>     * @param argv the arguments passed to the programs main method.
+<A NAME="107"></A>     */</FONT>
+<A NAME="108"></A>    <FONT ID="Public">public</FONT> DicomReceiver(String[] argv) {
+<A NAME="109"></A>        Getopt  g;
+<A NAME="110"></A>        <FONT ID="Int">int</FONT>     option;
+<A NAME="111"></A>        String  arg;
+<A NAME="112"></A>        String  propertiesURIString = <FONT ID="Null">null</FONT>;
+<A NAME="113"></A>        String  loggerPropertiesURIString = <FONT ID="Null">null</FONT>;
+<A NAME="114"></A>        
+<A NAME="115"></A>        <FONT ID="SingleLineComment">// If no arguments are given
+<A NAME="116"></A></FONT>        <FONT ID="If">if</FONT> (argv == <FONT ID="Null">null</FONT>) {
+<A NAME="117"></A>            showHelp();
+<A NAME="118"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="119"></A>        }
+<A NAME="120"></A>        
+<A NAME="121"></A>        <FONT ID="SingleLineComment">// h showHelp, no arguments
+<A NAME="122"></A></FONT>        <FONT ID="SingleLineComment">// l properties file for logger, argument required
+<A NAME="123"></A></FONT>        <FONT ID="SingleLineComment">// p properties file for DicomRouter, argument required
+<A NAME="124"></A></FONT>        g = <FONT ID="New">new</FONT> Getopt(<FONT ID="StringLiteral">"DicomReceiver"</FONT>, argv, <FONT ID="StringLiteral">"hl:p:"</FONT>);
+<A NAME="125"></A>        
+<A NAME="126"></A>        <FONT ID="SingleLineComment">// geopt should not write error messages
+<A NAME="127"></A></FONT>        g.setOpterr(<FONT ID="False">false</FONT>);
+<A NAME="128"></A>        
+<A NAME="129"></A>        <FONT ID="While">while</FONT> ((option = g.getopt()) != -<FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="130"></A>            <FONT ID="Switch">switch</FONT> (option) {
+<A NAME="131"></A>                <FONT ID="Case">case</FONT> <FONT ID="CharacerLiteral">'h'</FONT>:
+<A NAME="132"></A>                    showHelp();
+<A NAME="133"></A>                    <FONT ID="Break">break</FONT>;
+<A NAME="134"></A>                    
+<A NAME="135"></A>                <FONT ID="Case">case</FONT><FONT ID="CharacerLiteral">'l'</FONT>:
+<A NAME="136"></A>                    loggerPropertiesURIString = g.getOptarg();
+<A NAME="137"></A>                    <FONT ID="Break">break</FONT>;
+<A NAME="138"></A>                    
+<A NAME="139"></A>                <FONT ID="Case">case</FONT> <FONT ID="CharacerLiteral">'p'</FONT>:
+<A NAME="140"></A>                    propertiesURIString = g.getOptarg();
+<A NAME="141"></A>                    <FONT ID="Break">break</FONT>;
+<A NAME="142"></A>                    
+<A NAME="143"></A>                <FONT ID="Case">case</FONT> <FONT ID="CharacerLiteral">'?'</FONT>:
+<A NAME="144"></A>                    <FONT ID="SingleLineComment">// Missing argument for an option
+<A NAME="145"></A></FONT>                    System.err.println(<FONT ID="StringLiteral">"Missing argument for option."</FONT>);
+<A NAME="146"></A>                    exit(<FONT ID="Null">null</FONT>);
+<A NAME="147"></A>                    <FONT ID="Break">break</FONT>;
+<A NAME="148"></A>                    
+<A NAME="149"></A>                <FONT ID="Default">default</FONT>:
+<A NAME="150"></A>                    <FONT ID="SingleLineComment">// Undefined option
+<A NAME="151"></A></FONT>                    System.err.println(<FONT ID="StringLiteral">"Undefined option: "</FONT> + (<FONT ID="Char">char</FONT>) option);
+<A NAME="152"></A>                    exit(<FONT ID="Null">null</FONT>);
+<A NAME="153"></A>                    ;
+<A NAME="154"></A>            }
+<A NAME="155"></A>        }
+<A NAME="156"></A>        
+<A NAME="157"></A>        <FONT ID="If">if</FONT> (propertiesURIString != <FONT ID="Null">null</FONT>) {
+<A NAME="158"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="159"></A>                setDicomRouterProperties(propertiesURIString);
+<A NAME="160"></A>            } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="161"></A>                <FONT ID="SingleLineComment">// URI of DicomRouter properties could not accessed.
+<A NAME="162"></A></FONT>                System.err.println(<FONT ID="StringLiteral">"Can't access URI of DicomRouter properties file."</FONT>);
+<A NAME="163"></A>                exit(<FONT ID="Null">null</FONT>);
+<A NAME="164"></A>            }
+<A NAME="165"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="166"></A>            <FONT ID="SingleLineComment">// DicomRouter properties must be defined.
+<A NAME="167"></A></FONT>            System.err.println(<FONT ID="StringLiteral">"DicomRouter properties file not defined."</FONT>);
+<A NAME="168"></A>            exit(<FONT ID="Null">null</FONT>);
+<A NAME="169"></A>        }
+<A NAME="170"></A>        
+<A NAME="171"></A>        <FONT ID="SingleLineComment">// If logger properties are not defined the BasicConfigurator is used
+<A NAME="172"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="173"></A>            setLoggerProperties(loggerPropertiesURIString);
+<A NAME="174"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="175"></A>            <FONT ID="SingleLineComment">// URI of DicomRouter properties could not accessed.
+<A NAME="176"></A></FONT>            System.err.println(<FONT ID="StringLiteral">"Can't access URI of logger properties file."</FONT>);
+<A NAME="177"></A>            exit(<FONT ID="Null">null</FONT>);
+<A NAME="178"></A>        }
+<A NAME="179"></A>    }
+<A NAME="180"></A>    
+<A NAME="181"></A>    
+<A NAME="182"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Abstract methods &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="183"></A></FONT>    
+<A NAME="184"></A>    <FONT ID="FormalComment">/**
+<A NAME="185"></A>     *
+<A NAME="186"></A>     */</FONT>
+<A NAME="187"></A>    <FONT ID="Public">public</FONT> <FONT ID="Abstract">abstract</FONT> <FONT ID="Boolean">boolean</FONT> start();
+<A NAME="188"></A>    
+<A NAME="189"></A>    
+<A NAME="190"></A>    <FONT ID="FormalComment">/**
+<A NAME="191"></A>     *
+<A NAME="192"></A>     */</FONT>
+<A NAME="193"></A>    <FONT ID="Public">public</FONT> <FONT ID="Abstract">abstract</FONT> <FONT ID="Void">void</FONT> stop();
+<A NAME="194"></A>    
+<A NAME="195"></A>    
+<A NAME="196"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Public methods &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="197"></A></FONT>    
+<A NAME="198"></A>    <FONT ID="FormalComment">/**
+<A NAME="199"></A>     *
+<A NAME="200"></A>     * @param listener
+<A NAME="201"></A>     */</FONT>
+<A NAME="202"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> addDicomRouterEventListener(<A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEventListener.java.html">DicomRouterEventListener</A> listener) {
+<A NAME="203"></A>        <FONT ID="SingleLineComment">// add a listener if it is not already registered
+<A NAME="204"></A></FONT>        <FONT ID="If">if</FONT> (!dicomRouterEventListeners.contains(listener)) {
+<A NAME="205"></A>            dicomRouterEventListeners.addElement(listener);
+<A NAME="206"></A>        }
+<A NAME="207"></A>    };
+<A NAME="208"></A>    
+<A NAME="209"></A>    
+<A NAME="210"></A>    <FONT ID="FormalComment">/**
+<A NAME="211"></A>     *
+<A NAME="212"></A>     * @param listener
+<A NAME="213"></A>     */</FONT>
+<A NAME="214"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> removeDicomRouterEventListener(<A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEventListener.java.html">DicomRouterEventListener</A> listener) {
+<A NAME="215"></A>        <FONT ID="SingleLineComment">// remove a listener if it is not already registered
+<A NAME="216"></A></FONT>        <FONT ID="If">if</FONT> (dicomRouterEventListeners.contains(listener)) {
+<A NAME="217"></A>            dicomRouterEventListeners.removeElement(listener);
+<A NAME="218"></A>        }
+<A NAME="219"></A>    };
+<A NAME="220"></A>    
+<A NAME="221"></A>    
+<A NAME="222"></A>    <FONT ID="FormalComment">/**
+<A NAME="223"></A>     * Notify all listener to DicomRouterEvent.
+<A NAME="224"></A>     * @param evt the event object.
+<A NAME="225"></A>     */</FONT>
+<A NAME="226"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> fireDicomRouterEvent(<A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEvent.java.html">DicomRouterEvent</A> evt) {
+<A NAME="227"></A>        Vector v = <FONT ID="Null">null</FONT>;
+<A NAME="228"></A>        
+<A NAME="229"></A>        <FONT ID="If">if</FONT> (dicomRouterEventListeners == <FONT ID="Null">null</FONT>) <FONT ID="Return">return</FONT>;
+<A NAME="230"></A>        
+<A NAME="231"></A>        <FONT ID="SingleLineComment">// make a copyof the listener object so that it cannot be
+<A NAME="232"></A></FONT>        <FONT ID="SingleLineComment">// changed while we are firing events
+<A NAME="233"></A></FONT>        <FONT ID="Synchronized">synchronized</FONT>(<FONT ID="This">this</FONT>) {
+<A NAME="234"></A>            v = (Vector) dicomRouterEventListeners.clone();
+<A NAME="235"></A>        }
+<A NAME="236"></A>        
+<A NAME="237"></A>        <FONT ID="SingleLineComment">// fire the event
+<A NAME="238"></A></FONT>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; v.size(); i++) {
+<A NAME="239"></A>            <A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEventListener.java.html">DicomRouterEventListener</A> client = (<A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEventListener.java.html">DicomRouterEventListener</A>) v.elementAt(i);
+<A NAME="240"></A>            client.handleDicomRouterEvent(evt);
+<A NAME="241"></A>        }
+<A NAME="242"></A>    }
+<A NAME="243"></A>    
+<A NAME="244"></A>    
+<A NAME="245"></A>    <FONT ID="FormalComment">/**
+<A NAME="246"></A>     *
+<A NAME="247"></A>     * @param props
+<A NAME="248"></A>     */</FONT>
+<A NAME="249"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setDicomRouterProperties(Properties props) {
+<A NAME="250"></A>        <FONT ID="This">this</FONT>.drProperties = <FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">DicomRouterProperties</A>(props);
+<A NAME="251"></A>    }
+<A NAME="252"></A>    
+<A NAME="253"></A>    
+<A NAME="254"></A>    <FONT ID="FormalComment">/**
+<A NAME="255"></A>     *
+<A NAME="256"></A>     * @param uri
+<A NAME="257"></A>     */</FONT>
+<A NAME="258"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setDicomRouterProperties(String uri) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="259"></A>        setDicomRouterProperties(<FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">DicomRouterProperties</A>(uri));
+<A NAME="260"></A>    }
+<A NAME="261"></A>    
+<A NAME="262"></A>    
+<A NAME="263"></A>    <FONT ID="FormalComment">/**
+<A NAME="264"></A>     *
+<A NAME="265"></A>     * @param props
+<A NAME="266"></A>     */</FONT>
+<A NAME="267"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setLoggerProperties(Properties props) {
+<A NAME="268"></A>        <FONT ID="This">this</FONT>.loggerProperties = props;
+<A NAME="269"></A>        
+<A NAME="270"></A>        <FONT ID="SingleLineComment">// Reset the default hierarchy to its defaut.
+<A NAME="271"></A></FONT>        BasicConfigurator.resetConfiguration();
+<A NAME="272"></A>        <FONT ID="SingleLineComment">// Set log level to INFO
+<A NAME="273"></A></FONT>        Logger.getRootLogger().setLevel(Level.INFO);
+<A NAME="274"></A>        
+<A NAME="275"></A>        <FONT ID="If">if</FONT> (loggerProperties != <FONT ID="Null">null</FONT>) {
+<A NAME="276"></A>            
+<A NAME="277"></A>            <FONT ID="SingleLineComment">// Read configuration options from properties.
+<A NAME="278"></A></FONT>            PropertyConfigurator.configure(loggerProperties);
+<A NAME="279"></A>            
+<A NAME="280"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="281"></A>            
+<A NAME="282"></A>            <FONT ID="SingleLineComment">// Add a ConsoleAppender that uses PatternLayout using the
+<A NAME="283"></A></FONT>            <FONT ID="SingleLineComment">// PatternLayout.TTCC_CONVERSION_PATTERN and prints to System.out
+<A NAME="284"></A></FONT>            <FONT ID="SingleLineComment">// to the root category.
+<A NAME="285"></A></FONT>            BasicConfigurator.configure();
+<A NAME="286"></A>            
+<A NAME="287"></A>            <FONT ID="SingleLineComment">// Set logging level to INFO
+<A NAME="288"></A></FONT>            Logger.getRootLogger().setLevel(Level.INFO);
+<A NAME="289"></A>            
+<A NAME="290"></A>            <FONT ID="SingleLineComment">// Set logging level of dcm4che to WARN
+<A NAME="291"></A></FONT>            Logger.getLogger(<FONT ID="StringLiteral">"org.dcm4cheri.net.FsmImpl"</FONT>).setLevel(Level.WARN);
+<A NAME="292"></A>            Logger.getLogger(<FONT ID="StringLiteral">"org.dcm4cheri.server.ServerImpl"</FONT>).setLevel(Level.WARN);
+<A NAME="293"></A>            
+<A NAME="294"></A>        }
+<A NAME="295"></A>    }
+<A NAME="296"></A>    
+<A NAME="297"></A>    <FONT ID="FormalComment">/**
+<A NAME="298"></A>     *
+<A NAME="299"></A>     * @param uri
+<A NAME="300"></A>     */</FONT>
+<A NAME="301"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setLoggerProperties(String uri) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="302"></A>        Properties props = <FONT ID="Null">null</FONT>;
+<A NAME="303"></A>        
+<A NAME="304"></A>        props.load(<FONT ID="New">new</FONT> FileInputStream(Util.uriToFile(uri)));
+<A NAME="305"></A>        
+<A NAME="306"></A>        setLoggerProperties(props);
+<A NAME="307"></A>    }
+<A NAME="308"></A>    
+<A NAME="309"></A>    
+<A NAME="310"></A>    <FONT ID="FormalComment">/**
+<A NAME="311"></A>     * Displays the showHelp message on the System.out device.
+<A NAME="312"></A>     */</FONT>
+<A NAME="313"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Void">void</FONT> showHelp() {
+<A NAME="314"></A>        System.out.println(<FONT ID="StringLiteral">"Usage: DicomXXXReceiver [-h] [-l filename] [-p filename]"</FONT>);
+<A NAME="315"></A>        System.out.println(<FONT ID="StringLiteral">"-h print this help message."</FONT>);
+<A NAME="316"></A>        System.out.println(<FONT ID="StringLiteral">"-l set the filename of the properties file for the logger."</FONT>);
+<A NAME="317"></A>        System.out.println(<FONT ID="StringLiteral">"-p set the filename of the properties file for the DicomRouter."</FONT>);
+<A NAME="318"></A>    }
+<A NAME="319"></A>    
+<A NAME="320"></A>    
+<A NAME="321"></A>    <FONT ID="FormalComment">/**
+<A NAME="322"></A>     * Displays a showCopyright notice on the System.out device.
+<A NAME="323"></A>     */</FONT>
+<A NAME="324"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Static">static</FONT> <FONT ID="Void">void</FONT> showCopyright() {
+<A NAME="325"></A>        System.out.println(Util.getCopyrightMessage());
+<A NAME="326"></A>    }
+<A NAME="327"></A>    
+<A NAME="328"></A>    
+<A NAME="329"></A>    <FONT ID="FormalComment">/**
+<A NAME="330"></A>     * The application is closed if called
+<A NAME="331"></A>     * @param prompt Errormessage
+<A NAME="332"></A>     */</FONT>
+<A NAME="333"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> exit(String prompt) {
+<A NAME="334"></A>        <FONT ID="If">if</FONT> (prompt != <FONT ID="Null">null</FONT>) {
+<A NAME="335"></A>            System.err.println(prompt);
+<A NAME="336"></A>            log.error(prompt);
+<A NAME="337"></A>        }
+<A NAME="338"></A>        
+<A NAME="339"></A>        System.exit(<FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="340"></A>    }
+<A NAME="341"></A>    
+<A NAME="342"></A>}
+<A NAME="343"></A>
+<A NAME="344"></A><FONT ID="FormalComment">/**
+<A NAME="345"></A> * Revisions:
+<A NAME="346"></A> *
+<A NAME="347"></A> * 2006.04.29, hacklaender: Totally rewritten.
+<A NAME="348"></A> * 2005.08.22, hacklaender: method execute renamed to start (for consistance with a future implementation of a stop method).
+<A NAME="349"></A> * 2005.08.21, hacklaender: initProperties method added.
+<A NAME="350"></A> */</FONT>
+<A NAME="351"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DicomReceiver</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

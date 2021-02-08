@@ -1,0 +1,495 @@
+======================================================================================================
+4.1.0 Date: 2006.11.17
+
+Adapted the test classes to new property naming convention.
+
+======================================================================================================
+4.0.0 Date: 2006.11.10
+
+Changed '_' character in property keys of receivers and plugins to '-'. Neccessary to be compatible with the style of dcm4che.
+Changed deprecated method calls according to Java 5.
+Inclusion of dcm4che 1.4.5.
+
+======================================================================================================
+3.1.5 Date: 2006.11.09
+
+Fixed a bug in class Annotation causing a null pointer exception when calling the drawXXAnnotation methods.
+
+======================================================================================================
+3.1.4 Date: 2006.09.03
+
+The package DicomServices is no longer part of the DicomRouter development. It is now included as a library.
+Fixed a bug in enabling/disabling the Start and Stop buttons in the GUI frontends.
+Inclusion of dcm4che 1.4.3. This fixed the known bug concerning Server.stop() method.
+
+======================================================================================================
+3.1.2 Date: 2006.07.25
+
+Known bug:
+
+dcm4che 1.4.2 has a known bug when calling the Server.stop() method:
+The method org.dcm4cheri.server.ServerImpl.run throws an exception when to stopping the server: The stopping process works fine up to the point, when the server-socket is closed. At that time another thread still trys to open a new server-socket connection, but the socket is now closed and not available anymore. Therefore the exception is thrown. It has no side effects and should be ignored. A work around will be included in a future version of dcm4che.  
+
+======================================================================================================
+3.1.0 Date: 2006.07.02
+
+2006-07-02
+Receiver and plugin for Storage SC rewritten.
+
+======================================================================================================
+
+3.0.1 Date: 2006-02-26
+
+2006-02-26: hacklaender
+Fixed a bug in method Annotation.formatDate which prohibits displaying a DICOM date with 8 characters.
+
+------------------------------------------------------------------------------------------------------
+
+3.0.0 Date: 2006-02-24
+
+2006.02.24 hacklaender
+Die Beispielprogramme DcrRcv und DcmSnd aus dem dcm4che Projekt sind die Basis für den DicomStorageSCPReceiver
+und das DicomStorageSCUPlugin.
+
+2006.02.24 hacklaender
+Klassen zum Start der Pluginkette wurden reduziert und in der Logik vereinfacht.
+
+------------------------------------------------------------------------------------------------------
+
+Erledigt 2006.02.24 [ToDo:] Der abstarkte DicomRouter sollte eine "stop" Methode implementieren.
+
+Erledigt 2006.02.24 [ToDo:] Die Klassen "DicomRouterPluginFactory.java", "DefaultDicomRouterPluginFactory.java", "DicomRouterFrameworkConfig.java", "DicomRouterFrameworkConfigImpl.java" und "DicomRouterPluginConfig.java" zu beseitigen.
+
+Erledigt 2006.02.24 [ToDo:] Alle Funktionalität, die mit Properties zu tun hat, sollte nach Möglichkeit in der Klasse "DicomRouterProperties.java" gebündelt werden. Die Klassen "DicomRouterPluginConfig.java", "DicomRouterFrameworkConfig.java" und "DicomRouterFrameworkConfigImpl.java" sollten eigentlich aufgelöst werden.
+
+Erledigt 2006.02.24 [Frage:] Sind die Klassen in "/server" am richtigen Ort, oder sollten wir sie nicht besser in "/receiver/net" verschieben?
+
+Erledigt 2006.02.24 [Frage:] Die Konfigurationsdatei für den Networkreceiver setzt die Buffergröße auf 512 Byte. Ist das OK? Der Sender verwendet eine Buffergröße von 2048 Byte.
+
+
+------------------------------------------------------------------------------------------------------
+2.2.12 unstable
+
+Fixed 2006.02.24 [B u g :]
+Die TLS-Übertragung funktioniert nicht. Warum ist unklar. Es ist auch unklar, wie die Zertifikate erzeugt werden und ob die Passwörter stimmen, die ich in den Konfigurationsdateine angegeben habe (aus den Samples von Zeilinger übernommen).
+
+------------------------------------------------------------------------------------------------------
+
+2006.02.19 hacklaender
+API Änderung in dcm4che 1.3.22 im Interface AssociationListener: Die fruehere Methode close(Association assoc) wurde ersetzt durch die Methoden closing(Association assoc) und closed(Association assoc). Deshalb wurde die Methode DefaultDicomStorageSCPAssociationHandler::close(Association assoc) geändert in closed(Association assoc). closing(Association assoc) wird in DefaultDicomStorageSCPAssociationHandler nicht benutzt und implementiert.
+In DicomStorageSCP::c_store(ActiveAssociation assoc, Dimse rq) musste als Folge der Methodenaufruf storageSCPReceiverAssociationHandler.close(assoc.getAssociation()) durch storageSCPReceiverAssociationHandler.closed(assoc.getAssociation()) ersetzt werden.
+
+2006.02.19 hacklaender
+API Änderung in dcm4che 1.3.22 in DcmParser: Die Methode setSAXHandler2 hat den zusätzlichen Parameter int excludeValueLengthLimit (Exclude values which length exceeds the specified limit from XML output).
+Daraus resultiert eine Änderung in XSLTransformPlugin::datasetToXML(Dataset ds). Da keine values ausgeschlossen werden sollen wird der Wert auf excludeValueLengthLimit = Integer.MAX_VALUE gesetzt. Als Beispiel siehe das Beispielprogramm Dcm2Xml.
+
+2006.02.19 hacklaender
+dcm4che Version 1.3.22 als Basis des Projektes upgedated. 
+
+
+------------------------------------------------------------------------------------------------------
+2.2.11 unstable
+
+B u g :
+Die TLS-Übertragung funktioniert nicht. Warum ist unklar. Es ist auch unklar, wie die Zertifikate erzeugt werden und ob die Passwörter stimmen, die ich in den Konfigurationsdateine angegeben habe (aus den Samples von Zeilinger übernommen).
+
+------------------------------------------------------------------------------------------------------
+
+29.08.2005 hacklaender
+Im Zuge dieser Veränderungen hat sich praktisch nebenbei die abstrakte Klasse "DicomReceiver" ergeben.
+
+29.08.2005 hacklaender
+Hauptziel der Änderungen war die Klassen "DefaultFrameworkPropertyKeys.java" und "DefaultFrameworkPropertyValues.java" aus dem Projekt zu werfen. Stattdessen gibt es jetzt die Konfigurationsdateien "DicomStorageSCU.cfg" und "DicomStorageSCP.cfg" jeweils in einem /resource Unterverzeichnis für das Sendeplugin und den Filereceiver. Ich verstehe die Konfigurationsdateien als Defaultwerte, die vom Anwender in der Regel nicht verändert werden müsen. Sowohl das Plugin, als auch der Receiver haben darüber hinaus Propertien (host, port, protocol...) die vom Anwender verändert werden können. Durch das Konzept der /resource Konfigurationsdateien ist es aber prinzipiell möglich, ohne Änderung der Source Veränderungen am Verhalten des Routers vorzunehmen.
+
+29.08.2005 hacklaender
+Zur Vereinheitlichung wurde an den Properties etwas geändert: Bisher waren die Properties der Receiver folgendermassen aufgebaut: rec.host=192.168.0.1
+Jetzt lautet der Eintrag - wie bisher schon bei den Plugins -: receiver.de.iftm.dcm4che.router.receiver.net.DicomStorageReceiver.host = 192.168.0.1
+
+29.08.2005 hacklaender
+Die aktuelle Version funktioniert, die JUnit Testklassen sind angelegt. Die Funktionalität ist aber noch nicht im Detail mit JUnit getestet.
+
+29.08.2005 hacklaender
+Klasse PropertyUtil in DicomRouterProperties umbenannt.
+
+29.08.2005 hacklaender
+DicomRouterProperties als Extension der Klasse Properties definiert.
+
+29.08.2005 hacklaender
+Die Klasse ./samples/net/Configuration.jave von dch4che in DicomRouterProperties uebernommen.
+
+29.08.2005 hacklaender
+Die Klasse SaveDicomdirPlugin modifiziert: Aus der Resource dcmdir.cfg werden die Konfigurationsparameter mit der neuen Klasse DicomRouterProperties ausgelesen.
+Für die Funktionalität sind  n u r  die Keys notwendig, die mit "dir." beginnen. Alle anderen Einträge der DAtei werden ignoriert.
+Achtung: Die Originaldatei dcmdir.cfg aus dem dcm4che Package 1.1.4 enthält die beiden Einträge
+  dir.PRESENTATION.PresentationLabel
+  dir.PRESENTATION.PresentationDescription
+Die refernzierten Tags sind im Package nicht defiert. Deshalb müssen die Zeilen in der PDatei auskommentiert werden.
+
+29.08.2005 hacklaender
+Klasse DicomStorageSCUPlugin mit neuem Versionsdatum versehen.
+
+29.08.2005 hacklaender
+Datei /router/util/resources/DcmSnd.properties aus dem Projekt gelöscht. Wurde in DicomStorageSCU für Loggingmeldungen benutzt. Diese sind jetzt fest einprogrammiert.
+
+29.08.2005 hacklaender
+DicomReceiver sollte ein "interface" für eine Konstruktor der Form public DicomReceiver(Properties userProps, Properties loggerProps) besitzen. Dafür könnte public void initProperties(Properties p) entfallen.
+
+
+------------------------------------------------------------------------------------------------------
+2.2.10
+------------------------------------------------------------------------------------------------------
+
+27.01.2005 hacklaender
+Fixed a bug using the "Tag String" @ggggeeee in TagModifyPlugin, SaveFilesystemPlugin and XSLTransformPlugin.
+
+
+------------------------------------------------------------------------------------------------------
+2.2.9
+------------------------------------------------------------------------------------------------------
+
+21.01.2005 hacklaender
+Fixed a bug in PortableMediaCreatorPlugin the ignors the properties index_file and readme_file.
+
+19.01.2005 hacklaender
+New GUI main program DicomRouterGUI2.
+
+
+------------------------------------------------------------------------------------------------------
+2.2.8
+------------------------------------------------------------------------------------------------------
+
+17.01.2005 hacklaender
+New Plugin PortableMediaCreatorPlugin included.
+
+
+------------------------------------------------------------------------------------------------------
+2.2.7
+------------------------------------------------------------------------------------------------------
+
+06.01.2005 hacklaender
+SaveDicomdirPlugin, SaveFilesystemPlugin and ExportImagePlugin modified: They are now more flexible
+in defining the directory to write to by properties. The composition of the directory tree composed
+by the "write_dir_tree" property is modified also.
+
+05.01.2005 hacklaender
+de/iftm/dcm4che/router/pluginresources/dcmdir.cfg replaced with he file in dcm4che Version 1.1.4
+/samples/cfg/dcmdir.cfg. Two of the keys defined in this file are not known by the dcm4che package:
+dir.PRESENTATION.PresentationLabel
+dir.PRESENTATION.PresentationDescription
+The Tags PresentationLabel and PresentationDescription are not defined. Solution: The keys are 
+commented out in the resource file.
+
+
+------------------------------------------------------------------------------------------------------
+2.2.6
+------------------------------------------------------------------------------------------------------
+
+29.12.2004 hacklaender
+Changed structure of project and build.xml to the format of NetBeans 4.0. 
+
+29.12.2004 hacklaender
+Corrected the documentation of some of the source files. 
+
+
+------------------------------------------------------------------------------------------------------
+2.2.5
+------------------------------------------------------------------------------------------------------
+
+17.11.2004 kleber
+Workaround for possible error in dcm4che 1.1.4: The SaveDicomdirPlugin is based on the sample
+/samples/media/dcmdir.jar of the sch4che package. The example uses the file /samples/conf/dcmdir.cfg for
+configuration. This file is included as a resource in the dcmrouter JAR file. Two of the keys
+defined in this file are not known by the dcm4che package:
+dir.PRESENTATION.PresentationLabel
+dir.PRESENTATION.PresentationDescription
+They generate an exception, if the resource is used. Solution: The two keys are cleared in the resource.
+
+17.11.2004 hacklaender
+XSLTransformPlugin adapted to the new XML schema of dcm4che 1.1.4
+
+
+------------------------------------------------------------------------------------------------------
+2.2.3
+------------------------------------------------------------------------------------------------------
+
+15.11.2004 hacklaender
+Added example XSL stylesheet to demonstrate how to (1)pseudo-name a Dataset and to remove elements and (2) invert an monochrome image.
+
+15.11.2004 hacklaender
+Fixed a bug in XSLTransformPlugin that reconverted XML are not copied to the Dataset.
+
+15.11.2004 hacklaender
+Fixed minor bug in the manual.
+
+
+------------------------------------------------------------------------------------------------------
+2.2.2
+------------------------------------------------------------------------------------------------------
+
+8.11.2004 hacklaender
+Fixed a bug in TransformImagePlugin.doFlipVertical that results an overflow when flipping rectangular images.
+
+
+------------------------------------------------------------------------------------------------------
+2.2.1
+------------------------------------------------------------------------------------------------------
+
+6.11.2004 hacklaender
+Fixed a bug in UIDModifyPlugin that aborts the chain of plugins.
+
+
+------------------------------------------------------------------------------------------------------
+2.2.0
+------------------------------------------------------------------------------------------------------
+
+5.11.2004 hacklaender
+Changed dcm4che to version 1.1.4.
+
+
+5.11.2004 hacklaender
+Manual updated.
+
+
+4.11.2004 hacklaender
+New example configuration files: file_to_monochrome1_file.properties, file_transform_image_file.properties and file_xml_file.properties.
+
+
+4.11.2004 hacklaender
+Build XML file of external plugins changed: Link to libraries of the dcmrouter project.
+
+
+4.11.2004 hacklaender
+XSLTransformPlugin: Subkey "stop_tag" removed. New subkey "untouch_pixel_data" added.
+
+
+4.11.2004 hacklaender
+New external plugin "TransformImagePlugin" added.
+
+
+------------------------------------------------------------------------------------------------------
+2.1.0
+------------------------------------------------------------------------------------------------------
+
+
+3.10.2004 kleber
+Fixed a bug which results in "No Presentation Context" if sending objects between two DicomRouters. Changed several values in DefaultFrameworkPropertyValues.java.
+
+
+13.03.2004 hacklaender
+Fixed a bug in the manual concerning the documentation of the DicomStorageSCU plugin.
+
+
+15.02.2004 hacklaender
+Klasse de.iftm.dcm4che.router.DicomRouter in de.iftm.dcm4che.router.receiver.net.NetworkReceiver umbenannt. Manifest in ./resources/META-INF/manifest.mf angepasst.
+
+
+15.02.2004 hacklaender
+Unittests an die geänderte API angepasst.
+
+
+15.02.2004 hacklaender
+The class MyDatasourceForDcmSnd is now defined as a static member class of DicomStorageSCU.
+
+
+15.02.2004 hacklaender
+Plugin ManipulationByExistingXSLPlugin aus dem Projekt gelöscht. Wird durch TransformXSLPlugin ersetzt. Damit wurde auch das gesamte Package de.iftm.dcm4che.router.xml sowie die Bibliothek jdom.jar überflüssig und aus dem Projekt gestrichen.
+
+
+08.02.2004 hacklaender
+Zwei neue Klassen hinzugefügt: de.iftm.dcm4che.router.property.PropertyString und in /unittest de.iftm.dcm4che.router.property.PropertyStringTest.
+
+
+------------------------------------------------------------------------------------------------------
+2.0.1
+------------------------------------------------------------------------------------------------------
+
+
+01.02.2004 hacklaender
+Updated manual.
+
+
+01.02.2004 hacklaender
+Unittest modified to use ./example_images.
+
+
+31.01.2004 hacklaender
+build.xml modified.
+
+
+31.01.2004 hacklaender
+ExternalPluginLoader rewritten to respect the fully qualified name of pluginName.
+
+
+31.01.2004 hacklaender
+More detailed logging of method PluginInitialisation#getPlugin.
+
+
+20.01.2004 hacklaender
+Frontend mit einer GUI unter dem Namen DicomRouterGUI implementiert.
+
+
+20.01.2004 hacklaender
+Kommentare in den Sourcefiles ueberarbeitet.
+
+
+17.11.2003 hacklaender
+Update des User Manual.
+
+
+17.11.2003 hacklaender
+Die framework.properties Dateien so angepasst, dass sie auch laufen: Durch die Umstellung der API muss jetzt der voll qualifizierte Name der Plugin Klasse im Key angegeben werden.
+
+
+17.11.2003 hacklaender
+FileDicomReceiver im Quelltext etwas umorganiesiert und zwei neue Constructoren eingefügt, die den Aufruf als Library erleichtern sollen.
+
+
+17.11.2003 hacklaender
+Ein neues Plugin TransformXSLPlugin eigefügt. Dazu einen neuen Ordner /cfg/xsl/ angelegt.
+
+
+17.11.2003 hacklaender
+In ExternalPluginLoader einige System.out.println Debug Meldungen gelöscht. Man sollte eigenlich nur log.debug verwenden!
+
+
+17.11.2003 hacklaender
+In DicomStorageSCU den Pfad der ResourceBundel korrigiert
+
+
+13.11.2003 hacklaender
+Den Quellcode und Unittests des Plugins ExportImagePlugin aus dem Projekt ausgegliedert. Das Plugin soll als Beispiel für ein externes Plugin (dann im Verzeichnis /lib/plugin/) in einem eigenständigen Ast für externe Plugins in Sourcefourge wieder auftauchen. Jedes Plugin sollte in einem eigenen Unterverzeichnis entwickelt werden, das nach dem Schema von Dicom Router aufgebaut ist. Jedes Plugin hat auch sein eigenes build-file.
+
+
+13.11.2003 hacklaender
+In /lib ein neues Verzeichni /lib/plugin/ für zusätzliche Plugins erzeugt.
+
+
+13.11.2003 hacklaender
+In DefaultDicomRouterPluginFactory global xxxPluggin durch xxxPlugin ersetzt.
+
+
+13.11.2003 hacklaender
+In DefaultDicomRouterPlugin die Methoden getparentPlugin in getParentPlugin und setparentPlugin in setParentPlugin umbenannt.
+
+
+13.11.2003 hacklaender
+Formatierung des Quellcodes überarbeitet und fehlende Copyright-Vermerke ergänzt.
+
+
+7.10.2003 heupel
+Es ist möglich Plugins auszuführen, die nicht in die dcmrouter.jar eingebunden sind.
+Dazu ist es nötig, dass das Plugin in den Ordner lib/plugins abgelegt wird, dabei ist es unerheblich,
+ob es eine Java-Classdatei oder eine Java-Jardatei ist. Der Name der Jardatei muss mit dem enthaltenen
+Pluginnamen übereinstimmen.
+Die Konfiguration erfolgt wie bisher, indem der Name des Plugins angegeben wird.
+In das Package de.iftm.dcm4che.router.util wurde eine neue Klasse mit dem Namen "ExternalPluginLoader"
+abgelegt.
+
+
+5.10.2003 heupel
+Die Version des initialisierten Plugins wird in der Klasse de.iftm.dcm4che.router.util.PluginInitialisation geloggt.
+
+
+5.10.2003 heupel
+abstrakte Methode getVersion() in die Klasse de.iftm.dcm4che.router.DefaultDicomRouterPlugin
+integriert, muss von jedem Plugin eingebunden werden. Version setzt sich aus dem Erstellungsdatum zusammen jjjj.mm.tt z.B. 2003.10.5
+
+
+4.10.2003 heupel
+PluginInitialisation in das Package de.iftm.dcm4che.router.util verschoben
+
+
+
+------------------------------------------------------------------------------------------------------
+1.2.2
+------------------------------------------------------------------------------------------------------
+
+
+
+22.8.2003 hacklaen:
+Ein neues Verzeichnis /manual eingefügt. Hierin der erste Entwurf eines User-Manuals als HTML Datei.
+
+/cfg/framework.properties neu erstellt. Darin sind alle Properties des Receivers und Senders bis auf AET Titel gelöscht.
+
+In /unittest/... alle bisherigen Tests gelöscht und neue für AnnotationTest.java, ExportImagePluginTest.java, PseudonymPluginTest.java, SaveFilesystemPluginTest.java eingefügt
+Zusätzlich ein Verzeichnis /unittest/.../plugin/resources mit Beispiel DICOM Dateien für CT, MRT und CR eingefügt. Zusätzlich finden sich dort HTML-Dateien mit dem Dump der Dateien.
+
+Ein neues Plugin ExportImagePlugin.java mit Hilfsklasse Annotation.java eingefügt.
+
+Alle Plugins bis auf ManipulationByExistingXSLTPlugin.java und MyDataSourceForDcmSnd.java durch die aktuellen Versionen ersetzt.
+
+
+17.8.2003 heupel:
+TLS-Konfiguration des RCV um die Möglichkeit der Auswahl der Klientauthentifikation erweitert.
+
+
+11.8.2003 heupel:
+Overview.html oberhalb der entsprechenden Packages platziert(src).
+uml ordner zum Ablegen von Diagrammen geschaffen.
+Inhalt von src/docs aufgelöst und in die neugeschaffenen Ordner verteilt.
+build.xml angepasst ("clean" und "todoc" targets).
+
+
+6.8.2003 heupel:
+Xml-Dokumente werden nicht mehr in List form übergeben!
+
+Properties des ManipulationByExistingXSLTPlugin wurden nicht korrekt eingesetzt.
+Die Möglichkeit der Ausgabe von Dicom Objekten als XML-Dokumente ist nicht so beeinflussbar gwesen,
+wie es vorgesehen ist. Die Xml-Dokumente wurden jedesmal ausgegeben, das ist falsch.
+-->Korrigiert 
+
+Xslt Dokument Anonym.xsl hat Sequenzen im Dicom Object nicht verarbeiten können, d.h. das   transformierte XmlDocument hat keine Sequenzen enthalten, sie wurden einfach ignoriert.
+-->Korrigiert
+
+Umlaute werden durch den Parser nicht gelesen,Lösung
+--> Der FileWriter benutzt die UTF-8 beim File erzeugen 
+
+
+
+------------------------------------------------------------------------------------------------------
+1.2.1
+------------------------------------------------------------------------------------------------------
+
+
+
+22.8.2003 hacklaen:
+Ein neues Verzeichnis /manual eingefügt. Hierin der erste Entwurf eines User-Manuals als HTML Datei.
+
+/cfg/framework.properties neu erstellt. Darin sind alle Properties des Receivers und Senders bis auf AET Titel gelöscht.
+
+In /unittest/... alle bisherigen Tests gelöscht und neue für AnnotationTest.java, ExportImagePluginTest.java, PseudonymPluginTest.java, SaveFilesystemPluginTest.java eingefügt
+Zusätzlich ein Verzeichnis /unittest/.../plugin/resources mit Beispiel DICOM Dateien für CT, MRT und CR eingefügt. Zusätzlich finden sich dort HTML-Dateien mit dem Dump der Dateien.
+
+Ein neues Plugin ExportImagePlugin.java mit Hilfsklasse Annotation.java eingefügt.
+
+Alle Plugins bis auf ManipulationByExistingXSLTPlugin.java und MyDataSourceForDcmSnd.java durch die aktuellen Versionen ersetzt.
+
+
+17.8.2003 heupel:
+TLS-Konfiguration des RCV um die Möglichkeit der Auswahl der Klientauthentifikation erweitert.
+
+
+11.8.2003 heupel:
+Overview.html oberhalb der entsprechenden Packages platziert(src).
+uml ordner zum Ablegen von Diagrammen geschaffen.
+Inhalt von src/docs aufgelöst und in die neugeschaffenen Ordner verteilt.
+build.xml angepasst ("clean" und "todoc" targets).
+
+
+6.8.2003 heupel:
+Xml-Dokumente werden nicht mehr in List form übergeben!
+
+Properties des ManipulationByExistingXSLTPlugin wurden nicht korrekt eingesetzt.
+Die Möglichkeit der Ausgabe von Dicom Objekten als XML-Dokumente ist nicht so beeinflussbar gwesen,
+wie es vorgesehen ist. Die Xml-Dokumente wurden jedesmal ausgegeben, das ist falsch.
+-->Korrigiert 
+
+Xslt Dokument Anonym.xsl hat Sequenzen im Dicom Object nicht verarbeiten können, d.h. das   transformierte XmlDocument hat keine Sequenzen enthalten, sie wurden einfach ignoriert.
+-->Korrigiert
+
+Umlaute werden durch den Parser nicht gelesen,Lösung
+--> Der FileWriter benutzt die UTF-8 beim File erzeugen 
+
+
+
+

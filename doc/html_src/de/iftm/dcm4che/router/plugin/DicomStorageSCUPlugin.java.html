@@ -1,0 +1,300 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.plugin.DicomStorageSCUPlugin (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DicomStorageSCUPlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  DicomStorageSCUPlugin.java
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Copyright (c) 2003 by
+<A NAME="5"></A> *
+<A NAME="6"></A> *  IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="7"></A> *  VISUS Technology Transfer GmbH
+<A NAME="8"></A> *
+<A NAME="9"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="10"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="11"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="12"></A> *  (at your option) any later version.
+<A NAME="13"></A> *
+<A NAME="14"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="15"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="16"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="17"></A> *  Lesser General Public License for more details.
+<A NAME="18"></A> *
+<A NAME="19"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="20"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="21"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="22"></A> *
+<A NAME="23"></A> *
+<A NAME="24"></A> *****************************************************************************/</FONT>
+<A NAME="25"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.plugin.index.html" target="packageFrame">de.iftm.dcm4che.router.plugin</A>;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">de.iftm.dcm4che.router.property.DicomRouterProperties</A>;
+<A NAME="28"></A><FONT ID="Import">import</FONT> de.iftm.dcm4che.services.CDimseService;
+<A NAME="29"></A><FONT ID="Import">import</FONT> de.iftm.dcm4che.services.ConfigProperties;
+<A NAME="30"></A>
+<A NAME="31"></A><FONT ID="Import">import</FONT> org.apache.log4j.Logger;
+<A NAME="32"></A>
+<A NAME="33"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="34"></A>
+<A NAME="35"></A><FONT ID="Import">import</FONT> org.dcm4che.net.*;
+<A NAME="36"></A>
+<A NAME="37"></A><FONT ID="Import">import</FONT> org.dcm4che.util.*;
+<A NAME="38"></A>
+<A NAME="39"></A><FONT ID="Import">import</FONT> gnu.getopt.Getopt;
+<A NAME="40"></A><FONT ID="Import">import</FONT> gnu.getopt.LongOpt;
+<A NAME="41"></A>
+<A NAME="42"></A><FONT ID="Import">import</FONT> java.io.*;
+<A NAME="43"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="44"></A><FONT ID="Import">import</FONT> java.net.*;
+<A NAME="45"></A><FONT ID="Import">import</FONT> java.text.ParseException;
+<A NAME="46"></A>
+<A NAME="47"></A>
+<A NAME="48"></A><FONT ID="FormalComment">/**
+<A NAME="49"></A> * This class extends the {@link DicomRouterPlugin} class and implements
+<A NAME="50"></A> * {@link DicomRouterPlugin} interface. It take the rolle of a DICOM Storage
+<A NAME="51"></A> * Service Class User and sends Dicom Object to a DICOM Storage
+<A NAME="52"></A> * Service Class Provider.
+<A NAME="53"></A> * &lt;br&gt;&lt;br&gt;
+<A NAME="54"></A> * 2005.08.20 hacklaender: Changed the processing of properties.&lt;br&gt;
+<A NAME="55"></A> * 2004.01.31 hacklaender: Logging messages modified: No stack trace.&lt;br&gt;
+<A NAME="56"></A> */</FONT>
+<A NAME="57"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> DicomStorageSCUPlugin <FONT ID="Extends">extends</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">DicomRouterPlugin</A> {
+<A NAME="58"></A>    
+<A NAME="59"></A>    <FONT ID="FormalComment">/** DOCUMENT ME! */</FONT>
+<A NAME="60"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> Logger log = Logger.getLogger(<A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomStorageSCUPlugin.java.html">DicomStorageSCUPlugin</A>.<FONT ID="Class">class</FONT>);
+<A NAME="61"></A>    
+<A NAME="62"></A>    <FONT ID="FormalComment">/** DOCUMENT ME! */</FONT>
+<A NAME="63"></A>    <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> String VERSION = <FONT ID="StringLiteral">"2006.11.10"</FONT>;
+<A NAME="64"></A>    
+<A NAME="65"></A>    <FONT ID="FormalComment">/** The configuration properties of the StorageService working class. */</FONT>
+<A NAME="66"></A>    ConfigProperties cfg = <FONT ID="Null">null</FONT>;
+<A NAME="67"></A>    
+<A NAME="68"></A>    
+<A NAME="69"></A>    <FONT ID="SingleLineComment">// &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  Local fields defined by properties: &gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="70"></A></FONT>    
+<A NAME="71"></A>    <FONT ID="FormalComment">/** The transmission protocol to use.
+<A NAME="72"></A>     * &lt;p&gt;Normally the 'dicom' protocol is used. The data are send unencrypted.
+<A NAME="73"></A>     * If you would like to use the encrypted transmission, use the 'dicom-tls'
+<A NAME="74"></A>     * protocol. If you use it, you have to define some other properties, named 'tls_xxx'.
+<A NAME="75"></A>     * &lt;p&gt;dicom-tls: accept TLS connection (offer AES and DES encryption)
+<A NAME="76"></A>     * &lt;p&gt;dicom-tls.aes : accept TLS connection (force AES or DES encryption)
+<A NAME="77"></A>     * &lt;p&gt;dicom-tls.3des: accept TLS connection (force DES encryption)
+<A NAME="78"></A>     * &lt;p&gt;dicom-tls.nodes : accept TLS connection (no encryption) */</FONT>
+<A NAME="79"></A>    <FONT ID="Private">private</FONT> String protocol = <FONT ID="StringLiteral">"dicom"</FONT>;
+<A NAME="80"></A>    
+<A NAME="81"></A>    <FONT ID="FormalComment">/** Own AET (Application Entity Title).
+<A NAME="82"></A>     * Default is "&lt;any&gt;", that means association of any AET is accepted.
+<A NAME="83"></A>     * The provided property value should be a comma or space separated list of individual AETs.
+<A NAME="84"></A>     * Providing no value is equivalent to to a value "&lt;any&gt;". */</FONT>
+<A NAME="85"></A>    <FONT ID="Private">private</FONT> String called_aets = <FONT ID="StringLiteral">"DCMRCV"</FONT>;
+<A NAME="86"></A>    
+<A NAME="87"></A>    <FONT ID="FormalComment">/** AETs  (Application Entity Titles) of the storage service users.
+<A NAME="88"></A>     * Default is "&lt;any&gt;", that means association of any AET is accepted.
+<A NAME="89"></A>     * The provided property value should be a comma or space separated list of individual AETs.
+<A NAME="90"></A>     * Providing no value is equivalent to to a value "&lt;any&gt;". */</FONT>
+<A NAME="91"></A>    <FONT ID="Private">private</FONT> String calling_aets = <FONT ID="StringLiteral">"DCMSND"</FONT>;
+<A NAME="92"></A>    
+<A NAME="93"></A>    <FONT ID="FormalComment">/** The IP address of the computer the Dataset should be stored. 127.0.0.1 corresponds to "localhost". */</FONT>
+<A NAME="94"></A>    <FONT ID="Private">private</FONT> String host = <FONT ID="StringLiteral">"127.0.0.1"</FONT>; <FONT ID="SingleLineComment">// corresponds to localhost
+<A NAME="95"></A></FONT>    
+<A NAME="96"></A>    <FONT ID="FormalComment">/** Holds the port number of the server [default=104]. */</FONT>
+<A NAME="97"></A>    <FONT ID="Private">private</FONT> String port = <FONT ID="StringLiteral">"104"</FONT>;
+<A NAME="98"></A>    
+<A NAME="99"></A>    
+<A NAME="100"></A>    <FONT ID="SingleLineComment">// &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+<A NAME="101"></A></FONT>    
+<A NAME="102"></A>    
+<A NAME="103"></A>    <FONT ID="FormalComment">/**
+<A NAME="104"></A>     * Creates a DicomSendPlugin Object.
+<A NAME="105"></A>     */</FONT>
+<A NAME="106"></A>    <FONT ID="Public">public</FONT> DicomStorageSCUPlugin() {
+<A NAME="107"></A>    }
+<A NAME="108"></A>    
+<A NAME="109"></A>    
+<A NAME="110"></A>    <FONT ID="FormalComment">/**
+<A NAME="111"></A>     * Inits the DicomRouterPlugin with the specified Properties.
+<A NAME="112"></A>     * @param p  Properties containing the configuration of the plugin
+<A NAME="113"></A>     */</FONT>
+<A NAME="114"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> init(<A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">Properties</A> p) {
+<A NAME="115"></A>        String s;
+<A NAME="116"></A>        URL url;
+<A NAME="117"></A>        
+<A NAME="118"></A>        <FONT ID="SingleLineComment">// Read the default configuration properties for the working class StorageService
+<A NAME="119"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="120"></A>            url = CDimseService.<FONT ID="Class">class</FONT>.getResource(<FONT ID="StringLiteral">"resources/CDimseService.cfg"</FONT>);
+<A NAME="121"></A>            cfg = <FONT ID="New">new</FONT> ConfigProperties(url);
+<A NAME="122"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="123"></A>            log.error(<FONT ID="StringLiteral">"Can't load default configuration file from resource."</FONT>);
+<A NAME="124"></A>        }
+<A NAME="125"></A>        
+<A NAME="126"></A>        <FONT ID="If">if</FONT> (props == <FONT ID="Null">null</FONT>) {
+<A NAME="127"></A>            <FONT ID="SingleLineComment">// nichts zu tun
+<A NAME="128"></A></FONT>            <FONT ID="Return">return</FONT>;
+<A NAME="129"></A>        }
+<A NAME="130"></A>        
+<A NAME="131"></A>        <FONT ID="SingleLineComment">// called_aets
+<A NAME="132"></A></FONT>        s = p.getProperty(<FONT ID="StringLiteral">"called-aets"</FONT>);
+<A NAME="133"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="134"></A>            called_aets = s;
+<A NAME="135"></A>        }
+<A NAME="136"></A>        
+<A NAME="137"></A>        <FONT ID="SingleLineComment">// calling_aets
+<A NAME="138"></A></FONT>        s = p.getProperty(<FONT ID="StringLiteral">"calling-aets"</FONT>);
+<A NAME="139"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="140"></A>            calling_aets = s;
+<A NAME="141"></A>        }
+<A NAME="142"></A>        
+<A NAME="143"></A>        <FONT ID="SingleLineComment">// host
+<A NAME="144"></A></FONT>        s = p.getProperty(<FONT ID="StringLiteral">"host"</FONT>);
+<A NAME="145"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="146"></A>            host= s;
+<A NAME="147"></A>        }
+<A NAME="148"></A>        
+<A NAME="149"></A>        <FONT ID="SingleLineComment">// port
+<A NAME="150"></A></FONT>        s = p.getProperty(<FONT ID="StringLiteral">"port"</FONT>);
+<A NAME="151"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="152"></A>            port = s;
+<A NAME="153"></A>        }
+<A NAME="154"></A>        
+<A NAME="155"></A>        <FONT ID="SingleLineComment">// protocol
+<A NAME="156"></A></FONT>        s = p.getProperty(<FONT ID="StringLiteral">"protocol"</FONT>);
+<A NAME="157"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="158"></A>            protocol = s;
+<A NAME="159"></A>        }
+<A NAME="160"></A>        
+<A NAME="161"></A>        <FONT ID="SingleLineComment">// cdimse_cfg_uri
+<A NAME="162"></A></FONT>        <FONT ID="SingleLineComment">// Two forms are possible:
+<A NAME="163"></A></FONT>        <FONT ID="SingleLineComment">// 1. Absolute reference (file:/C:/a/b/c.txt): The reference is taken as is.
+<A NAME="164"></A></FONT>        <FONT ID="SingleLineComment">// 2. Relative reference (b/c.txt): The referece is relative to the package of the class de.iftm.dcm4che.services.StorageService
+<A NAME="165"></A></FONT>        s = props.getProperty(<FONT ID="StringLiteral">"cdimse-cfg-uri"</FONT>);
+<A NAME="166"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="167"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="168"></A>                url = ConfigProperties.fileRefToURL(CDimseService.<FONT ID="Class">class</FONT>.getResource(<FONT ID="StringLiteral">""</FONT>), s);
+<A NAME="169"></A>                cfg = <FONT ID="New">new</FONT> ConfigProperties(url);
+<A NAME="170"></A>            } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="171"></A>                log.error(<FONT ID="StringLiteral">"Error in cdimse_cfg_uri. Default values used."</FONT>);
+<A NAME="172"></A>            }
+<A NAME="173"></A>        }
+<A NAME="174"></A>        
+<A NAME="175"></A>    }
+<A NAME="176"></A>    
+<A NAME="177"></A>    <FONT ID="FormalComment">/**
+<A NAME="178"></A>     * Sends the Dicom Object to Dicom Stroge Service Class Provider.
+<A NAME="179"></A>     *
+<A NAME="180"></A>     * @param dataset holds the value of the Dicom Object
+<A NAME="181"></A>     * @return if succesfull CONTINUE, REQUEST_ABORT_RECEIVER or CONTINUE_CHAIN if an error occurs
+<A NAME="182"></A>     */</FONT>
+<A NAME="183"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> process(Dataset dataset) {
+<A NAME="184"></A>        DcmURL  dcmURL;
+<A NAME="185"></A>        CDimseService cDimseService;
+<A NAME="186"></A>        <FONT ID="Boolean">boolean</FONT>     success = <FONT ID="False">false</FONT>;
+<A NAME="187"></A>        
+<A NAME="188"></A>        <FONT ID="SingleLineComment">// Update the configuration properties with properties given to this class
+<A NAME="189"></A></FONT>        cfg.put(<FONT ID="StringLiteral">"host"</FONT>, host);
+<A NAME="190"></A>        cfg.put(<FONT ID="StringLiteral">"port"</FONT>, port);
+<A NAME="191"></A>        <FONT ID="If">if</FONT> (called_aets != <FONT ID="Null">null</FONT>) cfg.put(<FONT ID="StringLiteral">"called-aets"</FONT>, called_aets);
+<A NAME="192"></A>        <FONT ID="If">if</FONT> (calling_aets != <FONT ID="Null">null</FONT>) cfg.put(<FONT ID="StringLiteral">"calling-aets"</FONT>, calling_aets);
+<A NAME="193"></A>        
+<A NAME="194"></A>        <FONT ID="SingleLineComment">// Create the destination dcmURL: PROTOCOL://CALLED[:CALLING]@HOST[:PORT]
+<A NAME="195"></A></FONT>        dcmURL = <FONT ID="New">new</FONT> DcmURL(protocol, cfg.getProperty(<FONT ID="StringLiteral">"called-aets"</FONT>), cfg.getProperty(<FONT ID="StringLiteral">"calling-aets"</FONT>), cfg.getProperty(<FONT ID="StringLiteral">"host"</FONT>), Integer.parseInt(cfg.getProperty(<FONT ID="StringLiteral">"port"</FONT>)));
+<A NAME="196"></A>        
+<A NAME="197"></A>        <FONT ID="SingleLineComment">// Create working class CDimseService
+<A NAME="198"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="199"></A>            cDimseService = <FONT ID="New">new</FONT> CDimseService(cfg, dcmURL);
+<A NAME="200"></A>        } <FONT ID="Catch">catch</FONT> (ParseException e) {
+<A NAME="201"></A>            log.error(<FONT ID="StringLiteral">"Error creating CDimseService"</FONT>);
+<A NAME="202"></A>            <FONT ID="SingleLineComment">// Do not abort plugin queue
+<A NAME="203"></A></FONT>            <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="204"></A>        }
+<A NAME="205"></A>        
+<A NAME="206"></A>        <FONT ID="SingleLineComment">// Open association
+<A NAME="207"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="208"></A>            <FONT ID="If">if</FONT> (! cDimseService.aASSOCIATE()) {
+<A NAME="209"></A>                log.error(<FONT ID="StringLiteral">"Can't associate"</FONT>);
+<A NAME="210"></A>                <FONT ID="SingleLineComment">// Do not abort plugin queue
+<A NAME="211"></A></FONT>                <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="212"></A>            }
+<A NAME="213"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="214"></A>            log.error(<FONT ID="StringLiteral">"Error while associating"</FONT>);
+<A NAME="215"></A>            <FONT ID="SingleLineComment">// Do not abort plugin queue
+<A NAME="216"></A></FONT>            <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="217"></A>        }
+<A NAME="218"></A>        
+<A NAME="219"></A>        <FONT ID="SingleLineComment">// Store Dataset
+<A NAME="220"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="221"></A>            cDimseService.cSTORE(dataset);
+<A NAME="222"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="223"></A>            log.error(<FONT ID="StringLiteral">"Error while sending Dataset"</FONT>);
+<A NAME="224"></A>            <FONT ID="SingleLineComment">// Do not abort plugin queue
+<A NAME="225"></A></FONT>            <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="226"></A>        }
+<A NAME="227"></A>        
+<A NAME="228"></A>        <FONT ID="SingleLineComment">// Release association
+<A NAME="229"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="230"></A>            <FONT ID="SingleLineComment">// Wait until it receives the responds to the release request.
+<A NAME="231"></A></FONT>            cDimseService.aRELEASE(<FONT ID="True">true</FONT>);
+<A NAME="232"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="233"></A>            log.error(<FONT ID="StringLiteral">"Error while releasing association"</FONT>);
+<A NAME="234"></A>            <FONT ID="SingleLineComment">// Do not abort plugin queue
+<A NAME="235"></A></FONT>            <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="236"></A>        }
+<A NAME="237"></A>        
+<A NAME="238"></A>        <FONT ID="SingleLineComment">// Successful stored
+<A NAME="239"></A></FONT>        <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="240"></A>    }
+<A NAME="241"></A>
+<A NAME="242"></A>    
+<A NAME="243"></A>    <FONT ID="FormalComment">/**
+<A NAME="244"></A>     * Closes the Association with a release.
+<A NAME="245"></A>     */</FONT>
+<A NAME="246"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> close() {
+<A NAME="247"></A>    }
+<A NAME="248"></A>    
+<A NAME="249"></A>    
+<A NAME="250"></A>    <FONT ID="FormalComment">/**
+<A NAME="251"></A>     * DOCUMENT ME!
+<A NAME="252"></A>     *
+<A NAME="253"></A>     * @return DOCUMENT ME!
+<A NAME="254"></A>     */</FONT>
+<A NAME="255"></A>    <FONT ID="Public">public</FONT> String getVersion() {
+<A NAME="256"></A>        <FONT ID="Return">return</FONT> VERSION;
+<A NAME="257"></A>    }
+<A NAME="258"></A>}
+<A NAME="259"></A>
+<A NAME="260"></A>
+<A NAME="261"></A><FONT ID="MultiLineComment">/*
+<A NAME="262"></A> * $Log: DicomStorageSCUPlugin.java,v $
+<A NAME="263"></A> * Revision 1.8  2004/02/12 18:18:24  k_kleber
+<A NAME="264"></A> * Weiteres Umbenennen der Rückgabewerte der Methode process() in DicomRouterPlugin
+<A NAME="265"></A> *
+<A NAME="266"></A> * Revision 1.7  2004/02/12 17:55:29  k_kleber
+<A NAME="267"></A> * Überarbeiten der Schnittstelle für das DicomRouterPlugin.
+<A NAME="268"></A> * -Zusammenlegen der abstracten Klasse DefaultDicomRouter mit DicomRouterPlugin
+<A NAME="269"></A> * -Umbennen der abstacten Methodennamen
+<A NAME="270"></A> *
+<A NAME="271"></A> */</FONT>
+<A NAME="272"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DicomStorageSCUPlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

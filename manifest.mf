@@ -1,0 +1,8 @@
+Manifest-Version: 1.0
+X-COMMENT: Main-Class will be added automatically by build
+Implementation-Title: dcmrouter
+Implementation-Version: 3.1.4 2006-09-02
+Implementation-Vendor: Dr. Thomas Hacklaender
+Class-Path: dcm4che.jar jai_imageio_api.zip DcmServices.jar log4j.jar getopt.jar
+
+

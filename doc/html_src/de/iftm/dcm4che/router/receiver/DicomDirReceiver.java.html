@@ -1,0 +1,352 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.receiver.DicomDirReceiver (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DicomDirReceiver</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  Copyright (c) 2006 by
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Thomas Hacklaender @ IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="5"></A> *
+<A NAME="6"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="7"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="8"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="9"></A> *  (at your option) any later version.
+<A NAME="10"></A> *
+<A NAME="11"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="12"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="13"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="14"></A> *  Lesser General Public License for more details.
+<A NAME="15"></A> *
+<A NAME="16"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="17"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="18"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="19"></A> *
+<A NAME="20"></A> *****************************************************************************/</FONT>
+<A NAME="21"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.receiver.index.html" target="packageFrame">de.iftm.dcm4che.router.receiver</A>;
+<A NAME="22"></A>
+<A NAME="23"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">de.iftm.dcm4che.router.plugin.DicomRouterPlugin</A>;
+<A NAME="24"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/PluginChain.java.html">de.iftm.dcm4che.router.plugin.PluginChain</A>;
+<A NAME="25"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.property.index.html" target="packageFrame">de.iftm.dcm4che.router.property.*</A>;
+<A NAME="26"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.util.index.html" target="packageFrame">de.iftm.dcm4che.router.util.*</A>;
+<A NAME="27"></A>
+<A NAME="28"></A><FONT ID="Import">import</FONT> org.apache.log4j.BasicConfigurator;
+<A NAME="29"></A><FONT ID="Import">import</FONT> org.apache.log4j.Logger;
+<A NAME="30"></A>
+<A NAME="31"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="32"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.Tags;
+<A NAME="33"></A><FONT ID="Import">import</FONT> org.dcm4che.media.*;
+<A NAME="34"></A>
+<A NAME="35"></A><FONT ID="Import">import</FONT> java.io.*;
+<A NAME="36"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="37"></A>
+<A NAME="38"></A>
+<A NAME="39"></A><FONT ID="FormalComment">/**
+<A NAME="40"></A> * @author  hacklaender
+<A NAME="41"></A> * @version 2006.07.01
+<A NAME="42"></A> */</FONT>
+<A NAME="43"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> DicomDirReceiver <FONT ID="Extends">extends</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/receiver/GeneralFileReceiver.java.html">GeneralFileReceiver</A> {
+<A NAME="44"></A>    <FONT ID="MultiLineComment">/*
+<A NAME="45"></A>     * Gives an oppertunity to recieve outprints at different appenders in
+<A NAME="46"></A>     * a better and faster way as use System.out
+<A NAME="47"></A>     */</FONT>
+<A NAME="48"></A>    
+<A NAME="49"></A>    <FONT ID="FormalComment">/** The version string */</FONT>
+<A NAME="50"></A>    <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> String VERSION = <FONT ID="StringLiteral">"2006.11.10"</FONT>;
+<A NAME="51"></A>    
+<A NAME="52"></A>    <FONT ID="FormalComment">/** DOCUMENT ME! */</FONT>
+<A NAME="53"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger log = Logger.getLogger(<A HREF="../../../../../de/iftm/dcm4che/router/receiver/DicomDirReceiver.java.html">DicomDirReceiver</A>.<FONT ID="Class">class</FONT>);
+<A NAME="54"></A>    
+<A NAME="55"></A>    <FONT ID="FormalComment">/** The given DICOMDIR file. */</FONT>
+<A NAME="56"></A>    <FONT ID="Private">private</FONT> File dicomdir = <FONT ID="Null">null</FONT>;
+<A NAME="57"></A>    
+<A NAME="58"></A>    <FONT ID="SingleLineComment">// &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  Local fields defined by properties: &gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="59"></A></FONT>    
+<A NAME="60"></A>    <FONT ID="FormalComment">/** Holds the value of property fileURI. */</FONT>
+<A NAME="61"></A>    <FONT ID="Private">private</FONT> String file_uri = <FONT ID="Null">null</FONT>;
+<A NAME="62"></A>    
+<A NAME="63"></A>    
+<A NAME="64"></A>    <FONT ID="SingleLineComment">//&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+<A NAME="65"></A></FONT>    
+<A NAME="66"></A>    <FONT ID="FormalComment">/**
+<A NAME="67"></A>     * Creates a new instance of Class
+<A NAME="68"></A>     * @param props the properties for the receiver and plugins.
+<A NAME="69"></A>     */</FONT>
+<A NAME="70"></A>    <FONT ID="Public">public</FONT> DicomDirReceiver(Properties props) {
+<A NAME="71"></A>        <FONT ID="Super">super</FONT>(props);
+<A NAME="72"></A>        
+<A NAME="73"></A>        <FONT ID="SingleLineComment">// Initialise
+<A NAME="74"></A></FONT>        init();
+<A NAME="75"></A>    }
+<A NAME="76"></A>    
+<A NAME="77"></A>    
+<A NAME="78"></A>    <FONT ID="FormalComment">/**
+<A NAME="79"></A>     * Creates a new instance of Class
+<A NAME="80"></A>     * @param uri the URI of the properties file for the receiver and plugins.
+<A NAME="81"></A>     */</FONT>
+<A NAME="82"></A>    <FONT ID="Public">public</FONT> DicomDirReceiver(String uri) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="83"></A>        <FONT ID="Super">super</FONT>(uri);
+<A NAME="84"></A>        
+<A NAME="85"></A>        <FONT ID="SingleLineComment">// Initialise
+<A NAME="86"></A></FONT>        init();
+<A NAME="87"></A>    }
+<A NAME="88"></A>    
+<A NAME="89"></A>    
+<A NAME="90"></A>    <FONT ID="FormalComment">/**
+<A NAME="91"></A>     * Creates a new instance of Class
+<A NAME="92"></A>     * @param argv the arguments passed to the programs main method.
+<A NAME="93"></A>     */</FONT>
+<A NAME="94"></A>    <FONT ID="Public">public</FONT> DicomDirReceiver(String[] argv) {
+<A NAME="95"></A>        <FONT ID="Super">super</FONT>(argv);
+<A NAME="96"></A>        
+<A NAME="97"></A>        <FONT ID="SingleLineComment">// Initialise
+<A NAME="98"></A></FONT>        init();
+<A NAME="99"></A>        
+<A NAME="100"></A>        <FONT ID="SingleLineComment">// Start automatically
+<A NAME="101"></A></FONT>        start();
+<A NAME="102"></A>    }
+<A NAME="103"></A>    
+<A NAME="104"></A>    
+<A NAME="105"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Static methods &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="106"></A></FONT>    
+<A NAME="107"></A>    
+<A NAME="108"></A>    <FONT ID="FormalComment">/**
+<A NAME="109"></A>     * @param argv the command line arguments.
+<A NAME="110"></A>     */</FONT>
+<A NAME="111"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Void">void</FONT> main(String[] argv) {
+<A NAME="112"></A>        <FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/receiver/DicomFileReceiver.java.html">DicomFileReceiver</A>(argv);
+<A NAME="113"></A>    }
+<A NAME="114"></A>    
+<A NAME="115"></A>    
+<A NAME="116"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Other methods &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="117"></A></FONT>    
+<A NAME="118"></A>    
+<A NAME="119"></A>    <FONT ID="FormalComment">/**
+<A NAME="120"></A>     * Extend the init method of GeneralFileReceiver
+<A NAME="121"></A>     */</FONT>
+<A NAME="122"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> init() {
+<A NAME="123"></A>        
+<A NAME="124"></A>        <FONT ID="SingleLineComment">// First use GeneralFileReceiver.init()
+<A NAME="125"></A></FONT>        <FONT ID="Super">super</FONT>.init();
+<A NAME="126"></A>        
+<A NAME="127"></A>        <FONT ID="SingleLineComment">// No local extensions
+<A NAME="128"></A></FONT>    }
+<A NAME="129"></A>
+<A NAME="130"></A>    
+<A NAME="131"></A>    <FONT ID="FormalComment">/**
+<A NAME="132"></A>     * @return true, if successful started, false otherwise.
+<A NAME="133"></A>     */</FONT>
+<A NAME="134"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> start() {
+<A NAME="135"></A>        
+<A NAME="136"></A>        <FONT ID="SingleLineComment">// Wenn der Vector null ist, ist nichts zu tun
+<A NAME="137"></A></FONT>        <FONT ID="If">if</FONT> (fileVector == <FONT ID="Null">null</FONT>) {
+<A NAME="138"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="139"></A>        }
+<A NAME="140"></A>        
+<A NAME="141"></A>        <FONT ID="SingleLineComment">// First element in fileVector contains the File of the DICOMDIR.
+<A NAME="142"></A></FONT>        <FONT ID="SingleLineComment">// Replace content of fileVector with the files referenced by DICOMDIR
+<A NAME="143"></A></FONT>        <FONT ID="If">if</FONT> (!replaceFileVectorWithDicomDir()) {
+<A NAME="144"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="145"></A>        }
+<A NAME="146"></A>        
+<A NAME="147"></A>        <FONT ID="SingleLineComment">// Info
+<A NAME="148"></A></FONT>        <FONT ID="If">if</FONT> (log.isInfoEnabled()) {
+<A NAME="149"></A>            log.info(<FONT ID="StringLiteral">"Version: "</FONT> + <FONT ID="This">this</FONT>.VERSION);
+<A NAME="150"></A>            log.info(<FONT ID="StringLiteral">"Number of files to process: "</FONT> + fileVector.size());
+<A NAME="151"></A>        }
+<A NAME="152"></A>        
+<A NAME="153"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="154"></A>            pluginChain = <FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/PluginChain.java.html">PluginChain</A>(drProperties);
+<A NAME="155"></A>        } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterException.java.html">DicomRouterException</A> e) {
+<A NAME="156"></A>            log.error(e.getMessage());
+<A NAME="157"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="158"></A>        }
+<A NAME="159"></A>        
+<A NAME="160"></A>        pluginChain.initPlugins();
+<A NAME="161"></A>        
+<A NAME="162"></A>        <FONT ID="SingleLineComment">// Bearbeitung in separaten Thread starten
+<A NAME="163"></A></FONT>        Thread pfv = <FONT ID="New">new</FONT> ProcessFileVector();
+<A NAME="164"></A>        pfv.start();
+<A NAME="165"></A>        
+<A NAME="166"></A>        <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="167"></A>    }
+<A NAME="168"></A>    
+<A NAME="169"></A>    
+<A NAME="170"></A>    <FONT ID="FormalComment">/**
+<A NAME="171"></A>     * Send a "stop" signal to the process method
+<A NAME="172"></A>     */</FONT>
+<A NAME="173"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> stop() {
+<A NAME="174"></A>        stopFlag = <FONT ID="True">true</FONT>;
+<A NAME="175"></A>    }
+<A NAME="176"></A>    
+<A NAME="177"></A>    
+<A NAME="178"></A>    <FONT ID="FormalComment">/**
+<A NAME="179"></A>     * Replaces the content of fileVector with the files referenced by DICOMDIR.
+<A NAME="180"></A>     *
+<A NAME="181"></A>     * @return true, if a DICOMDIR was successful analysed.
+<A NAME="182"></A>     */</FONT>
+<A NAME="183"></A>    <FONT ID="Private">private</FONT> <FONT ID="Boolean">boolean</FONT> replaceFileVectorWithDicomDir() {
+<A NAME="184"></A>        DirReader dirReader = <FONT ID="Null">null</FONT>;
+<A NAME="185"></A>        DirRecord dr = <FONT ID="Null">null</FONT>;
+<A NAME="186"></A>        Dataset ds;
+<A NAME="187"></A>        
+<A NAME="188"></A>        <FONT ID="SingleLineComment">// If Vector equals to null, nothing to do
+<A NAME="189"></A></FONT>        <FONT ID="If">if</FONT> (fileVector == <FONT ID="Null">null</FONT>) {
+<A NAME="190"></A>            log.error(<FONT ID="StringLiteral">"No DICOMDIR selected"</FONT>);
+<A NAME="191"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="192"></A>        }
+<A NAME="193"></A>        
+<A NAME="194"></A>        <FONT ID="SingleLineComment">// First element in fileVector contains the File of the DICOMDIR.
+<A NAME="195"></A></FONT>        dicomdir = (File) fileVector.get(<FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="196"></A>        
+<A NAME="197"></A>        <FONT ID="SingleLineComment">// Clear fileVector
+<A NAME="198"></A></FONT>        fileVector = <FONT ID="New">new</FONT> Vector();
+<A NAME="199"></A>        
+<A NAME="200"></A>        <FONT ID="SingleLineComment">// The content of the directory records of a DICOMDIR are defined
+<A NAME="201"></A></FONT>        <FONT ID="SingleLineComment">// in PS 3.3 - F.5 DEFINITION OF SPECIFIC DIRECTORY RECORDS.
+<A NAME="202"></A></FONT>        <FONT ID="SingleLineComment">//
+<A NAME="203"></A></FONT>        <FONT ID="SingleLineComment">// List of requieren Type 1 and 2 items:
+<A NAME="204"></A></FONT>        <FONT ID="SingleLineComment">//
+<A NAME="205"></A></FONT>        <FONT ID="SingleLineComment">// F.5.1 Patient Directory Record Definition
+<A NAME="206"></A></FONT>        <FONT ID="SingleLineComment">//   - Specific Character Set, Type 1C
+<A NAME="207"></A></FONT>        <FONT ID="SingleLineComment">//   - Patient's Name, Type 2
+<A NAME="208"></A></FONT>        <FONT ID="SingleLineComment">//   - Patient ID, Type 1
+<A NAME="209"></A></FONT>        <FONT ID="SingleLineComment">//
+<A NAME="210"></A></FONT>        <FONT ID="SingleLineComment">// F.5.2 Study Directory record definition
+<A NAME="211"></A></FONT>        <FONT ID="SingleLineComment">//   - Specific Character Set, Type 1C
+<A NAME="212"></A></FONT>        <FONT ID="SingleLineComment">//   - Study Date, Type 1
+<A NAME="213"></A></FONT>        <FONT ID="SingleLineComment">//   - Study Time, Type 1
+<A NAME="214"></A></FONT>        <FONT ID="SingleLineComment">//   - Study Description, Type 2
+<A NAME="215"></A></FONT>        <FONT ID="SingleLineComment">//   - Study Instance UID, Type 1C: The Study Instance UID shall be present as a mandatory key only if no file is referenced by this Directory Record.
+<A NAME="216"></A></FONT>        <FONT ID="SingleLineComment">//   - Study ID, Type 1
+<A NAME="217"></A></FONT>        <FONT ID="SingleLineComment">//   - Accession Number, Type 2
+<A NAME="218"></A></FONT>        <FONT ID="SingleLineComment">//
+<A NAME="219"></A></FONT>        <FONT ID="SingleLineComment">// F.5.3 Series Directory Record Definition
+<A NAME="220"></A></FONT>        <FONT ID="SingleLineComment">//   - Specific Character Set, Type 1C
+<A NAME="221"></A></FONT>        <FONT ID="SingleLineComment">//   - Modality, Type 1
+<A NAME="222"></A></FONT>        <FONT ID="SingleLineComment">//   - Series Instance UID, Type 1
+<A NAME="223"></A></FONT>        <FONT ID="SingleLineComment">//   - Series Number, Type 1
+<A NAME="224"></A></FONT>        <FONT ID="SingleLineComment">//
+<A NAME="225"></A></FONT>        <FONT ID="SingleLineComment">// F.5.4 Image directory record definition
+<A NAME="226"></A></FONT>        <FONT ID="SingleLineComment">//   - Specific Character Set, Type 1C
+<A NAME="227"></A></FONT>        <FONT ID="SingleLineComment">//   - Instance Number, Type 1
+<A NAME="228"></A></FONT>        
+<A NAME="229"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="230"></A>            <FONT ID="SingleLineComment">// Get a DirReader
+<A NAME="231"></A></FONT>            dirReader = DirBuilderFactory.getInstance().newDirReader(dicomdir);
+<A NAME="232"></A>            
+<A NAME="233"></A>            <FONT ID="SingleLineComment">// Get first Patient
+<A NAME="234"></A></FONT>            dr = dirReader.getFirstRecordBy(DirRecord.PATIENT, <FONT ID="Null">null</FONT>, <FONT ID="False">false</FONT>);
+<A NAME="235"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="236"></A>            log.error(<FONT ID="StringLiteral">"Selected file is not a DICOMDIR: "</FONT> + e.getMessage());
+<A NAME="237"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="238"></A>        }
+<A NAME="239"></A>        
+<A NAME="240"></A>        <FONT ID="SingleLineComment">// Loop for all patients
+<A NAME="241"></A></FONT>        <FONT ID="While">while</FONT> (dr != <FONT ID="Null">null</FONT>) {
+<A NAME="242"></A>            
+<A NAME="243"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="244"></A>                getNextChild(dr);
+<A NAME="245"></A>                
+<A NAME="246"></A>                <FONT ID="SingleLineComment">// Get next Patient
+<A NAME="247"></A></FONT>                dr = dr.getNextSibling();
+<A NAME="248"></A>            } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="249"></A>                log.error(<FONT ID="StringLiteral">"Error while analysing the DICOMDIR: "</FONT> + e.getMessage());
+<A NAME="250"></A>                <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="251"></A>            }
+<A NAME="252"></A>        }
+<A NAME="253"></A>        
+<A NAME="254"></A>        <FONT ID="SingleLineComment">// DICOMDIR successful analysed
+<A NAME="255"></A></FONT>        <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="256"></A>    }
+<A NAME="257"></A>    
+<A NAME="258"></A>    
+<A NAME="259"></A>    <FONT ID="FormalComment">/**
+<A NAME="260"></A>     *
+<A NAME="261"></A>     */</FONT>
+<A NAME="262"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> getNextChild(DirRecord dr) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="263"></A>        DirRecord child;
+<A NAME="264"></A>        File f;
+<A NAME="265"></A>        
+<A NAME="266"></A>        child = dr.getFirstChild();
+<A NAME="267"></A>        
+<A NAME="268"></A>        <FONT ID="SingleLineComment">// Loop for all childs
+<A NAME="269"></A></FONT>        <FONT ID="While">while</FONT> (child != <FONT ID="Null">null</FONT>) {
+<A NAME="270"></A>            
+<A NAME="271"></A>            <FONT ID="SingleLineComment">// Hanging Protocol DR and HL7 Struc Doc DR
+<A NAME="272"></A></FONT>            <FONT ID="SingleLineComment">// are defined in PS 3.3 - F.5. but not in dcm4che 1.3.x
+<A NAME="273"></A></FONT>            <FONT ID="SingleLineComment">// Should be catched before processing other types
+<A NAME="274"></A></FONT>            
+<A NAME="275"></A>            <FONT ID="If">if</FONT> (child.getType().equals(DirRecord.PATIENT)) {
+<A NAME="276"></A>                
+<A NAME="277"></A>                <FONT ID="SingleLineComment">// PATIENT
+<A NAME="278"></A></FONT>                getNextChild(child);
+<A NAME="279"></A>                
+<A NAME="280"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (child.getType().equals(DirRecord.STUDY)) {
+<A NAME="281"></A>                
+<A NAME="282"></A>                <FONT ID="SingleLineComment">// STUDY
+<A NAME="283"></A></FONT>                getNextChild(child);
+<A NAME="284"></A>                
+<A NAME="285"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (child.getType().equals(DirRecord.SERIES)) {
+<A NAME="286"></A>                <FONT ID="SingleLineComment">// SERIES
+<A NAME="287"></A></FONT>                getNextChild(child);
+<A NAME="288"></A>                
+<A NAME="289"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="290"></A>                
+<A NAME="291"></A>                <FONT ID="SingleLineComment">// Allow all type of instance
+<A NAME="292"></A></FONT>                
+<A NAME="293"></A>                String[] sa = child.getRefFileIDs();
+<A NAME="294"></A>                
+<A NAME="295"></A>                <FONT ID="SingleLineComment">// File ID must be defined
+<A NAME="296"></A></FONT>                <FONT ID="If">if</FONT> (!(sa == <FONT ID="Null">null</FONT>)) {
+<A NAME="297"></A>                    
+<A NAME="298"></A>                    <FONT ID="SingleLineComment">// Insert referenced file to fileVector
+<A NAME="299"></A></FONT>                    
+<A NAME="300"></A>                    <FONT ID="SingleLineComment">// Start with DICOMDIR directory
+<A NAME="301"></A></FONT>                    f = dicomdir.getParentFile();
+<A NAME="302"></A>                    <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; sa.length; i++) {
+<A NAME="303"></A>                        <FONT ID="SingleLineComment">// Add descending IDs
+<A NAME="304"></A></FONT>                        f = <FONT ID="New">new</FONT> File(f, sa[i]);
+<A NAME="305"></A>                    }
+<A NAME="306"></A>                    
+<A NAME="307"></A>                    <FONT ID="SingleLineComment">// log.info(f.toString());
+<A NAME="308"></A></FONT>                    
+<A NAME="309"></A>                    fileVector.addElement(f);
+<A NAME="310"></A>                }
+<A NAME="311"></A>            }
+<A NAME="312"></A>            
+<A NAME="313"></A>            child = child.getNextSibling();
+<A NAME="314"></A>        }
+<A NAME="315"></A>    }
+<A NAME="316"></A>    
+<A NAME="317"></A>}
+<A NAME="318"></A>
+<A NAME="319"></A><FONT ID="FormalComment">/**
+<A NAME="320"></A> * Revisions:
+<A NAME="321"></A> *
+<A NAME="322"></A> * 2006.04.29 hacklaender: Totally rewritten.
+<A NAME="323"></A> */</FONT>
+<A NAME="324"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DicomDirReceiver</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

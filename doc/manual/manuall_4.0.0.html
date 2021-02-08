@@ -1,0 +1,3374 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<HTML>
+<HEAD>
+	<META HTTP-EQUIV="CONTENT-TYPE" CONTENT="text/html; charset=windows-1252">
+	<TITLE>UserManual</TITLE>
+	<META NAME="GENERATOR" CONTENT="OpenOffice.org 2.0  (Win32)">
+	<META NAME="CREATED" CONTENT="20060225;8155126">
+	<META NAME="CHANGEDBY" CONTENT="Thomas Hackl&auml;nder">
+	<META NAME="CHANGED" CONTENT="20061111;12222089">
+	<META NAME="ProgId" CONTENT="FrontPage.Editor.Document">
+	<STYLE>
+	<!--
+		@page { size: 21cm 29.7cm }
+	-->
+	</STYLE>
+</HEAD>
+<BODY LANG="en-US" DIR="LTR">
+<H1 ALIGN=CENTER><B>Dicom Router</B></H1>
+<H1 ALIGN=CENTER><B>Manual</B></H1>
+<P ALIGN=CENTER><BR><BR>
+</P>
+<P ALIGN=CENTER>by Thomas Hacklaender, M.D., PhD<BR><BR>Version 4.0.0</P>
+<P ALIGN=CENTER STYLE="margin-bottom: 0cm">2006.11.10</P>
+<P><BR><BR>
+</P>
+<H1>Contents</H1>
+<UL>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#Summary">Summary</A> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#Classpath">Classpath</A></P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#Libraries Used">Libraries
+	Used</A></P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#Receiver">Receiver</A> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#Plugins">Plugins</A> 
+	</P>
+	<UL>
+		<LI><P STYLE="margin-bottom: 0cm"><A HREF="#URI">URI</A> 
+		</P>
+		<LI><P STYLE="margin-bottom: 0cm"><A HREF="#Property String Guidelines">Property
+		String Guidelines</A> 
+		</P>
+	</UL>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#Logger">Logger</A> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#Developer Notes">Developer
+	Notes</A> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#DTD">Appendix: Document
+	Type Definition</A> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#XML example">Appendix:
+	XML Example</A> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#XSL Templates">Appendix:
+	XSL Templates</A> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0cm"><A HREF="#Configuration Files">Appendix:
+	Configuration Files</A> 
+	</P>
+	<LI><P><A HREF="#dcm4che 1.1.4 Dictionaries in XML format">Appendix:
+	dcm4che 1.1.4 Dictionaries in XML format</A> 
+	</P>
+</UL>
+<P><BR><BR>
+</P>
+<H1><A NAME="Summary"></A>Summary</H1>
+<P>This project arose in cooperation with the &quot;IFTM Institut f&uuml;r
+Telematik in der Medizn GmbH&quot; and the &quot;Visus Technology
+Transfer Inc.&quot;. The purpose was to produce a DICOM Software
+Router, which will be able to receive DICOM Objects and manipulate
+them with plugins. The requirement on the router was to create an
+option to configure the router without manipulating the source code.
+There are several configurations, which are necessary to be
+manipulated by the user of the router in practical use. For instance
+to change the settings of the receiver or to change the plugins
+called to work with the DICOM Object. All that operations have to be
+easy for the users who work with the software and for the developers
+who want to extend the software e.g. with new plugins. 
+</P>
+<P><BR><BR>
+</P>
+<H1>Classpath</H1>
+<P><A NAME="Classpath"></A>To use the Dicom Router you must modify
+the classpath of the Java virtual machine. At a minimum the file
+<FONT SIZE=2><FONT FACE="Courier New, monospace">DicomViewer.jar</FONT></FONT>
+containing the compiled version of the Dicom Router must be included.
+This file includes a manifest defining all other required libraries
+to run the program. But, the manifest expects, that all these
+libraries are in the same folder as <FONT SIZE=2><FONT FACE="Courier New, monospace">DicomViewer.jar</FONT></FONT>.
+If this is not true, you have to include the following library's to
+the classpath by hand:</P>
+<UL>
+	<LI><P><FONT FACE="Courier New, monospace"><FONT SIZE=2>dcm4che.jar</FONT></FONT></P>
+	<LI><P><FONT FACE="Courier New, monospace"><FONT SIZE=2>DcmServices.jar</FONT></FONT></P>
+	<LI><P><FONT FACE="Courier New, monospace"><FONT SIZE=2>getopt.jar</FONT></FONT></P>
+	<LI><P><FONT FACE="Courier New, monospace"><FONT SIZE=2>jai_imageio_api.zip</FONT></FONT></P>
+	<LI><P><FONT FACE="Courier New, monospace"><FONT SIZE=2>log4j.jar</FONT></FONT></P>
+</UL>
+<P>The inclusion of these libraries allows the processing of all
+DICOM images, which are not-compressed and not JPEG coded. If you
+need to process these image types also, you must replace the
+<FONT SIZE=2><FONT FACE="Courier New, monospace">jai_imageio_api.zip</FONT></FONT>
+library by a complete installation of the JAI Image IO package.
+Please refer to the documentation in <FONT SIZE=2><FONT FACE="Courier New, monospace">./lib/dcm4che_requirements.html</FONT></FONT>
+.</P>
+<H1><A NAME="Libraries Used"></A><BR>Libraries Used</H1>
+<TABLE WIDTH=779 BORDER=1 CELLPADDING=2 CELLSPACING=3>
+	<COL WIDTH=114>
+	<COL WIDTH=101>
+	<COL WIDTH=185>
+	<COL WIDTH=346>
+	<TR>
+		<TD WIDTH=114>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=101>
+			<P><FONT SIZE=3><B>Version used in project</B></FONT></P>
+		</TD>
+		<TD WIDTH=185>
+			<P><FONT SIZE=3><B>Newest version (10-NOV-2006)</B></FONT></P>
+		</TD>
+		<TD WIDTH=346>
+			<P><FONT SIZE=3><B>Link</B></FONT></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=114>
+			<P>dcm4che</P>
+		</TD>
+		<TD WIDTH=101>
+			<P>1.4.5</P>
+		</TD>
+		<TD WIDTH=185>
+			<P>1.4.5</P>
+		</TD>
+		<TD WIDTH=346>
+			<P><A HREF="http://sourceforge.net/projects/dcm4che/">http://sourceforge.net/projects/dcm4che/</A></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=114>
+			<P>DcmServices</P>
+		</TD>
+		<TD WIDTH=101>
+			<P>1.5.6</P>
+		</TD>
+		<TD WIDTH=185>
+			<P>1.5.6</P>
+		</TD>
+		<TD WIDTH=346>
+			<P>Included in this distribution</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=114>
+			<P>log4j</P>
+		</TD>
+		<TD WIDTH=101>
+			<P>1.2.13</P>
+		</TD>
+		<TD WIDTH=185>
+			<P>1.2.13</P>
+		</TD>
+		<TD WIDTH=346>
+			<P><A HREF="http://jakarta.apache.org/log4j/docs/index.html">http://jakarta.apache.org/log4j/docs/index.html</A></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=114>
+			<P>java2html</P>
+		</TD>
+		<TD WIDTH=101>
+			<P>1.3.1</P>
+		</TD>
+		<TD WIDTH=185>
+			<P>1.3.1</P>
+		</TD>
+		<TD WIDTH=346>
+			<P><A HREF="http://www.java2html.com/">http://www.java2html.com/</A></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=114>
+			<P>getopt</P>
+		</TD>
+		<TD WIDTH=101>
+			<P>1.0.12</P>
+		</TD>
+		<TD WIDTH=185>
+			<P>1.0.12</P>
+		</TD>
+		<TD WIDTH=346>
+			<P><A HREF="http://www.urbanophile.com/arenn/hacking/download.html">http://www.urbanophile.com/arenn/hacking/download.html</A></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=114>
+			<P>Lumbermill (only for external logging)</P>
+		</TD>
+		<TD WIDTH=101>
+			<P>1.0.0</P>
+		</TD>
+		<TD WIDTH=185>
+			<P>1.0.0</P>
+		</TD>
+		<TD WIDTH=346>
+			<P><A HREF="http://sourceforge.net/projects/lumbermill/">http://sourceforge.net/projects/lumbermill/</A></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=114>
+			<P>JDicom<BR>(only for testing)</P>
+		</TD>
+		<TD WIDTH=101>
+			<P>1.7.35</P>
+		</TD>
+		<TD WIDTH=185>
+			<P>1.7.35</P>
+		</TD>
+		<TD WIDTH=346>
+			<P><A HREF="http://www.tiani.com/JDicom/">http://www.tiani.com/JDicom/</A></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=114>
+			<P>jSimpleX<BR>(only for developing XSL templates)</P>
+		</TD>
+		<TD WIDTH=101>
+			<P>2.1</P>
+		</TD>
+		<TD WIDTH=185>
+			<P>3.0<BR>Problems with missing libraries</P>
+		</TD>
+		<TD WIDTH=346>
+			<P><A HREF="http://jsimplex.sourceforge.net/index.html">http://jsimplex.sourceforge.net/index.html</A>
+						</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR>(see the file <FONT SIZE=2><FONT FACE="Courier New, monospace">./lib/links.html</FONT></FONT>
+for recent updates).</P>
+<P><BR><BR>
+</P>
+<H1>Receiver</H1>
+<P>You start the Dicom Router framework by invoking one of the
+receivers. They all define a 'main' method, so you can call them from
+the command-line or by instantiating the receiver class.</P>
+<P><BR><BR>
+</P>
+<TABLE WIDTH=95% BORDER=1 CELLPADDING=2 CELLSPACING=0>
+	<COL WIDTH=59*>
+	<COL WIDTH=197*>
+	<TR>
+		<TD COLSPAN=2 WIDTH=100%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=23%>
+			<P><B>Argument </B>
+			</P>
+		</TD>
+		<TD WIDTH=77%>
+			<P><B>Description </B>
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=23%>
+			<P>-c 
+			</P>
+		</TD>
+		<TD WIDTH=77%>
+			<P>configuration: The <A HREF="#URI">URI</A> of the configuration
+			file for the Dicom Router. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=23%>
+			<P>-l 
+			</P>
+		</TD>
+		<TD WIDTH=77%>
+			<P>logger: The <A HREF="#URI">URI</A> of the configuration file
+			for the logger log4j.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=23%>
+			<P>-h 
+			</P>
+		</TD>
+		<TD WIDTH=77%>
+			<P>help: Displays a help message. 
+			</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR><BR>
+</P>
+<H2>Network Receiver</H2>
+<TABLE WIDTH=1205 BORDER=1 CELLPADDING=2 CELLSPACING=0>
+	<COL WIDTH=106>
+	<COL WIDTH=177>
+	<COL WIDTH=121>
+	<COL WIDTH=784>
+	<TR>
+		<TD COLSPAN=3 WIDTH=412 HEIGHT=43>
+			<H3><B>DicomStorageSCPReceiver</B></H3>
+		</TD>
+		<TD WIDTH=784>
+			<P>de.iftm.dcm4che.router.receiver.DicomStorageSCPReceiver</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=4 WIDTH=1199 HEIGHT=19>
+			<P>This receiver implements the &bdquo;DICOM Storage&ldquo;
+			service class as a service class provider (SCP).</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=4 WIDTH=1199 HEIGHT=19>
+			<P STYLE="font-style: normal"><B>Possible Properties:</B></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=106>
+			<P STYLE="font-style: normal"><B>Subkey</B></P>
+		</TD>
+		<TD WIDTH=177>
+			<P STYLE="font-style: normal"><B>Default Value</B></P>
+		</TD>
+		<TD WIDTH=121>
+			<P STYLE="font-style: normal"><B>Valid Values</B></P>
+		</TD>
+		<TD WIDTH=784>
+			<P STYLE="font-style: normal"><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=106>
+			<P>protocol</P>
+		</TD>
+		<TD WIDTH=177>
+			<P>dicom</P>
+		</TD>
+		<TD WIDTH=121>
+			<P>dicom,
+			dicom-tls,<BR>dicom-tls.aes,<BR>dicom-tls.3des,<BR>dicom-tls.nodes</P>
+		</TD>
+		<TD WIDTH=784>
+			<P>Normally the 'dicom' protocol is used. The data are send
+			unencrypted. If you would like to use the encrypted transmission,
+			use the 'dicom-tls' protocol. If you use it, you have to define
+			some other properties, named 'tls-xxx'.<BR>dicom-tls: accept TLS
+			connection (offer AES and DES encryption)<BR>dicom-tls.aes :
+			accept TLS connection (force AES or DES
+			encryption)<BR>dicom-tls.3des: accept TLS connection (force DES
+			encryption)<BR>dicom-tls.nodes : accept TLS connection (no
+			encryption)</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=106>
+			<P>called-aets</P>
+		</TD>
+		<TD WIDTH=177>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=121>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=784>
+			<P>The AE title of this computer. By default this property is not
+			defined, so the receiver accepts connections with any AET set. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=106>
+			<P>calling-aets 
+			</P>
+		</TD>
+		<TD WIDTH=177>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=121>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=784>
+			<P>The AE titles of computers which are allowed to call this
+			receiver. By default this property is not defined, which allows
+			any computer to call this receiver.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=106>
+			<P>port</P>
+		</TD>
+		<TD WIDTH=177>
+			<P>104</P>
+		</TD>
+		<TD WIDTH=121>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=784>
+			<P>The port number of this computer used to receive DICOM objects.
+						</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=106>
+			<P>storage-cfg-uri</P>
+		</TD>
+		<TD WIDTH=177>
+			<P>resources/StorageService.cfg</P>
+		</TD>
+		<TD WIDTH=121>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=784>
+			<P>File reference to the configuration file of the Storage SCP
+			(server). Two forms are possible:</P>
+			<P>1. Absolute reference (file:/C:/a/b/c.txt): The reference is
+			taken as is.<BR>2. Relative reference (b/c.txt): The referece is
+			relative to the package of the class
+			de.iftm.dcm4che.services.StorageService</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR>
+</P>
+<P><BR><BR>
+</P>
+<H2>File Receiver</H2>
+<TABLE WIDTH=95% BORDER=1 CELLPADDING=2 CELLSPACING=0>
+	<COL WIDTH=33*>
+	<COL WIDTH=23*>
+	<COL WIDTH=30*>
+	<COL WIDTH=170*>
+	<TR>
+		<TD COLSPAN=3 WIDTH=34%>
+			<H3 STYLE="font-style: normal"><B>DicomFileReceiver</B></H3>
+		</TD>
+		<TD WIDTH=66%>
+			<P STYLE="font-style: normal; font-weight: medium">de.iftm.dcm4che.router.receiver.DicomFileReceiver</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<P>This receiver reads one or more DICOM object from the local
+			filesysetem.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<P><B>Possible Properties:</B></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=13%>
+			<P><B>Subkey </B>
+			</P>
+		</TD>
+		<TD WIDTH=9%>
+			<P><B>Default Value </B>
+			</P>
+		</TD>
+		<TD WIDTH=12%>
+			<P><B>Valid Values</B></P>
+		</TD>
+		<TD WIDTH=66%>
+			<P><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=13%>
+			<P>file-uri</P>
+		</TD>
+		<TD WIDTH=9%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=12%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=66%>
+			<P>A <A HREF="#URI">URI</A> of a file or directory. If a file is
+			given, only this file is processed. If a directory is speciefied,
+			all files in this directory are processed. The sequence of
+			processing is not guaranteed. It depends on the operating system. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=13%>
+			<P>include-subdirectories</P>
+		</TD>
+		<TD WIDTH=9%>
+			<P>false</P>
+		</TD>
+		<TD WIDTH=12%>
+			<P>true, True, false, False</P>
+		</TD>
+		<TD WIDTH=66%>
+			<P>If file-uri is a directory and include-subdirectories is false,
+			all files in that directory are processed. If
+			include-subdirectories is true, all files in all subdirectories
+			are included also. 
+			</P>
+		</TD>
+	</TR>
+</TABLE>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<TABLE WIDTH=95% BORDER=1 CELLPADDING=2 CELLSPACING=0>
+	<COL WIDTH=33*>
+	<COL WIDTH=23*>
+	<COL WIDTH=30*>
+	<COL WIDTH=170*>
+	<TR>
+		<TD COLSPAN=3 WIDTH=34%>
+			<H3 STYLE="font-style: normal"><B>DicomDirReceiver</B></H3>
+		</TD>
+		<TD WIDTH=66%>
+			<P STYLE="font-style: normal; font-weight: medium">de.iftm.dcm4che.router.receiver.DicomDirReceiver</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<P>This receiver reads all files referenced in a given DICOMDIR
+			file.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<P><B>Possible Properties:</B></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=13%>
+			<P><B>Subkey </B>
+			</P>
+		</TD>
+		<TD WIDTH=9%>
+			<P><B>Default Value </B>
+			</P>
+		</TD>
+		<TD WIDTH=12%>
+			<P><B>Valid Values</B></P>
+		</TD>
+		<TD WIDTH=66%>
+			<P><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=13%>
+			<P>file-uri</P>
+		</TD>
+		<TD WIDTH=9%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=12%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=66%>
+			<P>The <A HREF="#URI">URI</A> of a DICOMDIR file. All files
+			referenced by this file are processed. The sequence of processing
+			is not defined.</P>
+		</TD>
+	</TR>
+</TABLE>
+<H1><BR><BR>Plugins</H1>
+<P STYLE="margin-bottom: 0cm"><BR>
+</P>
+<TABLE WIDTH=1207 BORDER=1 CELLPADDING=2 CELLSPACING=0>
+	<COL WIDTH=106>
+	<COL WIDTH=179>
+	<COL WIDTH=121>
+	<COL WIDTH=784>
+	<TR>
+		<TD COLSPAN=4 WIDTH=1201>
+			<H3>DicomStorageSCUPlugin</H3>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=4 WIDTH=1201>
+			<P>This plugins uses the DICOM Storage service to store the
+			Dataset at a DICOM Storage SCP (Service Class Provider).<BR>There
+			a hugh number of properties is defined in the configuration file
+			of this receiver
+			(de.iftm.dcm4che.router.plugin.net.resources.dcmsnd.cfg). All of
+			them have reasonable default values, which covers most application
+			cases.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=106>
+			<P><B>Subkey </B>
+			</P>
+		</TD>
+		<TD WIDTH=179>
+			<P><B>Default Value </B>
+			</P>
+		</TD>
+		<TD WIDTH=121>
+			<P><B>Valid Values </B>
+			</P>
+		</TD>
+		<TD WIDTH=784>
+			<P><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=106>
+			<P>protocol</P>
+		</TD>
+		<TD WIDTH=179>
+			<P>dicom</P>
+		</TD>
+		<TD WIDTH=121>
+			<P>dicom,
+			dicom-tls,<BR>dicom-tls.aes,<BR>dicom-tls.3des,<BR>dicom-tls.nodes</P>
+		</TD>
+		<TD WIDTH=784>
+			<P>Normally the 'dicom' protocol is used. The data are send
+			unencrypted. If you would like to use the encrypted transmission,
+			use the 'dicom-tls' protocol. If you use it, you have to define
+			some other properties, named 'tls-xxx'.<BR>dicom-tls: accept TLS
+			connection (offer AES and DES encryption)<BR>dicom-tls.aes :
+			accept TLS connection (force AES or DES
+			encryption)<BR>dicom-tls.3des: accept TLS connection (force DES
+			encryption)<BR>dicom-tls.nodes : accept TLS connection (no
+			encryption)</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=106>
+			<P>called-aets</P>
+		</TD>
+		<TD WIDTH=179>
+			<P>DCMRCV</P>
+		</TD>
+		<TD WIDTH=121>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=784>
+			<P>The AE title of this computer. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=106>
+			<P>calling-aets 
+			</P>
+		</TD>
+		<TD WIDTH=179>
+			<P>DCMSND</P>
+		</TD>
+		<TD WIDTH=121>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=784>
+			<P>The AE titles of the storage class user. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=106>
+			<P>host</P>
+		</TD>
+		<TD WIDTH=179>
+			<P>127.0.0.1</P>
+		</TD>
+		<TD WIDTH=121>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=784>
+			<P>IP address or name of storage class user host (127.0.0.1
+			corresponds to localhost).</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=106>
+			<P>port</P>
+		</TD>
+		<TD WIDTH=179>
+			<P>104</P>
+		</TD>
+		<TD WIDTH=121>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=784>
+			<P>The port number of this computer used to receive DICOM objects.
+						</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=106>
+			<P>cdimse-cfg-uri</P>
+		</TD>
+		<TD WIDTH=179>
+			<P>resources/CDimseService.cfg</P>
+		</TD>
+		<TD WIDTH=121>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=784>
+			<P>File reference to the configuration file of the Storage SCU.
+			Two forms are possible:</P>
+			<P>1. Absolute reference (file:/C:/a/b/c.txt): The reference is
+			taken as is.<BR>2. Relative reference (b/c.txt): The referece is
+			relative to the package of the class
+			de.iftm.dcm4che.services.CDimseService</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR><BR>
+</P>
+<TABLE WIDTH=95% BORDER=1 CELLPADDING=2 CELLSPACING=0>
+	<COL WIDTH=21*>
+	<COL WIDTH=27*>
+	<COL WIDTH=57*>
+	<COL WIDTH=151*>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<H3>ExportImagePlugin</H3>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<P>This plugin exports the given Dataset as a standard graphic
+			image. The default file format is PNG, but there are properties to
+			change the format to all formats the installed ImageIO plugins
+			support. The extension of the saved image corresponds to the
+			ImageIO-name of the chosen graphic format. The plugin supports the
+			properties which start with the key <I>ExportImagePlugin</I>.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=8%>
+			<P><B>Subkey</B></P>
+		</TD>
+		<TD WIDTH=11%>
+			<P><B>Default Value</B></P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><B>Valid Values</B></P>
+		</TD>
+		<TD WIDTH=59%>
+			<P><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD ROWSPAN=6 WIDTH=8%>
+			<P>annotation-type</P>
+		</TD>
+		<TD ROWSPAN=6 WIDTH=11%>
+			<P>full</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>Defines what type of annotation should be drawn to the image. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P>no 
+			</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>No annotations should be drawn.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P>full 
+			</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>All annotations should be drawn.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P>minimal 
+			</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>Draw minimal set of annotations.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P>anonymous 
+			</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>Draw all annotation besides patient name,&nbsp;patient birth
+			date and patient ID.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P>pseudonym 
+			</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>Draw all annotation besides patient birth date and patient ID.
+			Replace the patient name with a pseudonym.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=8%>
+			<P>directory 
+			</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>./ 
+			</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>Describes the base directory as a <A HREF="#URI">URI</A>.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=8%>
+			<P>font-color</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>orange</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P>darkGray, lightGray, white, orange, yellow, green</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>The color of the font for annotations.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=8%>
+			<P>font-name</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>dialog</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P>serif, sansserif, monospaced, dialog</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>The name of the font for annotations.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=8%>
+			<P>font-size</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>14 
+			</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>The size in pixel of the font for annotations. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=8%>
+			<P>image-format</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>png 
+			</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P>jpg, png 
+			</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>The ImagIO name of the graphic format to export the Dataset. By
+			default the formats &quot;png&quot; and &quot;jpg&quot; are
+			supported. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD ROWSPAN=3 WIDTH=8%>
+			<P>image-size</P>
+		</TD>
+		<TD ROWSPAN=3 WIDTH=11%>
+			<P>512</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>The size of the image to export. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P><I>&lt;integer&gt;</I></P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>The size in pixel of the image to export. The image is always
+			square. The original image is scaled and centered to fit into the
+			image size.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P>original</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>The image is exported in the original size (square or
+			rectangular).</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=8%>
+			<P>margin-size</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>4 
+			</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>The size in pixel of the margin for annotations. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=8%>
+			<P>filename</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>DicomRouterImage</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>The name of the file to save. If the value starts with the
+			escape-character '$' the name is set according to the contents of
+			the DICOM element named after the escape-character. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=8%>
+			<P>name-postfix</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P><I>&lt;empty string&gt;</I></P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>A string to append after the name and before the file
+			extension. May bean empty string.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=8%>
+			<P>separate-patients</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>false</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P>true, True, false, False</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>If true, write files in the subdirectory
+			&quot;$PatientName_$PatientBirthDate/&lt;directory&gt;/&quot;</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=8%>
+			<P>use-subdirectory</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>&lt;<I>empty string</I>&gt;</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>Write files in the subdirectory
+			&quot;[$PatientName_$PatientBirthDate/]&lt;directory&gt;/&lt;use-subdirectory&gt;/&quot;.
+			If the value is empty no subdirectory
+			&quot;[$PatientName_$PatientBirthDate/]&lt;directory&gt;/&quot; is
+			used.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=8%>
+			<P>write-dir-tree</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P>false</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P>true, True, false, False</P>
+		</TD>
+		<TD WIDTH=59%>
+			<P>If true:<BR>Construct the the filename of the file to save from
+			the following components: 
+			</P>
+			<OL>
+				<LI><P STYLE="margin-bottom: 0cm">First letter of family name
+				followed by first letter of given name followed by date of birth,
+				6 character. Example: HT570522 
+				</P>
+				<LI><P STYLE="margin-bottom: 0cm">Study date, 6 character.
+				Example: 043012 
+				</P>
+				<LI><P STYLE="margin-bottom: 0cm">Modality, 2 character followed
+				by study time, 4 character. Example: MR1531 
+				</P>
+				<LI><P STYLE="margin-bottom: 0cm">Study ID. Example: 4711 
+				</P>
+				<LI><P STYLE="margin-bottom: 0cm">Series number. Example: 3 
+				</P>
+				<LI><P>Instance number. Example: 54 
+				</P>
+			</OL>
+			<P>If false:<BR>Construct the the filename of the file to save
+			from directory, name, name-postfix and image-format as the
+			extension.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR>
+</P>
+<P><BR><BR>
+</P>
+<TABLE WIDTH=95% BORDER=1 CELLPADDING=2 CELLSPACING=0>
+	<COL WIDTH=100*>
+	<COL WIDTH=56*>
+	<COL WIDTH=52*>
+	<COL WIDTH=48*>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<H3>InfoPlugin</H3>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<P>This plugin logs information of the processed dataset. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=39%>
+			<P><B>Subkey </B>
+			</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><B>Default Value </B>
+			</P>
+		</TD>
+		<TD WIDTH=20%>
+			<P><B>Valid Values </B>
+			</P>
+		</TD>
+		<TD WIDTH=19%>
+			<P><B>Description </B>
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=39%>
+			<P><I>&lt;no properties supported&gt;</I> 
+			</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=20%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=19%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR><BR><BR>
+</P>
+<TABLE WIDTH=95% BORDER=1 CELLPADDING=2 CELLSPACING=0>
+	<COL WIDTH=100*>
+	<COL WIDTH=56*>
+	<COL WIDTH=52*>
+	<COL WIDTH=48*>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<H3>NullPlugin</H3>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<P>This plugin does nothing. It can be used as a placeholder in
+			the chain of plugins.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=39%>
+			<P><B>Subkey </B>
+			</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><B>Default Value </B>
+			</P>
+		</TD>
+		<TD WIDTH=20%>
+			<P><B>Valid Values </B>
+			</P>
+		</TD>
+		<TD WIDTH=19%>
+			<P><B>Description </B>
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=39%>
+			<P><I>&lt;no properties supported&gt;</I> 
+			</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=20%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=19%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR><BR>
+</P>
+<TABLE WIDTH=95% BORDER=1 CELLPADDING=2 CELLSPACING=0>
+	<COL WIDTH=23*>
+	<COL WIDTH=21*>
+	<COL WIDTH=56*>
+	<COL WIDTH=157*>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<H3>PortableMediaCreatorPlugin</H3>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<P>This plugins creates a IHE (Integrating the Healthcare
+			Enterprise) PDI (Portable Data for Imaging) compatible file
+			structure (see <A HREF="http://www.rsna.org/IHE/tf/ihe_tf_index.shtml">http://www.rsna.org/IHE/tf/ihe_tf_index.shtml</A>).
+			The plugin acts as a <I>Portable Media Creator</I>. It supports
+			the properties which start with the key
+			PortableMediaCreatorPlugin.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=9%>
+			<P><B>Subkey</B></P>
+		</TD>
+		<TD WIDTH=8%>
+			<P><B>Default Value</B></P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><B>Valid Values</B></P>
+		</TD>
+		<TD WIDTH=61%>
+			<P><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD ROWSPAN=6 WIDTH=9%>
+			<P>annotation-type</P>
+		</TD>
+		<TD ROWSPAN=6 WIDTH=8%>
+			<P>full</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>Defines what type of annotation should be drawn to the image. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P>off 
+			</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>No annotations should be drawn.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P>full 
+			</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>All annotations should be drawn.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P>minimal 
+			</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>Draw minimal set of annotations.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P>anonymous 
+			</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>Draw all annotation besides patient name,&nbsp;patient birth
+			date and patient ID.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P>pseudonym 
+			</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>Draw all annotation besides patient birth date and patient ID.
+			Replace the patient name with a pseudonym.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=9%>
+			<P>directory 
+			</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P>./ 
+			</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>Describes the base directory as a <A HREF="#URI">URI</A>.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=9%>
+			<P>font-color</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P>orange</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P>darkGray, lightGray, white, orange, yellow, green</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>The color of the font for annotations.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=9%>
+			<P>font-name</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P>dialog</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P>serif, sansserif, monospaced, dialog</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>The name of the font for annotations.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=9%>
+			<P>font-size</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P>14 
+			</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>The size in pixel of the font for annotations. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD ROWSPAN=3 WIDTH=9%>
+			<P>image-size</P>
+		</TD>
+		<TD ROWSPAN=3 WIDTH=8%>
+			<P>512</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>The size of the image to export. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P><I>&lt;integer&gt;</I></P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>The size in pixel of the image to export. The image is always
+			square. The original image is scaled and centered to fit into the
+			image size.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P>original</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>The image is exported in the original size (square or
+			rectangular).</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD ROWSPAN=3 WIDTH=9%>
+			<P>index-file</P>
+		</TD>
+		<TD ROWSPAN=3 WIDTH=8%>
+			<P>default 
+			</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>Reference to the start file of the web-contend. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P>default 
+			</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>Use the build-in INDEX.HTM file 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P><A HREF="#URI">URI</A> 
+			</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>The <A HREF="#URI">URI</A> of the file to be used as INDEX.HTM.
+			The name of the written file is always INDEX.HTM, regardless of
+			the name given in the URI. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=9%>
+			<P>margin-size</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P>4 
+			</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>The size in pixel of the margin for annotations. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD ROWSPAN=4 WIDTH=9%>
+			<P>readme-file</P>
+		</TD>
+		<TD ROWSPAN=4 WIDTH=8%>
+			<P>default 
+			</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>Reference to the README.TXT file of the web-contend. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P>default 
+			</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>Use the build-in README.TXT file. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P>no 
+			</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>Don't use any README.TXT file. <I>NOTE: The INDEX.HTM file must
+			reflect this property.</I> 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=22%>
+			<P><A HREF="#URI">URI</A> 
+			</P>
+		</TD>
+		<TD WIDTH=61%>
+			<P>The <A HREF="#URI">URI</A> of the file to be used as README.TXT
+			. The name of the written file is always README.TXT, regardless of
+			the name given in the URI. 
+			</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR>
+</P>
+<P><BR><BR>
+</P>
+<TABLE WIDTH=95% BORDER=1 CELLPADDING=2 CELLSPACING=0>
+	<COL WIDTH=100*>
+	<COL WIDTH=56*>
+	<COL WIDTH=52*>
+	<COL WIDTH=48*>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<H3>PrivateRemovePlugin</H3>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<P>This removes all private elements of the submitted Dataset.
+			Elements are private, if (1) the group number is odd or (2) if the
+			element is not found in the dictionary of elements.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=39%>
+			<P><B>Subkey </B>
+			</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><B>Default Value </B>
+			</P>
+		</TD>
+		<TD WIDTH=20%>
+			<P><B>Valid Values </B>
+			</P>
+		</TD>
+		<TD WIDTH=19%>
+			<P><B>Description </B>
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=39%>
+			<P><I>&lt;no properties supported&gt;</I> 
+			</P>
+		</TD>
+		<TD WIDTH=22%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=20%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=19%>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR><BR>
+</P>
+<TABLE WIDTH=95% BORDER=1 CELLPADDING=2 CELLSPACING=0>
+	<COL WIDTH=22*>
+	<COL WIDTH=45*>
+	<COL WIDTH=62*>
+	<COL WIDTH=127*>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<H3>PseudonymPlugin</H3>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<P>This plugin replaces the PatientName with a pseudonym.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=8%>
+			<P><B>Subkey</B></P>
+		</TD>
+		<TD WIDTH=18%>
+			<P><B>Default Value</B></P>
+		</TD>
+		<TD WIDTH=24%>
+			<P><B>Valid Values</B></P>
+		</TD>
+		<TD WIDTH=50%>
+			<P><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=8%>
+			<P><I>type</I> 
+			</P>
+		</TD>
+		<TD WIDTH=18%>
+			<P>#Initials2_Birdat6 
+			</P>
+		</TD>
+		<TD WIDTH=24%>
+			<P>#Initials2_Birdat6 
+			</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P>Creates a new patient name: ii_bbbbbb 
+			</P>
+			<P>i the initials of the patient: name surename<BR>b patient birth
+			date 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=8%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=18%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=24%>
+			<P>#Mod2Acqdat8_Birdat8 
+			</P>
+		</TD>
+		<TD WIDTH=50%>
+			<P>Creates a new patient name: mmaaaaaaaa_bbbbbbbb 
+			</P>
+			<P>m modality<BR>a acquisition date<BR>b patient birth date 
+			</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR>
+</P>
+<P><BR><BR>
+</P>
+<TABLE WIDTH=95% BORDER=1 CELLPADDING=2 CELLSPACING=0>
+	<COL WIDTH=22*>
+	<COL WIDTH=31*>
+	<COL WIDTH=61*>
+	<COL WIDTH=141*>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<H3>SaveDicomdirPlugin</H3>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<P>This plugins saves the given Dataset as a file to the local
+			file system and stores a reference to this file in a DICOMDIR
+			index file according DICOM Part 10. It supports the properties
+			which start with the key <I>SaveFilesystemPlugin.</I> 
+			</P>
+			<P><I>Note</I>: A new reference to the image file is stored in the
+			index file DICOMDIR regardless if there is already a reference to
+			this file. If the write policy is &quot;write-dir-tree = true&quot;
+			the file is stored only once in the file system and may have
+			multiple references in the index file. If the write policy is
+			&quot;write-dir-tree = false&quot; a separate image file is
+			written for every reference in the index file. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=9%>
+			<P><B>Subkey </B>
+			</P>
+		</TD>
+		<TD WIDTH=12%>
+			<P><B>Default Value </B>
+			</P>
+		</TD>
+		<TD WIDTH=24%>
+			<P><B>Valid Values </B>
+			</P>
+		</TD>
+		<TD WIDTH=55%>
+			<P><B>Description </B>
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=9%>
+			<P>directory 
+			</P>
+		</TD>
+		<TD WIDTH=12%>
+			<P>./ 
+			</P>
+		</TD>
+		<TD WIDTH=24%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=55%>
+			<P>Describes the base directory as a <A HREF="#URI">URI</A>.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=9%>
+			<P>separate-patients</P>
+		</TD>
+		<TD WIDTH=12%>
+			<P>false</P>
+		</TD>
+		<TD WIDTH=24%>
+			<P>true, True, false, False</P>
+		</TD>
+		<TD WIDTH=55%>
+			<P>IIf true, write files in the subdirectory
+			&quot;$PatientName_$PatientBirthDate/&lt;directory&gt;/&quot;</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=9%>
+			<P>transfersyntax</P>
+		</TD>
+		<TD WIDTH=12%>
+			<P>ImplicitVRLittleEndian</P>
+		</TD>
+		<TD WIDTH=24%>
+			<P>ImplicitVRLittleEndian, ExplicitVRLittleEndian,
+			ExplicitVRBigEndian</P>
+		</TD>
+		<TD WIDTH=55%>
+			<P>Sets the transfer syntax of the file to save. The string may
+			start with the escape-character '$', which is ignored.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=9%>
+			<P>use-subdirectory</P>
+		</TD>
+		<TD WIDTH=12%>
+			<P>&lt;<I>empty string</I>&gt;</P>
+		</TD>
+		<TD WIDTH=24%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=55%>
+			<P>Write files in the subdirectory
+			&quot;[$PatientName_$PatientBirthDate/]&lt;directory&gt;/&lt;use-subdirectory&gt;/&quot;.
+			If the value is empty no subdirectory
+			&quot;[$PatientName_$PatientBirthDate/]&lt;directory&gt;/&quot; is
+			used.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=9%>
+			<P>write-dir-tree</P>
+		</TD>
+		<TD WIDTH=12%>
+			<P>true</P>
+		</TD>
+		<TD WIDTH=24%>
+			<P>true, True, false, False</P>
+		</TD>
+		<TD WIDTH=55%>
+			<P>If true:<BR>Construct the the file ID of the file to save from
+			the following file ID components: 
+			</P>
+			<OL>
+				<LI><P STYLE="margin-bottom: 0cm">First letter of family name
+				followed by first letter of given name followed by date of birth,
+				6 character. Example: HT570522 
+				</P>
+				<LI><P STYLE="margin-bottom: 0cm">Study date, 6 character.
+				Example: 043012 
+				</P>
+				<LI><P STYLE="margin-bottom: 0cm">Modality, 2 character followed
+				by study time, 4 character. Example: MR1531 
+				</P>
+				<LI><P STYLE="margin-bottom: 0cm">Study ID. Example: 4711 
+				</P>
+				<LI><P STYLE="margin-bottom: 0cm">Series number. Example: 3 
+				</P>
+				<LI><P>Instance number. Example: 54 
+				</P>
+			</OL>
+			<P>If false:<BR>Use a random string (containing 'A'..'F',
+			'0'..'9') as the file ID.&nbsp;</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR><BR><BR>
+</P>
+<TABLE WIDTH=95% BORDER=1 CELLPADDING=2 CELLSPACING=0>
+	<COL WIDTH=17*>
+	<COL WIDTH=24*>
+	<COL WIDTH=54*>
+	<COL WIDTH=161*>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<H3>SaveFilesystemPlugin</H3>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<P>This plugins saves the given Dataset to the local file system.
+			It supports the properties which start with the key
+			SaveFilesystemPlugin.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=7%>
+			<P><B>Subkey </B>
+			</P>
+		</TD>
+		<TD WIDTH=9%>
+			<P><B>Default Value </B>
+			</P>
+		</TD>
+		<TD WIDTH=21%>
+			<P><B>Valid Values </B>
+			</P>
+		</TD>
+		<TD WIDTH=63%>
+			<P><B>Description </B>
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=7%>
+			<P>directory 
+			</P>
+		</TD>
+		<TD WIDTH=9%>
+			<P>./ 
+			</P>
+		</TD>
+		<TD WIDTH=21%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=63%>
+			<P>Describes the base directory as a <A HREF="#URI">URI</A>.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=7%>
+			<P>extension 
+			</P>
+		</TD>
+		<TD WIDTH=9%>
+			<P>dcm 
+			</P>
+		</TD>
+		<TD WIDTH=21%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=63%>
+			<P>The extension (postfix without the character '.') of the file
+			to save. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=7%>
+			<P>filename</P>
+		</TD>
+		<TD WIDTH=9%>
+			<P>DicomRouterDataset</P>
+		</TD>
+		<TD WIDTH=21%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=63%>
+			<P>The name of the file to save. The string may be a <A HREF="#Property String Guidelines">Tag
+			String</A>. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=7%>
+			<P>separate-patients</P>
+		</TD>
+		<TD WIDTH=9%>
+			<P>false</P>
+		</TD>
+		<TD WIDTH=21%>
+			<P>true, True, false, False</P>
+		</TD>
+		<TD WIDTH=63%>
+			<P>If true, write files in the subdirectory
+			&quot;$PatientName_$PatientBirthDate/&lt;directory&gt;/&quot;</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=7%>
+			<P>transfersyntax</P>
+		</TD>
+		<TD WIDTH=9%>
+			<P>ImplicitVRLittleEndian</P>
+		</TD>
+		<TD WIDTH=21%>
+			<P>ImplicitVRLittleEndian, ExplicitVRLittleEndian,
+			ExplicitVRBigEndian</P>
+		</TD>
+		<TD WIDTH=63%>
+			<P>Sets the transfer syntax of the file to save. The string may
+			start with the escape-character '$', which is ignored. Default
+			value: ImplicitVRLittleEndian. Valid values are:
+			ImplicitVRLittleEndian,ExplicitVRLittleEndian and
+			ExplicitVRBigEndian.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=7%>
+			<P>use-subdirectory</P>
+		</TD>
+		<TD WIDTH=9%>
+			<P>&lt;<I>empty string</I>&gt;</P>
+		</TD>
+		<TD WIDTH=21%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=63%>
+			<P>Write files in the subdirectory
+			&quot;[$PatientName_$PatientBirthDate/]&lt;directory&gt;/&lt;use-subdirectory&gt;/&quot;.
+			If the value is empty no subdirectory
+			&quot;[$PatientName_$PatientBirthDate/]&lt;directory&gt;/&quot; is
+			used.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=7%>
+			<P>write-dir-tree</P>
+		</TD>
+		<TD WIDTH=9%>
+			<P>false</P>
+		</TD>
+		<TD WIDTH=21%>
+			<P>true, True, false, False</P>
+		</TD>
+		<TD WIDTH=63%>
+			<P>If true:<BR>Construct the the filename of the file to save from
+			the following components: 
+			</P>
+			<OL>
+				<LI><P STYLE="margin-bottom: 0cm">First letter of family name
+				followed by first letter of given name followed by date of birth,
+				6 character. Example: HT570522 
+				</P>
+				<LI><P STYLE="margin-bottom: 0cm">Study date, 6 character.
+				Example: 043012 
+				</P>
+				<LI><P STYLE="margin-bottom: 0cm">Modality, 2 character followed
+				by study time, 4 character. Example: MR1531 
+				</P>
+				<LI><P STYLE="margin-bottom: 0cm">Study ID. Example: 4711 
+				</P>
+				<LI><P STYLE="margin-bottom: 0cm">Series number. Example: 3 
+				</P>
+				<LI><P>Instance number. Example: 54 
+				</P>
+			</OL>
+			<P>If false:<BR>Construct the the filename of the file to save
+			from directory, name and extension.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=7%>
+			<P>write-fmi</P>
+		</TD>
+		<TD WIDTH=9%>
+			<P>true 
+			</P>
+		</TD>
+		<TD WIDTH=21%>
+			<P>true, True, false, False</P>
+		</TD>
+		<TD WIDTH=63%>
+			<P>Sets if a File Mete Information Block should be included in the
+			saved file or not. 
+			</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR><BR>
+</P>
+<TABLE WIDTH=95% BORDER=1 CELLPADDING=2 CELLSPACING=0>
+	<COL WIDTH=70*>
+	<COL WIDTH=27*>
+	<COL WIDTH=25*>
+	<COL WIDTH=134*>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<H3>TagModifyPlugin</H3>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<P>This plugin modifies named elements of the submitted Dataset.
+			It supports the properties which start with the key
+			<I>TagModifyPlugin.</I></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=27%>
+			<P><B>Subkey </B>
+			</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P><B>Default Value </B>
+			</P>
+		</TD>
+		<TD WIDTH=10%>
+			<P><B>Valid Values </B>
+			</P>
+		</TD>
+		<TD WIDTH=52%>
+			<P><B>Description</B></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=27%>
+			<P>A <A HREF="#Property String Guidelines">Tag String</A>
+			specifying a DICOM element 
+			</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=10%>
+			<P><I>#remove</I></P>
+		</TD>
+		<TD WIDTH=52%>
+			<P>The named element is removed from the dataset.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=27%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=10%>
+			<P><I>#clear</I></P>
+		</TD>
+		<TD WIDTH=52%>
+			<P>The contents of the named element is cleared. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=27%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=10%>
+			<P><A HREF="#Property String Guidelines">Tag String</A></P>
+		</TD>
+		<TD WIDTH=52%>
+			<P>The contents of the DICOM element is replaced with the contents
+			of the <A HREF="#Property String Guidelines">Tag String</A>. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=27%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=11%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=10%>
+			<P><I>&lt;string&gt;</I></P>
+		</TD>
+		<TD WIDTH=52%>
+			<P>The contents of the DICOM element is replaced with the given
+			&lt;string&gt;.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR><BR><BR>
+</P>
+<TABLE WIDTH=95% BORDER=1 CELLPADDING=2 CELLSPACING=0>
+	<COL WIDTH=45*>
+	<COL WIDTH=21*>
+	<COL WIDTH=45*>
+	<COL WIDTH=145*>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<H3>UIDModifyPlugin</H3>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<P>This plugin modifies the UID's. It supports the properties
+			which start with the key <I>UIDModifyPlugin.</I></P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=18%>
+			<P><B>Subkey</B></P>
+		</TD>
+		<TD WIDTH=8%>
+			<P><B>Default Value </B>
+			</P>
+		</TD>
+		<TD WIDTH=18%>
+			<P><B>Valid Values </B>
+			</P>
+		</TD>
+		<TD WIDTH=57%>
+			<P><B>Description </B>
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD ROWSPAN=3 WIDTH=18%>
+			<P>SOPInstanceUID, StudyInstanceUID, SeriesInstanceUID,</P>
+			<P>$SOPInstanceUID, $StudyInstanceUID, $SeriesInstanceUID 
+			</P>
+		</TD>
+		<TD ROWSPAN=3 WIDTH=8%>
+			<P>#newroot 
+			</P>
+		</TD>
+		<TD WIDTH=18%>
+			<P><I>#original</I></P>
+		</TD>
+		<TD WIDTH=57%>
+			<P>The UID is not changed.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=18%>
+			<P><I>#new</I></P>
+		</TD>
+		<TD WIDTH=57%>
+			<P>A new UID is generated using the root UID.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=18%>
+			<P><I>#newroot</I></P>
+		</TD>
+		<TD WIDTH=57%>
+			<P>The new UID is constructed from the root UID of the dcm4che
+			library as a prefix and the remainder of the original UID as a
+			postfix. The length of the remainder is chosen in that way, that
+			the length of the resulting UID does not exceed 64 characters.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=18%>
+			<P>root-uid</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P>1.2.40.0.13.1.1</P>
+		</TD>
+		<TD WIDTH=18%>
+			<P>Any sequence of numbers and '.' characters up to 64 characters
+			long</P>
+		</TD>
+		<TD WIDTH=57%>
+			<P>The root UID. The default value is the root UID of the dcm4che
+			package.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR><BR><BR>
+</P>
+<TABLE WIDTH=95% BORDER=1 CELLPADDING=2 CELLSPACING=0>
+	<COL WIDTH=27*>
+	<COL WIDTH=17*>
+	<COL WIDTH=22*>
+	<COL WIDTH=191*>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<H3>XSLTransformPlugin</H3>
+		</TD>
+	</TR>
+	<TR>
+		<TD COLSPAN=4 WIDTH=100%>
+			<P>This plugins transformsthe given Dataset using a XSL file. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=10%>
+			<P><B>Subkey </B>
+			</P>
+		</TD>
+		<TD WIDTH=6%>
+			<P><B>Default Value </B>
+			</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P><B>Valid Values </B>
+			</P>
+		</TD>
+		<TD WIDTH=75%>
+			<P><B>Description </B>
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=10%>
+			<P>save-source-xml</P>
+		</TD>
+		<TD WIDTH=6%>
+			<P>false</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=75%>
+			<P>True, if the XML representation of the Dataset should be saved
+			before transformation with the XSL file.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=10%>
+			<P>source-xml-directory 
+			</P>
+		</TD>
+		<TD WIDTH=6%>
+			<P>./ 
+			</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=75%>
+			<P>The directory to store the source as an <A HREF="#URI">URI</A>.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=10%>
+			<P>source-xml-filename</P>
+		</TD>
+		<TD WIDTH=6%>
+			<P>source</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=75%>
+			<P>The name of the XML file to save before transformation. The
+			string may be a <A HREF="#Property String Guidelines">Tag String</A>.
+			Example: $SOPInstanceUID sets the filename to the actual value of
+			the SOP instance UID of the converted Dataset. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=10%>
+			<P>source-xml-extension</P>
+		</TD>
+		<TD WIDTH=6%>
+			<P>.xml 
+			</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=75%>
+			<P>The extension of the XML file to save before transformation.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=10%>
+			<P>untouch-pixel-data 
+			</P>
+		</TD>
+		<TD WIDTH=6%>
+			<P>true 
+			</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P>true, True, false, False</P>
+		</TD>
+		<TD WIDTH=75%>
+			<P>If true, all data elements except the pixel data (element
+			[7FE0, 0010]) are converted to XML and optionally processed. At
+			the end of the processing steps of the plugin the pixel data are
+			appended to the reconverted Dataset. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=10%>
+			<P>xsl-directory</P>
+		</TD>
+		<TD WIDTH=6%>
+			<P>./cfg/xsl/ 
+			</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=75%>
+			<P>The directory of the XSL fileas an <A HREF="#URI">URI</A>.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=10%>
+			<P>xsl-filename 
+			</P>
+		</TD>
+		<TD WIDTH=6%>
+			<P>Identity.xsl 
+			</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=75%>
+			<P>The name and extension of the XSL file. The default XSL file
+			(&quot;Identity.xsl&quot;) just copies the source to the
+			transformed file. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=10%>
+			<P>transform</P>
+		</TD>
+		<TD WIDTH=6%>
+			<P>true</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P>true, True, false, False</P>
+		</TD>
+		<TD WIDTH=75%>
+			<P>True, if the XML representation of the Dataset should be
+			transformed with the XSL file. If false, the processing of this
+			plugin stops and the following plugin is invoken with a unmodified
+			Dataset. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=10%>
+			<P>save-transformed-xml</P>
+		</TD>
+		<TD WIDTH=6%>
+			<P>false</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P>true, True, false, False 
+			</P>
+		</TD>
+		<TD WIDTH=75%>
+			<P>True, if the XML representation of the Dataset should be saved
+			after transformation with the XSL file.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=10%>
+			<P>reconvert-transformed-xml</P>
+		</TD>
+		<TD WIDTH=6%>
+			<P>true</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P>true, True, false, False 
+			</P>
+		</TD>
+		<TD WIDTH=75%>
+			<P>True, if the transformed XML representation should be
+			reconverted to a Dataset. If false, the processing of this plugin
+			stops an the following plugin is invoken with a unmodified
+			Dataset. 
+			</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=10%>
+			<P>transformed-xml-directory 
+			</P>
+		</TD>
+		<TD WIDTH=6%>
+			<P>./ 
+			</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=75%>
+			<P>The directory of the transformed source as an <A HREF="#URI">URI</A>.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=10%>
+			<P>transformed-xml-filename</P>
+		</TD>
+		<TD WIDTH=6%>
+			<P>transformed</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=75%>
+			<P>The name of the XML file to save after transformation. The
+			string may be a <A HREF="#Property String Guidelines">Tag String</A>.
+			Example: $SOPInstanceUID sets the filename to the actual value of
+			the SOP instance UID of the converted Dataset.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=10%>
+			<P>transformed-xml-extension 
+			</P>
+		</TD>
+		<TD WIDTH=6%>
+			<P>.xml 
+			</P>
+		</TD>
+		<TD WIDTH=8%>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=75%>
+			<P>The extension of the XML file to save after transformation.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR>
+</P>
+<P><BR><BR>
+</P>
+<H2>URI</H2>
+<P><BR><BR>
+</P>
+<H4>Overview</H4>
+<P>For Windows-OS the absolute URI &quot;file:/c:/user/tom/&quot;
+describes the directory &quot;C:\\user\\tom\\&quot;.</P>
+<P>Relative URI's, e.g. without the &quot;file:&quot; schema-prefix,
+are relativ to the user-directory, given by the system property
+user.dir. For example: If the user.dir is &quot;C:\\user\\tom\\&quot;
+and the relative URI is &quot;/abc/&quot; the referenced directory is
+&quot;C:\\user\\tom\\abc\\&quot;.</P>
+<P>The abbreviations &quot;.&quot; for the current and &quot;..&quot;
+for the upper directory are valid to forma relative URI.</P>
+<P>If the URI must contains special characters (see <A HREF="#Character categories">Character
+categories</A>) use a escape sequence to define them. Keep in mind
+that even the space character &quot; &quot; has to be written as
+&quot;%20&quot;.</P>
+<P><BR><BR>
+</P>
+<H4>URIs, URLs, and URNs 
+</H4>
+<P>A URI is a uniform resource <I>identifier</I> while a URL is a
+uniform resource <I>locator</I>. Hence every URL is a URI, abstractly
+speaking, but not every URI is a URL. This is because there is
+another subcategory of URIs, uniform resource <I>names</I> (URNs),
+which name resources but do not specify how to locate them. The
+<TT>mailto</TT>, <TT>news</TT>, and <TT>isbn</TT> URIs shown above
+are examples of URNs. For more details see the online version of <A HREF="http://www.ietf.org/rfc/rfc2396.txt" TARGET="_blank">RFC
+2396: Uniform Resource Identifiers (URI): Generic Syntax.</A></P>
+<P><BR><BR>
+</P>
+<H4>URI syntax and components 
+</H4>
+<P>At the highest level a URI reference in string form has the syntax
+</P>
+<BLOCKQUOTE>[<I>scheme</I><TT><B>:</B></TT>]<I>scheme-specific-part</I>[<TT><B>#</B></TT><I>fragment</I>]
+</BLOCKQUOTE>
+<P>where square brackets [...] delineate optional components and the
+characters <TT><B>:</B></TT> and <TT><B>#</B></TT> stand for
+themselves. 
+</P>
+<P>An <I>absolute</I> URI specifies a scheme; a URI that is not
+absolute is said to be <I>relative</I>. URIs are also classified
+according to whether they are <I>opaque</I> or <I>hierarchical</I>. 
+</P>
+<P>An <I>opaque</I> URI is an absolute URI whose scheme-specific part
+does not begin with a slash character (<TT>'/'</TT>). Opaque URIs are
+not subject to further parsing. Some examples of opaque URIs are: 
+</P>
+<DL>
+	<DD>
+	<TABLE CELLPADDING=0 CELLSPACING=0>
+		<TR>
+			<TD>
+				<P><TT>mailto:java-net@java.sun.com</TT></P>
+			</TD>
+		</TR>
+		<TR>
+			<TD>
+				<P><TT>news:comp.lang.java</TT></P>
+			</TD>
+		</TR>
+		<TR>
+			<TD>
+				<P><TT>urn:isbn:096139210x</TT></P>
+			</TD>
+		</TR>
+	</TABLE>
+</DL>
+<P>A <I>hierarchical</I> URI is either an absolute URI whose
+scheme-specific part begins with a slash character, or a relative
+URI, that is, a URI that does not specify a scheme. Some examples of
+hierarchical URIs are: 
+</P>
+<BLOCKQUOTE><TT>http://java.sun.com/j2se/1.3/</TT><BR><TT>docs/guide/collections/designfaq.html#28</TT><BR><TT>../../../demo/jfc/SwingSet2/src/SwingSet2.java</TT><BR><TT>file:///~/calendar</TT>
+</BLOCKQUOTE>
+<P>A hierarchical URI is subject to further parsing according to the
+syntax 
+</P>
+<BLOCKQUOTE>[<I>scheme</I><TT><B>:</B></TT>][<TT><B>//</B></TT><I>authority</I>][<I>path</I>][<TT><B>?</B></TT><I>query</I>][<TT><B>#</B></TT><I>fragment</I>]
+</BLOCKQUOTE>
+<P>where the characters <TT><B>:</B></TT>, <TT><B>/</B></TT>, <TT><B>?</B></TT>,
+and <TT><B>#</B></TT> stand for themselves. The scheme-specific part
+of a hierarchical URI consists of the characters between the scheme
+and fragment components. 
+</P>
+<P>The authority component of a hierarchical URI is, if specified,
+either <I>server-based</I> or <I>registry-based</I>. A server-based
+authority parses according to the familiar syntax 
+</P>
+<BLOCKQUOTE>[<I>user-info</I><TT><B>@</B></TT>]<I>host</I>[<TT><B>:</B></TT><I>port</I>]
+</BLOCKQUOTE>
+<P>where the characters <TT><B>@</B></TT> and <TT><B>:</B></TT> stand
+for themselves. Nearly all URI schemes currently in use are
+server-based. An authority component that does not parse in this way
+is considered to be registry-based. 
+</P>
+<P>The path component of a hierarchical URI is itself said to be
+absolute if it begins with a slash character (<TT>'/'</TT>);
+otherwise it is relative. The path of a hierarchical URI that is
+either absolute or specifies an authority is always absolute. 
+</P>
+<P>All told, then, a URI instance has the following nine components: 
+</P>
+<DL>
+	<DD>
+	<TABLE CELLPADDING=2 CELLSPACING=2>
+		<TR>
+			<TH>
+				<P><I>Component</I></P>
+			</TH>
+			<TH>
+				<P><I>Type</I></P>
+			</TH>
+		</TR>
+		<TR>
+			<TD>
+				<P>scheme</P>
+			</TD>
+			<TD>
+				<P><TT>String</TT></P>
+			</TD>
+		</TR>
+		<TR>
+			<TD>
+				<P>scheme-specific-part</P>
+			</TD>
+			<TD>
+				<P><TT>String</TT></P>
+			</TD>
+		</TR>
+		<TR>
+			<TD>
+				<P>authority</P>
+			</TD>
+			<TD>
+				<P><TT>String</TT></P>
+			</TD>
+		</TR>
+		<TR>
+			<TD>
+				<P>user-info</P>
+			</TD>
+			<TD>
+				<P><TT>String</TT></P>
+			</TD>
+		</TR>
+		<TR>
+			<TD>
+				<P>host</P>
+			</TD>
+			<TD>
+				<P><TT>String</TT></P>
+			</TD>
+		</TR>
+		<TR>
+			<TD>
+				<P>port</P>
+			</TD>
+			<TD>
+				<P><TT>int</TT></P>
+			</TD>
+		</TR>
+		<TR>
+			<TD>
+				<P>path</P>
+			</TD>
+			<TD>
+				<P><TT>String</TT></P>
+			</TD>
+		</TR>
+		<TR>
+			<TD>
+				<P>query</P>
+			</TD>
+			<TD>
+				<P><TT>String</TT></P>
+			</TD>
+		</TR>
+		<TR>
+			<TD>
+				<P>fragment</P>
+			</TD>
+			<TD>
+				<P><TT>String</TT></P>
+			</TD>
+		</TR>
+	</TABLE>
+</DL>
+<P><BR><BR>
+</P>
+<P>In a given instance any particular component is either <I>undefined</I>
+or <I>defined</I> with a distinct value. Undefined string components
+are represented by <TT>null</TT>, while undefined integer components
+are represented by <TT>-1</TT>. A string component may be defined to
+have the empty string as its value; this is not equivalent to that
+component being undefined. 
+</P>
+<P>Whether a particular component is or is not defined in an instance
+depends upon the type of the URI being represented. An absolute URI
+has a scheme component. An opaque URI has a scheme, a scheme-specific
+part, and possibly a fragment, but has no other components. A
+hierarchical URI always has a path (though it may be empty) and a
+scheme-specific-part (which at least contains the path), and may have
+any of the other components. If the authority component is present
+and is server-based then the host component will be defined and the
+user-information and port components may be defined. 
+</P>
+<P><BR><BR>
+</P>
+<H4>Character categories 
+</H4>
+<P>RFC 2396 specifies precisely which characters are permitted in the
+various components of a URI reference. The following categories, most
+of which are taken from that specification, are used below to
+describe these constraints: 
+</P>
+<DL>
+	<DD>
+	<TABLE CELLPADDING=2 CELLSPACING=2>
+		<TR>
+			<TH VALIGN=TOP>
+				<P><I>alpha</I></P>
+			</TH>
+			<TD>
+				<P>The US-ASCII alphabetic characters, <TT>'A'</TT>through<TT>'Z'</TT>
+				and <TT>'a'</TT>through <TT>'z'</TT></P>
+			</TD>
+		</TR>
+		<TR>
+			<TH VALIGN=TOP>
+				<P><I>digit</I></P>
+			</TH>
+			<TD>
+				<P>The US-ASCII decimal digit characters, <TT>'0'</TT>through<TT>'9'</TT></P>
+			</TD>
+		</TR>
+		<TR>
+			<TH VALIGN=TOP>
+				<P><I>alphanum</I></P>
+			</TH>
+			<TD>
+				<P>All <I>alpha</I> and <I>digit</I> characters</P>
+			</TD>
+		</TR>
+		<TR>
+			<TH VALIGN=TOP>
+				<P><I>unreserved</I></P>
+			</TH>
+			<TD>
+				<P>All <I>alphanum</I> characters together with those in the
+				string <TT>&quot;_-!.~'()*&quot;</TT></P>
+			</TD>
+		</TR>
+		<TR>
+			<TH VALIGN=TOP>
+				<P><I>punct</I></P>
+			</TH>
+			<TD>
+				<P>The characters in the string <TT>&quot;,;:$&amp;+=&quot;</TT></P>
+			</TD>
+		</TR>
+		<TR>
+			<TH VALIGN=TOP>
+				<P><I>reserved</I></P>
+			</TH>
+			<TD>
+				<P>All <I>punct</I> characters together with those in the string
+				<TT>&quot;?/[]@&quot;</TT></P>
+			</TD>
+		</TR>
+		<TR>
+			<TH VALIGN=TOP>
+				<P><I>escaped</I></P>
+			</TH>
+			<TD>
+				<P>Escaped octets, that is, triplets consisting of the percent
+				character (<TT>'%'</TT>) followed by two hexadecimal digits
+				(<TT>'0'</TT>-<TT>'9'</TT>, <TT>'A'</TT>-<TT>'F'</TT>, and
+				<TT>'a'</TT>-<TT>'f'</TT>)</P>
+			</TD>
+		</TR>
+		<TR>
+			<TH VALIGN=TOP>
+				<P><I>other</I></P>
+			</TH>
+			<TD>
+				<P>The Unicode characters that are not in the US-ASCII character
+				set, are not control characters , and are not space characters
+				(<I>Deviation from RFC 2396, which is limited to US-ASCII)</I></P>
+			</TD>
+		</TR>
+	</TABLE>
+</DL>
+<P>The set of all legal URI characters consists of the <I>unreserved</I>,
+<I>reserved</I>, <I>escaped</I>, and <I>other</I> characters. 
+</P>
+<P><BR><BR>
+</P>
+<H4>Escaped octets, quotation, encoding, and decoding 
+</H4>
+<P>RFC 2396 allows escaped octets to appear in the user-info, path,
+query, and fragment components. Escaping serves two purposes in URIs:
+</P>
+<UL>
+	<LI><P>To <I>encode</I> non-US-ASCII characters when a URI is
+	required to conform strictly to RFC 2396 by not containing any <I>other</I>
+	characters. 
+	</P>
+	<LI><P>To <I>quote</I> characters that are otherwise illegal in a
+	component. The user-info, path, query, and fragment components
+	differ slightly in terms of which characters are considered legal
+	and illegal. 
+	</P>
+</UL>
+<P>These purposes are served in this class by three related
+operations: 
+</P>
+<UL>
+	<LI><P STYLE="margin-bottom: 0cm">A character is <I>encoded</I> by
+	replacing it with the sequence of escaped octets that represent that
+	character in the UTF-8 character set. The Euro currency symbol
+	(<TT>'\u20AC'</TT>), for example, is encoded as <TT>&quot;%E2%82%AC&quot;</TT>.
+	<I>(Deviation from RFC2396, which does not specify any particular
+	character set.)</I> 
+	</P>
+	<LI><P STYLE="margin-bottom: 0cm">An illegal character is <I>quoted</I>
+	simply by encoding it. The space character, for example, is quoted
+	by replacing it with <TT>&quot;%20&quot;</TT>. UTF-8 contains
+	US-ASCII, hence for US-ASCII characters this transformation has
+	exactly the effect required by RFC 2396. 
+	</P>
+	<LI><P>A sequence of escaped octets is <I>decoded</I> by replacing
+	it with the sequence of characters that it represents in the UTF-8
+	character set. UTF-8 contains US-ASCII, hence decoding has the
+	effect of de-quoting any quoted US-ASCII characters as well as that
+	of decoding any encoded non-US-ASCII characters. If a decoding error
+	occurs when decoding the escaped octets then the erroneous octets
+	are replaced by <TT>'\uFFFD'</TT>, the Unicode replacement
+	character. 
+	</P>
+</UL>
+<P><BR><BR>
+</P>
+<P><BR><BR>
+</P>
+<H2>Property String Guidelines</H2>
+<P><BR><BR>
+</P>
+<P>Normally the strings for the keys and values of a property are
+used as written. In special cases it is necessary to give them a
+special meaning. This meaning is described by lead-in characters
+defined in the following table. To use a lead-in character as the
+first character in a normal string, double the lead-in. Example To
+get the normal string &quot;#$hallo&quot; you have to write
+&quot;##$hallo&quot;.</P>
+<TABLE WIDTH=864 BORDER=1 CELLPADDING=2 CELLSPACING=0>
+	<TR VALIGN=TOP>
+		<TD WIDTH=53>
+			<P ALIGN=LEFT><B>Lead-In</B></P>
+		</TD>
+		<TD WIDTH=79>
+			<P ALIGN=LEFT><B>Type</B></P>
+		</TD>
+		<TD WIDTH=531>
+			<P ALIGN=LEFT><B>Meaning</B></P>
+		</TD>
+		<TD WIDTH=175>
+			<P ALIGN=LEFT><B>Example</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=53>
+			<P ALIGN=LEFT>#</P>
+		</TD>
+		<TD WIDTH=79>
+			<P ALIGN=LEFT>Command</P>
+		</TD>
+		<TD WIDTH=531>
+			<P ALIGN=LEFT>The string is a command.</P>
+		</TD>
+		<TD WIDTH=175>
+			<P ALIGN=LEFT>#remove 
+			</P>
+			<P ALIGN=LEFT>Remove a given tag.</P>
+		</TD>
+	</TR>
+	<TR>
+		<TD WIDTH=53 VALIGN=TOP>
+			<P ALIGN=LEFT>$</P>
+		</TD>
+		<TD ROWSPAN=2 WIDTH=79>
+			<P ALIGN=LEFT>Tag String</P>
+		</TD>
+		<TD WIDTH=531 VALIGN=TOP>
+			<P ALIGN=LEFT>The string is a named Tag. The substring following
+			the lead-in character is interpreted as the name of a tag as given
+			in the class org.dcm4che.dict.Tags</P>
+		</TD>
+		<TD WIDTH=175 VALIGN=TOP>
+			<P ALIGN=LEFT>$SeriesInstanceUID 
+			</P>
+			<P ALIGN=LEFT>The instance UID of the series. It is equivalent
+			with the Tag with group number 0x0020 and element number 0x000E.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=53>
+			<P ALIGN=LEFT>@</P>
+		</TD>
+		<TD WIDTH=531>
+			<P ALIGN=LEFT>The string is a hexadecimal Tag. The substring
+			following the lead-in character is interpreted as a 4 character
+			long hexadecimal group number followed by a 4 character long
+			element number. With a hexadecimal tag it is possible to access
+			private tags, which are not defined in the list of tags in
+			org.dcm4che.dict.Tags.</P>
+		</TD>
+		<TD WIDTH=175>
+			<P ALIGN=LEFT>@0020000E 
+			</P>
+			<P ALIGN=LEFT>The instance UID of the series. It is equivalent
+			with the Tag with th name &quot;SeriesInstanceUID&quot;.</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR>
+</P>
+<P><BR><BR>
+</P>
+<H1>Logger</H1>
+<P>The project uses the logging system log4j. For more information
+see the <A HREF="/thacklaender.KING/Lokale%20Einstellungen/Temp/sv8h5.tmp/log4j_manual.html" TARGET="_blank">short
+manual</A>.</P>
+<P><BR><BR>
+</P>
+<P><BR><BR>
+</P>
+<H1>Developer Notes</H1>
+<P><BR><BR>
+</P>
+<H2><B>Overview</B></H2>
+<P>Has to be written....</P>
+<P><BR><BR>
+</P>
+<P><BR><BR>
+</P>
+<H2>Short and global description of the programmflow</H2>
+<P>Has to be written....</P>
+<P><BR><BR>
+</P>
+<P><BR><BR>
+</P>
+<H2><B>Plugins</B></H2>
+<P>For every DICOM Object Set new instances of all plugins in the
+chain of plugins are created. They instances persist until the DICOM
+Object Set is completely processed. Then the close method of the
+plugins is called once.</P>
+<P><BR><BR>
+</P>
+<TABLE WIDTH=1408 BORDER=1 CELLPADDING=2 CELLSPACING=0>
+	<COL WIDTH=237>
+	<COL WIDTH=404>
+	<COL WIDTH=127>
+	<COL WIDTH=621>
+	<TR VALIGN=TOP>
+		<TD WIDTH=237>
+			<P><B>Method</B></P>
+		</TD>
+		<TD WIDTH=404>
+			<P><B>Description</B></P>
+		</TD>
+		<TD WIDTH=127>
+			<P><B>Parameters</B></P>
+		</TD>
+		<TD WIDTH=621>
+			<P><B>Return Values</B></P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=237>
+			<P>public String getVersion ()</P>
+		</TD>
+		<TD WIDTH=404>
+			<P>Returns a String with the version ID of the plugin.</P>
+		</TD>
+		<TD WIDTH=127>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=621>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=237>
+			<P>public void initProperties (Properties p)</P>
+		</TD>
+		<TD WIDTH=404>
+			<P>Initializes the plugin with the specified properties. This
+			method is called once after constructing the class.</P>
+		</TD>
+		<TD WIDTH=127>
+			<P>Properties p:</P>
+			<P>Containing the configuration of the plugin.</P>
+		</TD>
+		<TD WIDTH=621>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=237>
+			<P>public int process (Dataset dataset)</P>
+		</TD>
+		<TD WIDTH=404>
+			<P>This method does the real work of the plugin. It processes a
+			given DICOM object. The resulting DICOM object of this plugin is
+			the input of the next plugin in the chain of plugins.</P>
+		</TD>
+		<TD WIDTH=127>
+			<P>Dataset dataset:</P>
+			<P>The DICOM object to process.</P>
+		</TD>
+		<TD WIDTH=621>
+			<P>The result code of the processing, which tells the framework
+			what to do next: DicomRouterPlugin.CONTINUE if the next plugin
+			should be called. DicomRouterPlugin.ABORT_CHAIN if the next plugin
+			in the chain should NOT be called.
+			DicomRouterPlugin.ABORT_DICOM_OBJECT_SET if the current DICOM
+			object set should be aborded. In this case the abort method of all
+			plugins will be called immediately.</P>
+		</TD>
+	</TR>
+	<TR VALIGN=TOP>
+		<TD WIDTH=237>
+			<P>public void close ()</P>
+		</TD>
+		<TD WIDTH=404>
+			<P>This method is called before the instance of the class is
+			destroyed after successful processing. It should release all
+			resources associated with plugin.</P>
+		</TD>
+		<TD WIDTH=127>
+			<P><BR>
+			</P>
+		</TD>
+		<TD WIDTH=621>
+			<P><BR>
+			</P>
+		</TD>
+	</TR>
+</TABLE>
+<P><BR><BR>
+</P>
+<P><BR><BR>
+</P>
+<H1>Document Type Definition (DTD) 
+</H1>
+<P><BR><BR>
+</P>
+<P><CODE>&lt;!ELEMENT dicomfile (filemetainfo?, dataset)&gt;<BR>&lt;!ELEMENT
+filemetainfo (preamble?, attr*)&gt;<BR>&lt;!ELEMENT preamble
+(#PCDATA)&gt;<BR>&lt;!ELEMENT dataset (attr*)&gt;<BR>&lt;!ELEMENT
+attr (#PCDATA | item)*&gt;<BR>&lt;!ELEMENT item (#PCDATA | attr)*&gt;</CODE></P>
+<P><CODE>&lt;!ATTLIST attr tag CDATA #REQUIRED&gt;<BR>&lt;!ATTLIST
+attr vr (AE | AS | AT | CS | DA | DS | DT | FL | FD | IS | LO | LT |
+OB | OF | OW | PN | SH | SL | SQ | SS | ST | TM | UI | UL | UN | US |
+UT) #IMPLIED&gt;<BR>&lt;!ATTLIST attr vm CDATA #IMPLIED&gt;<BR>&lt;!ATTLIST
+attr pos CDATA #IMPLIED&gt;<BR>&lt;!ATTLIST attr len CDATA
+#IMPLIED&gt;<BR>&lt;!ATTLIST attr name CDATA #IMPLIED&gt;<BR>&lt;!ATTLIST
+attr src CDATA #IMPLIED&gt;<BR>&lt;!ATTLIST attr hide (true | false)
+&quot;false&quot;&gt;</CODE></P>
+<P><CODE>&lt;!ATTLIST item id CDATA #IMPLIED&gt;<BR>&lt;!ATTLIST item
+len CDATA #IMPLIED&gt;<BR>&lt;!ATTLIST item pos CDATA #IMPLIED&gt;</CODE></P>
+<P><BR><BR>
+</P>
+<P><BR><BR>
+</P>
+<H1>Example XML representation 
+</H1>
+<P><BR><BR>
+</P>
+<H2>SMPTE.xml 
+</H2>
+<P>The example shows the XML representation of the SMPTE.dcm file.
+Please note, that the pixel data are not included! 
+</P>
+<P><CODE>&lt;?xml version=&quot;1.0&quot;
+encoding=&quot;UTF-8&quot;?&gt;<BR>&lt;dicomfile&gt;<BR>&lt;filemetainfo&gt;<BR>&lt;preamble&gt;0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0&lt;/preamble&gt;<BR>&lt;attr
+len=&quot;4&quot; name=&quot;Group Length&quot; pos=&quot;132&quot;
+tag=&quot;00020000&quot; vm=&quot;1&quot; vr=&quot;UL&quot;&gt;180&lt;/attr&gt;<BR>&lt;attr
+len=&quot;2&quot; name=&quot;File Meta Information Version&quot;
+pos=&quot;144&quot; tag=&quot;00020001&quot; vm=&quot;1&quot;
+vr=&quot;OB&quot;&gt;0\1&lt;/attr&gt;<BR>&lt;attr len=&quot;26&quot;
+name=&quot;Media Storage SOP Class UID&quot; pos=&quot;158&quot;
+tag=&quot;00020002&quot; vm=&quot;1&quot;
+vr=&quot;UI&quot;&gt;1.2.840.10008.5.1.4.1.1.7&lt;/attr&gt;<BR>&lt;attr
+len=&quot;52&quot; name=&quot;Media Storage SOP Instance UID&quot;
+pos=&quot;192&quot; tag=&quot;00020003&quot; vm=&quot;1&quot;
+vr=&quot;UI&quot;&gt;1.2.40.0.13.1.1.192.168.0.2.20020706185944244.32773&lt;/attr&gt;<BR>&lt;attr
+len=&quot;18&quot; name=&quot;Transfer Syntax UID&quot; pos=&quot;252&quot;
+tag=&quot;00020010&quot; vm=&quot;1&quot;
+vr=&quot;UI&quot;&gt;1.2.840.10008.1.2&lt;/attr&gt;<BR>&lt;attr
+len=&quot;16&quot; name=&quot;Implementation Class UID&quot;
+pos=&quot;278&quot; tag=&quot;00020012&quot; vm=&quot;1&quot;
+vr=&quot;UI&quot;&gt;1.2.40.0.13.1.1&lt;/attr&gt;<BR>&lt;attr
+len=&quot;14&quot; name=&quot;Implementation Version Name&quot;
+pos=&quot;302&quot; tag=&quot;00020013&quot; vm=&quot;1&quot;
+vr=&quot;SH&quot;&gt;DCM4CHE12JUN02&lt;/attr&gt;<BR>&lt;/filemetainfo&gt;<BR>&lt;dataset&gt;<BR>&lt;attr
+len=&quot;4&quot; name=&quot;Group Length&quot; pos=&quot;324&quot;
+tag=&quot;00080000&quot; vm=&quot;1&quot; vr=&quot;UL&quot;&gt;224&lt;/attr&gt;<BR>&lt;attr
+len=&quot;26&quot; name=&quot;SOP Class UID&quot; pos=&quot;336&quot;
+tag=&quot;00080016&quot; vm=&quot;1&quot;
+vr=&quot;UI&quot;&gt;1.2.840.10008.5.1.4.1.1.7&lt;/attr&gt;<BR>&lt;attr
+len=&quot;52&quot; name=&quot;SOP Instance UID&quot; pos=&quot;370&quot;
+tag=&quot;00080018&quot; vm=&quot;1&quot;
+vr=&quot;UI&quot;&gt;1.2.40.0.13.1.1.192.168.0.2.20020706185944244.32773&lt;/attr&gt;<BR>&lt;attr
+len=&quot;8&quot; name=&quot;Study Date&quot; pos=&quot;430&quot;
+tag=&quot;00080020&quot; vm=&quot;1&quot;
+vr=&quot;DA&quot;&gt;20020706&lt;/attr&gt;<BR>&lt;attr len=&quot;8&quot;
+name=&quot;Content Date&quot; pos=&quot;446&quot; tag=&quot;00080023&quot;
+vm=&quot;1&quot; vr=&quot;DA&quot;&gt;20020706&lt;/attr&gt;<BR>&lt;attr
+len=&quot;10&quot; name=&quot;Study Time&quot; pos=&quot;462&quot;
+tag=&quot;00080030&quot; vm=&quot;1&quot;
+vr=&quot;TM&quot;&gt;185944.264&lt;/attr&gt;<BR>&lt;attr len=&quot;10&quot;
+name=&quot;Content Time&quot; pos=&quot;480&quot; tag=&quot;00080033&quot;
+vm=&quot;1&quot; vr=&quot;TM&quot;&gt;185944.264&lt;/attr&gt;<BR>&lt;attr
+len=&quot;2&quot; name=&quot;Accession Number&quot; pos=&quot;498&quot;
+tag=&quot;00080050&quot; vm=&quot;1&quot; vr=&quot;SH&quot;&gt;0&lt;/attr&gt;<BR>&lt;attr
+len=&quot;2&quot; name=&quot;Modality&quot; pos=&quot;508&quot;
+tag=&quot;00080060&quot; vm=&quot;1&quot; vr=&quot;CS&quot;&gt;OT&lt;/attr&gt;<BR>&lt;attr
+len=&quot;4&quot; name=&quot;Conversion Type&quot; pos=&quot;518&quot;
+tag=&quot;00080064&quot; vm=&quot;1&quot; vr=&quot;CS&quot;&gt;WSD&lt;/attr&gt;<BR>&lt;attr
+len=&quot;22&quot; name=&quot;Referring Physician&amp;apos;s Name&quot;
+pos=&quot;530&quot; tag=&quot;00080090&quot; vm=&quot;1&quot;
+vr=&quot;PN&quot;&gt;ReferringPhysicianName&lt;/attr&gt;<BR>&lt;attr
+len=&quot;4&quot; name=&quot;Group Length&quot; pos=&quot;560&quot;
+tag=&quot;00100000&quot; vm=&quot;1&quot; vr=&quot;UL&quot;&gt;58&lt;/attr&gt;<BR>&lt;attr
+len=&quot;6&quot; name=&quot;Patient&amp;apos;s Name&quot; pos=&quot;572&quot;
+tag=&quot;00100010&quot; vm=&quot;1&quot; vr=&quot;PN&quot;&gt;SMPTE&lt;/attr&gt;<BR>&lt;attr
+len=&quot;10&quot; name=&quot;Patient ID&quot; pos=&quot;586&quot;
+tag=&quot;00100020&quot; vm=&quot;1&quot;
+vr=&quot;LO&quot;&gt;1234567890&lt;/attr&gt;<BR>&lt;attr len=&quot;8&quot;
+name=&quot;Patient&amp;apos;s Birth Date&quot; pos=&quot;604&quot;
+tag=&quot;00100030&quot; vm=&quot;1&quot;
+vr=&quot;DA&quot;&gt;19501031&lt;/attr&gt;<BR>&lt;attr len=&quot;2&quot;
+name=&quot;Patient&amp;apos;s Sex&quot; pos=&quot;620&quot;
+tag=&quot;00100040&quot; vm=&quot;1&quot; vr=&quot;CS&quot;&gt;O&lt;/attr&gt;<BR>&lt;attr
+len=&quot;4&quot; name=&quot;Group Length&quot; pos=&quot;630&quot;
+tag=&quot;00180000&quot; vm=&quot;1&quot; vr=&quot;UL&quot;&gt;72&lt;/attr&gt;<BR>&lt;attr
+len=&quot;0&quot; name=&quot;Secondary Capture Device ID&quot;
+pos=&quot;642&quot; tag=&quot;00181010&quot; vm=&quot;0&quot;
+vr=&quot;LO&quot;/&gt;<BR>&lt;attr len=&quot;8&quot; name=&quot;Date
+of Secondary Capture&quot; pos=&quot;650&quot; tag=&quot;00181012&quot;
+vm=&quot;1&quot; vr=&quot;DA&quot;&gt;20020706&lt;/attr&gt;<BR>&lt;attr
+len=&quot;10&quot; name=&quot;Time of Secondary Capture&quot;
+pos=&quot;666&quot; tag=&quot;00181014&quot; vm=&quot;1&quot;
+vr=&quot;TM&quot;&gt;185944.264&lt;/attr&gt;<BR>&lt;attr len=&quot;10&quot;
+name=&quot;Secondary Capture Device Manufacturer&quot; pos=&quot;684&quot;
+tag=&quot;00181016&quot; vm=&quot;1&quot;
+vr=&quot;LO&quot;&gt;dcm4cheri&lt;/attr&gt;<BR>&lt;attr len=&quot;4&quot;
+name=&quot;Secondary Capture Device Software Version(s)&quot;
+pos=&quot;702&quot; tag=&quot;00181019&quot; vm=&quot;1&quot;
+vr=&quot;LO&quot;&gt;1.0&lt;/attr&gt;<BR>&lt;attr len=&quot;4&quot;
+name=&quot;Group Length&quot; pos=&quot;714&quot; tag=&quot;00200000&quot;
+vm=&quot;1&quot; vr=&quot;UL&quot;&gt;166&lt;/attr&gt;<BR>&lt;attr
+len=&quot;52&quot; name=&quot;Study Instance UID&quot; pos=&quot;726&quot;
+tag=&quot;0020000D&quot; vm=&quot;1&quot;
+vr=&quot;UI&quot;&gt;1.2.40.0.13.1.1.192.168.0.2.20020706185944244.32771&lt;/attr&gt;<BR>&lt;attr
+len=&quot;52&quot; name=&quot;Series Instance UID&quot; pos=&quot;786&quot;
+tag=&quot;0020000E&quot; vm=&quot;1&quot;
+vr=&quot;UI&quot;&gt;1.2.40.0.13.1.1.192.168.0.2.20020706185944244.32772&lt;/attr&gt;<BR>&lt;attr
+len=&quot;2&quot; name=&quot;Study ID&quot; pos=&quot;846&quot;
+tag=&quot;00200010&quot; vm=&quot;1&quot; vr=&quot;SH&quot;&gt;1&lt;/attr&gt;<BR>&lt;attr
+len=&quot;2&quot; name=&quot;Series Number&quot; pos=&quot;856&quot;
+tag=&quot;00200011&quot; vm=&quot;1&quot; vr=&quot;IS&quot;&gt;1&lt;/attr&gt;<BR>&lt;attr
+len=&quot;2&quot; name=&quot;Instance Number&quot; pos=&quot;866&quot;
+tag=&quot;00200013&quot; vm=&quot;1&quot; vr=&quot;IS&quot;&gt;1&lt;/attr&gt;<BR>&lt;attr
+len=&quot;0&quot; name=&quot;Patient Orientation&quot; pos=&quot;876&quot;
+tag=&quot;00200020&quot; vm=&quot;0&quot; vr=&quot;CS&quot;/&gt;<BR>&lt;attr
+len=&quot;0&quot; name=&quot;Laterality&quot; pos=&quot;884&quot;
+tag=&quot;00200060&quot; vm=&quot;0&quot; vr=&quot;CS&quot;/&gt;<BR>&lt;attr
+len=&quot;4&quot; name=&quot;Group Length&quot; pos=&quot;892&quot;
+tag=&quot;00280000&quot; vm=&quot;1&quot; vr=&quot;UL&quot;&gt;208&lt;/attr&gt;<BR>&lt;attr
+len=&quot;2&quot; name=&quot;Samples per Pixel&quot; pos=&quot;904&quot;
+tag=&quot;00280002&quot; vm=&quot;1&quot; vr=&quot;US&quot;&gt;1&lt;/attr&gt;<BR>&lt;attr
+len=&quot;12&quot; name=&quot;Photometric Interpretation&quot;
+pos=&quot;914&quot; tag=&quot;00280004&quot; vm=&quot;1&quot;
+vr=&quot;CS&quot;&gt;MONOCHROME2&lt;/attr&gt;<BR>&lt;attr len=&quot;2&quot;
+name=&quot;Rows&quot; pos=&quot;934&quot; tag=&quot;00280010&quot;
+vm=&quot;1&quot; vr=&quot;US&quot;&gt;256&lt;/attr&gt;<BR>&lt;attr
+len=&quot;2&quot; name=&quot;Columns&quot; pos=&quot;944&quot;
+tag=&quot;00280011&quot; vm=&quot;1&quot; vr=&quot;US&quot;&gt;256&lt;/attr&gt;<BR>&lt;attr
+len=&quot;2&quot; name=&quot;Pixel Aspect Ratio&quot; pos=&quot;954&quot;
+tag=&quot;00280034&quot; vm=&quot;1&quot; vr=&quot;IS&quot;&gt;1&lt;/attr&gt;<BR>&lt;attr
+len=&quot;2&quot; name=&quot;Bits Allocated&quot; pos=&quot;964&quot;
+tag=&quot;00280100&quot; vm=&quot;1&quot; vr=&quot;US&quot;&gt;16&lt;/attr&gt;<BR>&lt;attr
+len=&quot;2&quot; name=&quot;Bits Stored&quot; pos=&quot;974&quot;
+tag=&quot;00280101&quot; vm=&quot;1&quot; vr=&quot;US&quot;&gt;16&lt;/attr&gt;<BR>&lt;attr
+len=&quot;2&quot; name=&quot;High Bit&quot; pos=&quot;984&quot;
+tag=&quot;00280102&quot; vm=&quot;1&quot; vr=&quot;US&quot;&gt;15&lt;/attr&gt;<BR>&lt;attr
+len=&quot;2&quot; name=&quot;Pixel Representation&quot; pos=&quot;994&quot;
+tag=&quot;00280103&quot; vm=&quot;1&quot; vr=&quot;US&quot;&gt;0&lt;/attr&gt;<BR>&lt;attr
+len=&quot;2&quot; name=&quot;Smallest Image Pixel Value&quot;
+pos=&quot;1004&quot; tag=&quot;00280106&quot; vm=&quot;1&quot;
+vr=&quot;US&quot;&gt;4&lt;/attr&gt;<BR>&lt;attr len=&quot;2&quot;
+name=&quot;Largest Image Pixel Value&quot; pos=&quot;1014&quot;
+tag=&quot;00280107&quot; vm=&quot;1&quot; vr=&quot;US&quot;&gt;32259&lt;/attr&gt;<BR>&lt;attr
+len=&quot;6&quot; name=&quot;Window Center&quot; pos=&quot;1024&quot;
+tag=&quot;00281050&quot; vm=&quot;1&quot; vr=&quot;DS&quot;&gt;16131&lt;/attr&gt;<BR>&lt;attr
+len=&quot;6&quot; name=&quot;Window Width&quot; pos=&quot;1038&quot;
+tag=&quot;00281051&quot; vm=&quot;1&quot; vr=&quot;DS&quot;&gt;16127&lt;/attr&gt;<BR>&lt;attr
+len=&quot;2&quot; name=&quot;Rescale Intercept&quot; pos=&quot;1052&quot;
+tag=&quot;00281052&quot; vm=&quot;1&quot; vr=&quot;DS&quot;&gt;0&lt;/attr&gt;<BR>&lt;attr
+len=&quot;2&quot; name=&quot;Rescale Slope&quot; pos=&quot;1062&quot;
+tag=&quot;00281053&quot; vm=&quot;1&quot; vr=&quot;DS&quot;&gt;1&lt;/attr&gt;<BR>&lt;attr
+len=&quot;10&quot; name=&quot;Rescale Type&quot; pos=&quot;1072&quot;
+tag=&quot;00281054&quot; vm=&quot;1&quot;
+vr=&quot;LO&quot;&gt;PIXELVALUE&lt;/attr&gt;<BR>&lt;attr len=&quot;14&quot;
+name=&quot;Window Center &amp;amp; Width Explanation&quot; pos=&quot;1090&quot;
+tag=&quot;00281055&quot; vm=&quot;1&quot;
+vr=&quot;LO&quot;&gt;DcmImageWriter&lt;/attr&gt;<BR>&lt;attr len=&quot;4&quot;
+name=&quot;Group Length&quot; pos=&quot;1112&quot; tag=&quot;7FE00000&quot;
+vm=&quot;1&quot; vr=&quot;UL&quot;&gt;131080&lt;/attr&gt;<BR>&lt;attr
+hide=&quot;true&quot; len=&quot;131072&quot; name=&quot;Pixel Data&quot;
+pos=&quot;1124&quot; tag=&quot;7FE00010&quot; vm=&quot;1&quot;
+vr=&quot;OW&quot;/&gt;<BR>&lt;/dataset&gt;<BR>&lt;/dicomfile&gt;</CODE></P>
+<P><BR><BR>
+</P>
+<H1>XSL Templates</H1>
+<H2><BR>Identity.xsl 
+</H2>
+<P><B><BR><BR></B><CODE><FONT FACE="Courier New, monospace">&lt;?xml
+version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;?&gt;<BR><BR>&lt;!--
+This sytylesheet performs a identity transformation from the source
+--&gt;<BR>&lt;!-- to the destination XML file, that is it copies the
+source to the destination. --&gt;<BR>&lt;!-- see:
+<A HREF="http://www.ektron.com/support/ewebeditprokb.cfm?doc_id=2485">http://www.ektron.com/support/ewebeditprokb.cfm?doc_id=2485</A>
+--&gt;<BR>&lt;!-- 2003.11.16: Thomas Haklaender --&gt;<BR><BR>&lt;xsl:stylesheet
+version=&quot;1.0&quot;
+xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;&gt;<BR><BR>&lt;xsl:output
+method=&quot;xml&quot; version=&quot;1.0&quot; encoding=&quot;UTF-8&quot;
+indent=&quot;yes&quot; omit-xml-declaration=&quot;no&quot;/&gt;<BR><BR>&lt;!--
+identity template --&gt;<BR>&lt;xsl:template
+match=&quot;@*|node()&quot;&gt;<BR>&lt;xsl:copy&gt;<BR>&lt;xsl:apply-templates
+select=&quot;@*|node()&quot;/&gt;<BR>&lt;/xsl:copy&gt;<BR>&lt;/xsl:template&gt;<BR><BR>&lt;/xsl:stylesheet&gt;
+</FONT></CODE>
+</P>
+<H2><BR>Emample.xsl 
+</H2>
+<P><B><BR><BR></B><CODE>&lt;?xml version=&quot;1.0&quot;
+encoding=&quot;UTF-8&quot;?&gt;<BR><BR><BR>&lt;!-- Modify the
+elements Patent's Name, Manufacturer and Institution Name --&gt;<BR>&lt;!--
+Copy all other elements and leave them unchanged --&gt;<BR>&lt;!--
+2004.11.17: Thomas Haklaender --&gt;<BR><BR>&lt;xsl:stylesheet
+version=&quot;1.0&quot; xmlns=&quot;http://www.w3.org/TR/xhtml1/strict&quot;
+xmlns:xsl=&quot;http://www.w3.org/1999/XSL/Transform&quot;&gt;<BR>&lt;xsl:output
+indent=&quot;yes&quot; method=&quot;xml&quot;/&gt;<BR><BR><BR>&lt;!--
+Photometric Interpretation
+############################################## --&gt;<BR><BR>&lt;xsl:variable
+name=&quot;photometric-interpretation&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;//attr [@name=&amp;quot;Photometric
+Interpretation&amp;quot;]&quot;/&gt;<BR>&lt;/xsl:variable&gt;<BR><BR><BR>&lt;xsl:variable
+name=&quot;new-photometric-interpretation&quot;&gt;<BR>&lt;xsl:choose&gt;<BR>&lt;xsl:when
+test=&quot;substring($photometric-interpretation, 1, 11) =
+&amp;apos;MONOCHROME1&amp;apos;&quot;&gt;MONOCHROME2&lt;/xsl:when&gt;<BR>&lt;xsl:when
+test=&quot;substring($photometric-interpretation, 1, 11) =
+&amp;apos;MONOCHROME2&amp;apos;&quot;&gt;MONOCHROME1&lt;/xsl:when&gt;<BR>&lt;xsl:otherwise&gt;<BR>&lt;xsl:value-of
+select=&quot;$photometric-interpretation&quot;/&gt;<BR>&lt;/xsl:otherwise&gt;<BR>&lt;/xsl:choose&gt;<BR>&lt;/xsl:variable&gt;<BR><BR>&lt;xsl:attribute-set
+name=&quot;new-photometric-attribute-set&quot;&gt;<BR>&lt;xsl:attribute
+name=&quot;tag&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;@tag&quot;/&gt;<BR>&lt;/xsl:attribute&gt;<BR><BR>&lt;xsl:attribute
+name=&quot;vr&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;@vr&quot;/&gt;<BR>&lt;/xsl:attribute&gt;<BR>&lt;xsl:attribute
+name=&quot;pos&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;@pos&quot;/&gt;<BR>&lt;/xsl:attribute&gt;<BR><BR>&lt;xsl:attribute
+name=&quot;name&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;@name&quot;/&gt;<BR>&lt;/xsl:attribute&gt;<BR><BR>&lt;xsl:attribute
+name=&quot;vm&quot;&gt;1&lt;/xsl:attribute&gt;<BR><BR>&lt;xsl:attribute
+name=&quot;length&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;string-length($new-photometric-interpretation)&quot;/&gt;<BR>&lt;/xsl:attribute&gt;<BR><BR>&lt;/xsl:attribute-set&gt;<BR><BR><BR>&lt;!--
+Change the Photometric Interpretation between MONOCHROME1 and
+MONOCHROME2 --&gt;<BR>&lt;xsl:template match=&quot;attr
+[@name=&amp;quot;Photometric Interpretation&amp;quot;]&quot;&gt;<BR>&lt;xsl:element
+name=&quot;attr&quot; namespace=&quot;&quot;
+use-attribute-sets=&quot;new-photometric-attribute-set&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;$new-photometric-interpretation&quot;/&gt;<BR>&lt;/xsl:element&gt;<BR>&lt;/xsl:template&gt;<BR><BR><BR>&lt;!--
+Patient's Name ##############################################
+--&gt;<BR><BR>&lt;xsl:variable name=&quot;birth-date&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;//attr [@name=&amp;quot;Patient&amp;apos;s Birth
+Date&amp;quot;]&quot;/&gt;<BR>&lt;/xsl:variable&gt;<BR><BR>&lt;xsl:variable
+name=&quot;old-patient-name&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;//attr [@name=&amp;quot;Patient&amp;apos;s
+Name&amp;quot;]&quot;/&gt;<BR>&lt;/xsl:variable&gt;<BR><BR>&lt;xsl:variable
+name=&quot;new-patient-name&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;concat(substring($old-patient-name, 1,
+1),substring(substring-after($old-patient-name, &amp;apos;^&amp;apos;),1,1),
+&amp;apos;_&amp;apos;, substring($birth-date, 3,
+6))&quot;/&gt;<BR>&lt;/xsl:variable&gt;<BR><BR>&lt;xsl:attribute-set
+name=&quot;new-patient-name-attribute-set&quot;&gt;<BR>&lt;xsl:attribute
+name=&quot;tag&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;@tag&quot;/&gt;<BR>&lt;/xsl:attribute&gt;<BR><BR>&lt;xsl:attribute
+name=&quot;vr&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;@vr&quot;/&gt;<BR>&lt;/xsl:attribute&gt;<BR>&lt;xsl:attribute
+name=&quot;pos&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;@pos&quot;/&gt;<BR>&lt;/xsl:attribute&gt;<BR><BR>&lt;xsl:attribute
+name=&quot;name&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;@name&quot;/&gt;<BR>&lt;/xsl:attribute&gt;<BR><BR>&lt;xsl:attribute
+name=&quot;vm&quot;&gt;1&lt;/xsl:attribute&gt;<BR><BR>&lt;xsl:attribute
+name=&quot;length&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;string-length($new-patient-name)&quot;/&gt;<BR>&lt;/xsl:attribute&gt;<BR><BR>&lt;/xsl:attribute-set&gt;<BR><BR><BR>&lt;!--
+Change the Patient's name to LS_YYMMDD --&gt;<BR>&lt;!-- L Last name,
+S Surename, Y Year of birth, M Month of birth, D Day of birth
+--&gt;<BR>&lt;xsl:template match=&quot;attr[@name=&amp;quot;Patient&amp;apos;s
+Name&amp;quot;]&quot;&gt;<BR>&lt;xsl:element name=&quot;attr&quot;
+namespace=&quot;&quot;
+use-attribute-sets=&quot;new-patient-name-attribute-set&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;$new-patient-name&quot;/&gt;<BR>&lt;/xsl:element&gt;<BR>&lt;/xsl:template&gt;<BR><BR><BR>&lt;!--
+Patient ID ##############################################
+--&gt;<BR><BR>&lt;xsl:variable name=&quot;new-patient-id&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;&amp;apos;4711&amp;apos;&quot;/&gt;<BR>&lt;/xsl:variable&gt;<BR><BR>&lt;xsl:attribute-set
+name=&quot;new-patient-id-attribute-set&quot;&gt;<BR>&lt;xsl:attribute
+name=&quot;tag&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;@tag&quot;/&gt;<BR>&lt;/xsl:attribute&gt;<BR><BR>&lt;xsl:attribute
+name=&quot;vr&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;@vr&quot;/&gt;<BR>&lt;/xsl:attribute&gt;<BR>&lt;xsl:attribute
+name=&quot;pos&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;@pos&quot;/&gt;<BR>&lt;/xsl:attribute&gt;<BR><BR>&lt;xsl:attribute
+name=&quot;name&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;@name&quot;/&gt;<BR>&lt;/xsl:attribute&gt;<BR><BR>&lt;xsl:attribute
+name=&quot;vm&quot;&gt;1&lt;/xsl:attribute&gt;<BR><BR>&lt;xsl:attribute
+name=&quot;length&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;string-length($new-patient-id)&quot;/&gt;<BR>&lt;/xsl:attribute&gt;<BR><BR>&lt;/xsl:attribute-set&gt;<BR><BR>&lt;!--
+Replace the Patient ID with a fixed value --&gt;<BR>&lt;xsl:template
+match=&quot;attr [@name=&amp;quot;Patient ID&amp;quot;]&quot;&gt;<BR>&lt;xsl:element
+name=&quot;attr&quot; namespace=&quot;&quot;
+use-attribute-sets=&quot;new-patient-id-attribute-set&quot;&gt;<BR>&lt;xsl:value-of
+select=&quot;$new-patient-id&quot;/&gt;<BR>&lt;/xsl:element&gt;<BR>&lt;/xsl:template&gt;<BR><BR><BR>&lt;!--
+Manufacturer ############################################## --&gt;<BR><BR>&lt;!--
+Delete the Manufacturer element --&gt;<BR>&lt;xsl:template
+match=&quot;attr [@name=&amp;quot;Manufacturer&amp;quot;]&quot;/&gt;<BR><BR><BR>&lt;!--
+Copy all other nodes ##############################################
+--&gt;<BR><BR>&lt;!-- Copy all other nodes --&gt;<BR>&lt;xsl:template
+match=&quot;@* | * | text() | processing-instruction() | comment()&quot;
+priority=&quot;-2&quot;&gt;<BR>&lt;xsl:copy&gt;<BR>&lt;xsl:apply-templates
+select=&quot;@* | * | text() | processing-instruction() |
+comment()&quot;/&gt;<BR>&lt;/xsl:copy&gt;<BR>&lt;/xsl:template&gt;<BR><BR>&lt;/xsl:stylesheet&gt;<BR><BR></CODE><BR><BR>
+</P>
+<H1>Configuration Files</H1>
+<H2><B>router.properties</B></H2>
+<P><BR><CODE>#########################################################<BR>#<BR>#
+Configuration file for the Internet-Pseudonymizer<BR>#<BR># Version
+2003.11.17<BR>#<BR>#########################################################<BR><BR><BR>#########################################################<BR><BR>#
+Configuration of the DICOM Receiver:<BR><BR><BR>#
+IP-Configuration<BR><BR>receiver.de.iftm.dcm4che.router.receiver.net.DicomStorageSCPReceiver.host
+=
+<CODE>172.16.36.82<BR></CODE>receiver.de.iftm.dcm4che.router.receiver.net.DicomStorageSCPReceiver.port
+= 5104<BR><BR># AET-Configuration:<BR># If no value is given the
+receiver accepts connections to all AET's<BR># Otherwise a comma
+separated list of AET's should be
+given<BR><BR>#receiver.de.iftm.dcm4che.router.receiver.net.DicomStorageSCPReceiver.called-aets
+= AET1,
+AET2<BR>#receiver.de.iftm.dcm4che.router.receiver.net.DicomStorageSCPReceiver.calling-aets
+= AET3<BR><BR><BR>#########################################################<BR><BR>#
+Configuration of plugin 1<BR><BR>plugin.1.name =
+de.iftm.dcm4che.router.plugin.InfoPlugin<BR><BR><BR>#########################################################<BR><BR>#
+Configuration of plugin 2<BR><BR>plugin.2.name =
+de.iftm.dcm4che.router.plugin.PseudonymPlugin<BR><BR>plugin.2.de.iftm.dcm4che.router.plugin.PseudonymPlugin.type
+=
+#Initials2_Birdat4<BR><BR><BR>#########################################################<BR><BR>#
+Configuration of plugin 3<BR><BR>plugin.3.name =
+de.iftm.dcm4che.router.plugin.TagModifyPlugin<BR><BR>plugin.3.de.iftm.dcm4che.router.plugin.TagModifyPlugin.$PatientAge
+=
+#remove<BR>plugin.3.de.iftm.dcm4che.router.plugin.TagModifyPlugin.$InstitutionName
+=
+#remove<BR>plugin.3.de.iftm.dcm4che.router.plugin.TagModifyPlugin.$InstitutionAddress
+=
+#remove<BR>plugin.3.de.iftm.dcm4che.router.plugin.TagModifyPlugin.$PerformingPhysicianName
+=
+#remove<BR>plugin.3.de.iftm.dcm4che.router.plugin.TagModifyPlugin.$OperatorName
+=
+#remove<BR>plugin.3.de.iftm.dcm4che.router.plugin.TagModifyPlugin.$PatientID
+=
+#clear<BR>plugin.3.de.iftm.dcm4che.router.plugin.TagModifyPlugin.$ReferringPhysicianName
+=
+Internet<BR><BR><BR>#########################################################<BR><BR>#
+Configuration of plugin 4<BR><BR>plugin.4.name =
+de.iftm.dcm4che.router.plugin.PrivateRemovePlugin<BR><BR><BR>#########################################################<BR><BR>#
+Configuration of plugin 5<BR><BR>plugin.5.name =
+de.iftm.dcm4che.router.plugin.UIDModifyPlugin<BR><BR>plugin.5.de.iftm.dcm4che.router.plugin.UIDModifyPlugin.SOPInstanceUID
+=
+#newroot<BR>plugin.5.de.iftm.dcm4che.router.plugin.UIDModifyPlugin.StudyInstanceUID
+=
+#newroot<BR>plugin.5.de.iftm.dcm4che.router.plugin.UIDModifyPlugin.SeriesInstanceUID
+=
+#newroot<BR><BR><BR>#########################################################<BR><BR>#
+Configuration of plugin 6<BR><BR>plugin.6.name =
+de.iftm.dcm4che.router.plugin.DicomStorageSCUPlugin<BR><BR><BR>#
+Default values are defined in the class:<BR>#
+de.iftm.dcm4che.router.property.DefaultFrameworkPropertyValues<BR><BR><BR>#
+IP-Configuration<BR><BR>plugin.6.de.iftm.dcm4che.router.plugin.DicomStorageSCUPlugin.host
+=
+172.16.1.233<BR>plugin.6.iftm.dcm4che.router.plugin.DicomStorageSCUPlugin.port
+= 4499<BR><BR><BR># AET-Configuration<BR># If no value is given the
+plugin accepts connections to all AET's<BR># Otherwise a comma
+separated list of AET's should be
+given<BR><BR>plugin.6.iftm.dcm4che.router.plugin.DicomStorageSCUPlugin.called-aet
+=
+DCMRCV<BR>plugin.6.iftm.dcm4che.router.plugin.DicomStorageSCUPlugin.calling-aet
+=
+DCMSND<BR><BR><BR>#########################################################<BR>#
+End of
+Configuration<BR>#########################################################</CODE></P>
+<H2><BR>log4j.properties 
+</H2>
+<P><B><BR><BR></B><CODE>###############################################################<BR>#
+Default Logging Configuration<BR>#<BR># Short manual:
+http://jakarta.apache.org/log4j/docs/manual.html<BR># Pattern layout
+for appenders:
+http://jakarta.apache.org/log4j/docs/api/org/apache/log4j/PatternLayout.html<BR>#<BR>###############################################################<BR><BR>log4j.rootLogger=INFO,console<BR>log4j.logger.dcm4che.data.DcmObject=WARN<BR>log4j.logger.dcm4che.net.Association=WARN<BR>log4j.logger.PluginInitialisation=WARN<BR>log4j.logger.DefaultDicomRouterPluginFactory=WARN<BR>log4j.logger.DefaultRcvDcmObjectHandler=WARN
+<BR><BR>#File<BR>log4j.appender.file=org.apache.log4j.RollingFileAppender<BR>log4j.appender.file.file=./log/DicomRouter.log<BR>log4j.appender.file.layout=org.apache.log4j.PatternLayout<BR>log4j.appender.file.layout.ConversionPattern=%d{yyyyMMdd-HH:mm:ss}
+%-5p %c{1} -
+%m%n<BR><BR>#Console:<BR>log4j.appender.console=org.apache.log4j.ConsoleAppender<BR>log4j.appender.console.layout=org.apache.log4j.PatternLayout<BR>log4j.appender.console.layout.ConversionPattern=%d{yyyyMMdd-HH:mm:ss}
+%-5p %c{1} - %m%n<BR><BR>#LogServer<BR>log4j.rootCategory=DEBUG,
+LogServer<BR>log4j.appender.LogServer=org.apache.log4j.net.SocketAppender<BR>log4j.appender.LogServer.Port=4445<BR>log4j.appender.LogServer.RemoteHost=localhost</CODE>
+</P>
+<P><BR><BR>
+</P>
+<H1>dcm4che 1.1.4 Dictionaries in XML format</H1>
+<P>The dictionaries for Tags, UIDs etc. are defined in the dcm4che
+package. For convenience you can find a XML file with the defined
+terms <A HREF="/thacklaender.KING/Lokale%20Einstellungen/Temp/sv8h5.tmp/manual_files/dictionary_wo_DOCTYPE.xml" TARGET="_blank">here</A>
+as a local file.</P>
+</BODY>
+</HTML>

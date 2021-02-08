@@ -1,0 +1,328 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>org.dcm4cheri.server.DcmHandlerImpl (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DcmHandlerImpl</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/* ***** BEGIN LICENSE BLOCK *****
+<A NAME="2"></A> * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+<A NAME="3"></A> *
+<A NAME="4"></A> * The contents of this file are subject to the Mozilla Public License Version
+<A NAME="5"></A> * 1.1 (the "License"); you may not use this file except in compliance with
+<A NAME="6"></A> * the License. You may obtain a copy of the License at
+<A NAME="7"></A> * http://www.mozilla.org/MPL/
+<A NAME="8"></A> *
+<A NAME="9"></A> * Software distributed under the License is distributed on an "AS IS" basis,
+<A NAME="10"></A> * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+<A NAME="11"></A> * for the specific language governing rights and limitations under the
+<A NAME="12"></A> * License.
+<A NAME="13"></A> *
+<A NAME="14"></A> * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+<A NAME="15"></A> * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+<A NAME="16"></A> *
+<A NAME="17"></A> * The Initial Developer of the Original Code is
+<A NAME="18"></A> * TIANI Medgraph AG.
+<A NAME="19"></A> * Portions created by the Initial Developer are Copyright (C) 2002-2005
+<A NAME="20"></A> * the Initial Developer. All Rights Reserved.
+<A NAME="21"></A> *
+<A NAME="22"></A> * Contributor(s):
+<A NAME="23"></A> * Gunter Zeilinger &lt;gunter.zeilinger@tiani.com&gt;
+<A NAME="24"></A> *
+<A NAME="25"></A> * Alternatively, the contents of this file may be used under the terms of
+<A NAME="26"></A> * either the GNU General Public License Version 2 or later (the "GPL"), or
+<A NAME="27"></A> * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+<A NAME="28"></A> * in which case the provisions of the GPL or the LGPL are applicable instead
+<A NAME="29"></A> * of those above. If you wish to allow use of your version of this file only
+<A NAME="30"></A> * under the terms of either the GPL or the LGPL, and not to allow others to
+<A NAME="31"></A> * use your version of this file under the terms of the MPL, indicate your
+<A NAME="32"></A> * decision by deleting the provisions above and replace them with the notice
+<A NAME="33"></A> * and other provisions required by the GPL or the LGPL. If you do not delete
+<A NAME="34"></A> * the provisions above, a recipient may use your version of this file under
+<A NAME="35"></A> * the terms of any one of the MPL, the GPL or the LGPL.
+<A NAME="36"></A> *
+<A NAME="37"></A> * ***** END LICENSE BLOCK ***** */</FONT>
+<A NAME="38"></A>
+<A NAME="39"></A><FONT ID="Package">package</FONT> <A HREF="../../../org.dcm4cheri.server.index.html" target="packageFrame">org.dcm4cheri.server</A>;
+<A NAME="40"></A>
+<A NAME="41"></A><FONT ID="Import">import</FONT> <A HREF="../../../org/dcm4che/server/DcmHandler.java.html">org.dcm4che.server.DcmHandler</A>;
+<A NAME="42"></A><FONT ID="Import">import</FONT> org.dcm4che.net.AAssociateAC;
+<A NAME="43"></A><FONT ID="Import">import</FONT> org.dcm4che.net.Association;
+<A NAME="44"></A><FONT ID="Import">import</FONT> org.dcm4che.net.AssociationListener;
+<A NAME="45"></A><FONT ID="Import">import</FONT> org.dcm4che.net.AcceptorPolicy;
+<A NAME="46"></A><FONT ID="Import">import</FONT> org.dcm4che.net.DcmServiceRegistry;
+<A NAME="47"></A><FONT ID="Import">import</FONT> org.dcm4che.net.AssociationFactory;
+<A NAME="48"></A>
+<A NAME="49"></A><FONT ID="Import">import</FONT> java.io.IOException;
+<A NAME="50"></A><FONT ID="Import">import</FONT> java.net.Socket;
+<A NAME="51"></A><FONT ID="Import">import</FONT> java.util.Iterator;
+<A NAME="52"></A><FONT ID="Import">import</FONT> java.util.LinkedList;
+<A NAME="53"></A>
+<A NAME="54"></A><FONT ID="FormalComment">/**
+<A NAME="55"></A> *@author     &lt;a href="mailto:gunter@tiani.com"&gt;gunter zeilinger&lt;/a&gt;
+<A NAME="56"></A> *@created    June, 2002
+<A NAME="57"></A> *@version    $Revision: 1.7 $ $Date: 2005/10/05 16:26:16 $
+<A NAME="58"></A> */</FONT>
+<A NAME="59"></A><FONT ID="Class">class</FONT> DcmHandlerImpl <FONT ID="Implements">implements</FONT> <A HREF="../../../org/dcm4che/server/DcmHandler.java.html">DcmHandler</A>
+<A NAME="60"></A>{
+<A NAME="61"></A>
+<A NAME="62"></A>    <FONT ID="SingleLineComment">// Constants -----------------------------------------------------
+<A NAME="63"></A></FONT>
+<A NAME="64"></A>    <FONT ID="SingleLineComment">// Attributes ----------------------------------------------------
+<A NAME="65"></A></FONT>    <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> AssociationFactory fact =
+<A NAME="66"></A>            AssociationFactory.getInstance();
+<A NAME="67"></A>
+<A NAME="68"></A>    <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> LinkedList listeners = <FONT ID="New">new</FONT> LinkedList();
+<A NAME="69"></A>    <FONT ID="Private">private</FONT> AcceptorPolicy policy;
+<A NAME="70"></A>    <FONT ID="Private">private</FONT> DcmServiceRegistry services;
+<A NAME="71"></A>
+<A NAME="72"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> rqTimeout = <FONT ID="IntegerLiteral">5000</FONT>;
+<A NAME="73"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> dimseTimeout = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="74"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> soCloseDelay = <FONT ID="IntegerLiteral">500</FONT>;
+<A NAME="75"></A>    <FONT ID="Private">private</FONT> <FONT ID="Boolean">boolean</FONT> packPDVs = <FONT ID="False">false</FONT>;
+<A NAME="76"></A>
+<A NAME="77"></A>    <FONT ID="SingleLineComment">// Static --------------------------------------------------------
+<A NAME="78"></A></FONT>
+<A NAME="79"></A>    <FONT ID="SingleLineComment">// Constructors --------------------------------------------------
+<A NAME="80"></A></FONT>    <FONT ID="FormalComment">/**
+<A NAME="81"></A>     *  Constructor for the DcmHandlerImpl object
+<A NAME="82"></A>     *
+<A NAME="83"></A>     *@param  policy    Description of the Parameter
+<A NAME="84"></A>     *@param  services  Description of the Parameter
+<A NAME="85"></A>     */</FONT>
+<A NAME="86"></A>    <FONT ID="Public">public</FONT> DcmHandlerImpl(AcceptorPolicy policy, DcmServiceRegistry services)
+<A NAME="87"></A>    {
+<A NAME="88"></A>        setAcceptorPolicy(policy);
+<A NAME="89"></A>        setDcmServiceRegistry(services);
+<A NAME="90"></A>    }
+<A NAME="91"></A>
+<A NAME="92"></A>    <FONT ID="SingleLineComment">// Public --------------------------------------------------------
+<A NAME="93"></A></FONT>    <FONT ID="FormalComment">/**
+<A NAME="94"></A>     *  Sets the acceptorPolicy attribute of the DcmHandlerImpl object
+<A NAME="95"></A>     *
+<A NAME="96"></A>     *@param  policy  The new acceptorPolicy value
+<A NAME="97"></A>     */</FONT>
+<A NAME="98"></A>    <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Void">void</FONT> setAcceptorPolicy(AcceptorPolicy policy)
+<A NAME="99"></A>    {
+<A NAME="100"></A>        <FONT ID="If">if</FONT> (policy == <FONT ID="Null">null</FONT>) {
+<A NAME="101"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> NullPointerException();
+<A NAME="102"></A>        }
+<A NAME="103"></A>        <FONT ID="This">this</FONT>.policy = policy;
+<A NAME="104"></A>    }
+<A NAME="105"></A>
+<A NAME="106"></A>
+<A NAME="107"></A>    <FONT ID="FormalComment">/**
+<A NAME="108"></A>     *  Gets the acceptorPolicy attribute of the DcmHandlerImpl object
+<A NAME="109"></A>     *
+<A NAME="110"></A>     *@return    The acceptorPolicy value
+<A NAME="111"></A>     */</FONT>
+<A NAME="112"></A>    <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> AcceptorPolicy getAcceptorPolicy()
+<A NAME="113"></A>    {
+<A NAME="114"></A>        <FONT ID="Return">return</FONT> policy;
+<A NAME="115"></A>    }
+<A NAME="116"></A>
+<A NAME="117"></A>
+<A NAME="118"></A>    <FONT ID="FormalComment">/**
+<A NAME="119"></A>     *  Sets the dcmServiceRegistry attribute of the DcmHandlerImpl object
+<A NAME="120"></A>     *
+<A NAME="121"></A>     *@param  services  The new dcmServiceRegistry value
+<A NAME="122"></A>     */</FONT>
+<A NAME="123"></A>    <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Void">void</FONT> setDcmServiceRegistry(DcmServiceRegistry services)
+<A NAME="124"></A>    {
+<A NAME="125"></A>        <FONT ID="If">if</FONT> (services == <FONT ID="Null">null</FONT>) {
+<A NAME="126"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> NullPointerException();
+<A NAME="127"></A>        }
+<A NAME="128"></A>        <FONT ID="This">this</FONT>.services = services;
+<A NAME="129"></A>    }
+<A NAME="130"></A>
+<A NAME="131"></A>
+<A NAME="132"></A>    <FONT ID="FormalComment">/**
+<A NAME="133"></A>     *  Gets the dcmServiceRegistry attribute of the DcmHandlerImpl object
+<A NAME="134"></A>     *
+<A NAME="135"></A>     *@return    The dcmServiceRegistry value
+<A NAME="136"></A>     */</FONT>
+<A NAME="137"></A>    <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> DcmServiceRegistry getDcmServiceRegistry()
+<A NAME="138"></A>    {
+<A NAME="139"></A>        <FONT ID="Return">return</FONT> services;
+<A NAME="140"></A>    }
+<A NAME="141"></A>
+<A NAME="142"></A>
+<A NAME="143"></A>    <FONT ID="FormalComment">/**
+<A NAME="144"></A>     *  Sets the rqTimeout attribute of the DcmHandlerImpl object
+<A NAME="145"></A>     *
+<A NAME="146"></A>     *@param  timeout  The new rqTimeout value
+<A NAME="147"></A>     */</FONT>
+<A NAME="148"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setRqTimeout(<FONT ID="Int">int</FONT> timeout)
+<A NAME="149"></A>    {
+<A NAME="150"></A>        <FONT ID="If">if</FONT> (timeout &lt; <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="151"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> IllegalArgumentException(<FONT ID="StringLiteral">"timeout: "</FONT> + timeout);
+<A NAME="152"></A>        }
+<A NAME="153"></A>        <FONT ID="This">this</FONT>.rqTimeout = timeout;
+<A NAME="154"></A>    }
+<A NAME="155"></A>
+<A NAME="156"></A>
+<A NAME="157"></A>    <FONT ID="FormalComment">/**
+<A NAME="158"></A>     *  Gets the rqTimeout attribute of the DcmHandlerImpl object
+<A NAME="159"></A>     *
+<A NAME="160"></A>     *@return    The rqTimeout value
+<A NAME="161"></A>     */</FONT>
+<A NAME="162"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getRqTimeout()
+<A NAME="163"></A>    {
+<A NAME="164"></A>        <FONT ID="Return">return</FONT> rqTimeout;
+<A NAME="165"></A>    }
+<A NAME="166"></A>
+<A NAME="167"></A>
+<A NAME="168"></A>    <FONT ID="FormalComment">/**
+<A NAME="169"></A>     *  Gets the dimseTimeout attribute of the DcmHandlerImpl object
+<A NAME="170"></A>     *
+<A NAME="171"></A>     *@return    The dimseTimeout value
+<A NAME="172"></A>     */</FONT>
+<A NAME="173"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getDimseTimeout()
+<A NAME="174"></A>    {
+<A NAME="175"></A>        <FONT ID="Return">return</FONT> dimseTimeout;
+<A NAME="176"></A>    }
+<A NAME="177"></A>
+<A NAME="178"></A>
+<A NAME="179"></A>    <FONT ID="FormalComment">/**
+<A NAME="180"></A>     *  Sets the dimseTimeout attribute of the DcmHandlerImpl object
+<A NAME="181"></A>     *
+<A NAME="182"></A>     *@param  timeout  The new dimseTimeout value
+<A NAME="183"></A>     */</FONT>
+<A NAME="184"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setDimseTimeout(<FONT ID="Int">int</FONT> dimseTimeout)
+<A NAME="185"></A>    {
+<A NAME="186"></A>        <FONT ID="If">if</FONT> (dimseTimeout &lt; <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="187"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> IllegalArgumentException(<FONT ID="StringLiteral">"timeout: "</FONT> + dimseTimeout);
+<A NAME="188"></A>        }
+<A NAME="189"></A>        <FONT ID="This">this</FONT>.dimseTimeout = dimseTimeout;
+<A NAME="190"></A>    }
+<A NAME="191"></A>
+<A NAME="192"></A>
+<A NAME="193"></A>    <FONT ID="FormalComment">/**
+<A NAME="194"></A>     *  Gets the soCloseDelay attribute of the DcmHandlerImpl object
+<A NAME="195"></A>     *
+<A NAME="196"></A>     *@return    The soCloseDelay value
+<A NAME="197"></A>     */</FONT>
+<A NAME="198"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getSoCloseDelay()
+<A NAME="199"></A>    {
+<A NAME="200"></A>        <FONT ID="Return">return</FONT> soCloseDelay;
+<A NAME="201"></A>    }
+<A NAME="202"></A>
+<A NAME="203"></A>
+<A NAME="204"></A>    <FONT ID="FormalComment">/**
+<A NAME="205"></A>     *  Sets the soCloseDelay attribute of the DcmHandlerImpl object
+<A NAME="206"></A>     *
+<A NAME="207"></A>     *@param  delay  The new soCloseDelay value
+<A NAME="208"></A>     */</FONT>
+<A NAME="209"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setSoCloseDelay(<FONT ID="Int">int</FONT> delay)
+<A NAME="210"></A>    {
+<A NAME="211"></A>        <FONT ID="If">if</FONT> (delay &lt; <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="212"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> IllegalArgumentException(<FONT ID="StringLiteral">"delay: "</FONT> + delay);
+<A NAME="213"></A>        }
+<A NAME="214"></A>        <FONT ID="This">this</FONT>.soCloseDelay = delay;
+<A NAME="215"></A>    }
+<A NAME="216"></A>
+<A NAME="217"></A>    <FONT ID="FormalComment">/** Getter for property packPDVs.
+<A NAME="218"></A>     * @return Value of property packPDVs.
+<A NAME="219"></A>     */</FONT>
+<A NAME="220"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> isPackPDVs() {
+<A NAME="221"></A>        <FONT ID="Return">return</FONT> packPDVs;
+<A NAME="222"></A>    }
+<A NAME="223"></A>    
+<A NAME="224"></A>    <FONT ID="FormalComment">/** Setter for property packPDVs.
+<A NAME="225"></A>     * @param packPDVs New value of property packPDVs.
+<A NAME="226"></A>     */</FONT>
+<A NAME="227"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setPackPDVs(<FONT ID="Boolean">boolean</FONT> packPDVs) {
+<A NAME="228"></A>        <FONT ID="This">this</FONT>.packPDVs = packPDVs;
+<A NAME="229"></A>    }
+<A NAME="230"></A>    <FONT ID="SingleLineComment">// DcmHandler implementation -------------------------------------
+<A NAME="231"></A></FONT>    <FONT ID="FormalComment">/**
+<A NAME="232"></A>     *  Description of the Method
+<A NAME="233"></A>     *
+<A NAME="234"></A>     *@param  s                Description of the Parameter
+<A NAME="235"></A>     *@exception  IOException  Description of the Exception
+<A NAME="236"></A>     */</FONT>
+<A NAME="237"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> handle(Socket s)
+<A NAME="238"></A>        <FONT ID="Throws">throws</FONT> IOException
+<A NAME="239"></A>    {
+<A NAME="240"></A>        Association assoc = fact.newAcceptor(s);
+<A NAME="241"></A>        assoc.setRqTimeout(rqTimeout);
+<A NAME="242"></A>        assoc.setDimseTimeout(dimseTimeout);
+<A NAME="243"></A>        assoc.setSoCloseDelay(soCloseDelay);
+<A NAME="244"></A>        assoc.setPackPDVs(packPDVs);
+<A NAME="245"></A>        <FONT ID="For">for</FONT> (Iterator it = listeners.iterator(); it.hasNext(); ) {
+<A NAME="246"></A>            assoc.addAssociationListener((AssociationListener) it.next());
+<A NAME="247"></A>        }
+<A NAME="248"></A>        <FONT ID="If">if</FONT> (assoc.accept(policy) <FONT ID="InstanceOf">instanceof</FONT> AAssociateAC) {
+<A NAME="249"></A>            fact.newActiveAssociation(assoc, services).run();
+<A NAME="250"></A>        }
+<A NAME="251"></A>    }
+<A NAME="252"></A>
+<A NAME="253"></A>
+<A NAME="254"></A>    <FONT ID="FormalComment">/**
+<A NAME="255"></A>     *  Adds a feature to the AssociationListener attribute of the
+<A NAME="256"></A>     *  DcmHandlerImpl object
+<A NAME="257"></A>     *
+<A NAME="258"></A>     *@param  l  The feature to be added to the AssociationListener attribute
+<A NAME="259"></A>     */</FONT>
+<A NAME="260"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> addAssociationListener(AssociationListener l)
+<A NAME="261"></A>    {
+<A NAME="262"></A>        <FONT ID="Synchronized">synchronized</FONT> (listeners) {
+<A NAME="263"></A>            listeners.add(l);
+<A NAME="264"></A>        }
+<A NAME="265"></A>    }
+<A NAME="266"></A>
+<A NAME="267"></A>
+<A NAME="268"></A>    <FONT ID="FormalComment">/**
+<A NAME="269"></A>     *  Description of the Method
+<A NAME="270"></A>     *
+<A NAME="271"></A>     *@param  l  Description of the Parameter
+<A NAME="272"></A>     */</FONT>
+<A NAME="273"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> removeAssociationListener(AssociationListener l)
+<A NAME="274"></A>    {
+<A NAME="275"></A>        <FONT ID="Synchronized">synchronized</FONT> (listeners) {
+<A NAME="276"></A>            listeners.remove(l);
+<A NAME="277"></A>        }
+<A NAME="278"></A>    }
+<A NAME="279"></A>
+<A NAME="280"></A>
+<A NAME="281"></A>    <FONT ID="FormalComment">/**
+<A NAME="282"></A>     *  Gets the sockedClosedByHandler attribute of the DcmHandlerImpl object
+<A NAME="283"></A>     *
+<A NAME="284"></A>     *@return    The sockedClosedByHandler value
+<A NAME="285"></A>     */</FONT>
+<A NAME="286"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> isSockedClosedByHandler()
+<A NAME="287"></A>    {
+<A NAME="288"></A>        <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="289"></A>    }
+<A NAME="290"></A>
+<A NAME="291"></A>    <FONT ID="SingleLineComment">// Package protected ---------------------------------------------
+<A NAME="292"></A></FONT>
+<A NAME="293"></A>    <FONT ID="SingleLineComment">// Protected -----------------------------------------------------
+<A NAME="294"></A></FONT>
+<A NAME="295"></A>    <FONT ID="SingleLineComment">// Private -------------------------------------------------------
+<A NAME="296"></A></FONT>
+<A NAME="297"></A>    <FONT ID="SingleLineComment">// Inner classes -------------------------------------------------
+<A NAME="298"></A></FONT>}
+<A NAME="299"></A>
+<A NAME="300"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DcmHandlerImpl</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

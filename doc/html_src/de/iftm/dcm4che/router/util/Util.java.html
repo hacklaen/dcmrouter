@@ -1,0 +1,476 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.util.Util (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">Util</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  Implementation.java
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Copyright (c) 2003, 2004, 2005 by
+<A NAME="5"></A> *
+<A NAME="6"></A> *  IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="7"></A> *  VISUS Technology Transfer GmbH
+<A NAME="8"></A> *
+<A NAME="9"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="10"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="11"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="12"></A> *  (at your option) any later version.
+<A NAME="13"></A> *
+<A NAME="14"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="15"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="16"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="17"></A> *  Lesser General Public License for more details.
+<A NAME="18"></A> *
+<A NAME="19"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="20"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="21"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="22"></A> *
+<A NAME="23"></A> *
+<A NAME="24"></A> *****************************************************************************/</FONT>
+<A NAME="25"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.util.index.html" target="packageFrame">de.iftm.dcm4che.router.util</A>;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.property.index.html" target="packageFrame">de.iftm.dcm4che.router.property.*</A>;
+<A NAME="28"></A>
+<A NAME="29"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="30"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.*;
+<A NAME="31"></A>
+<A NAME="32"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="33"></A>
+<A NAME="34"></A><FONT ID="Import">import</FONT> java.io.*;
+<A NAME="35"></A><FONT ID="Import">import</FONT> java.net.*;
+<A NAME="36"></A>
+<A NAME="37"></A><FONT ID="FormalComment">/**
+<A NAME="38"></A> * Global utilities.
+<A NAME="39"></A> *
+<A NAME="40"></A> * @author hacklaender
+<A NAME="41"></A> * @version 2004.12.30
+<A NAME="42"></A> */</FONT>
+<A NAME="43"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> Util {
+<A NAME="44"></A>    <FONT ID="FormalComment">/** The logger for this class. */</FONT>
+<A NAME="45"></A>    <FONT ID="Static">static</FONT> Logger log = Logger.getLogger(<A HREF="../../../../../de/iftm/dcm4che/router/util/Util.java.html">Util</A>.<FONT ID="Class">class</FONT>);
+<A NAME="46"></A>    
+<A NAME="47"></A>    
+<A NAME="48"></A>    <FONT ID="FormalComment">/** Project version */</FONT>
+<A NAME="49"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> String VERSION = <FONT ID="StringLiteral">"3.3.0"</FONT>;
+<A NAME="50"></A>    
+<A NAME="51"></A>    
+<A NAME="52"></A>    <FONT ID="FormalComment">/**
+<A NAME="53"></A>     *
+<A NAME="54"></A>     */</FONT>
+<A NAME="55"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> String getCopyrightMessage() {
+<A NAME="56"></A>        String  message;
+<A NAME="57"></A>        
+<A NAME="58"></A>        message =  <FONT ID="StringLiteral">"Dicom Router version: "</FONT> + Util.VERSION + <FONT ID="StringLiteral">"\n"</FONT>;
+<A NAME="59"></A>        message += <FONT ID="StringLiteral">"\n"</FONT>;
+<A NAME="60"></A>        message += <FONT ID="StringLiteral">"This program receives DICOM objects, processes them and sends them optionally\n"</FONT>;
+<A NAME="61"></A>        message += <FONT ID="StringLiteral">"to another DICOM node.\n"</FONT>;
+<A NAME="62"></A>        message += <FONT ID="StringLiteral">"\n\n"</FONT>;
+<A NAME="63"></A>        message += <FONT ID="StringLiteral">"Copyright (C) 2003 - 2006 by:\n"</FONT>;
+<A NAME="64"></A>        message += <FONT ID="StringLiteral">"Dr. Thomas Hacklaender @ IFTM Institut fuer Telematik in der Medizin GmbH\n"</FONT>;
+<A NAME="65"></A>        message += <FONT ID="StringLiteral">"VISUS Technology Transfer GmbH\n"</FONT>;
+<A NAME="66"></A>        message += <FONT ID="StringLiteral">"\n\n"</FONT>;
+<A NAME="67"></A>        message += <FONT ID="StringLiteral">"This program is free software; you can redistribute it and/or modify it under \n"</FONT>;
+<A NAME="68"></A>        message += <FONT ID="StringLiteral">"the terms of the GNU Lesser Public License as published by the Free Software \n"</FONT>;
+<A NAME="69"></A>        message += <FONT ID="StringLiteral">"Foundation; either version 2 of the License, or (at your option) any later version.\n"</FONT>;
+<A NAME="70"></A>        message += <FONT ID="StringLiteral">"\n"</FONT>;
+<A NAME="71"></A>        message += <FONT ID="StringLiteral">"This program is distributed in the hope that it will be useful, but WITHOUT ANY \n"</FONT>;
+<A NAME="72"></A>        message += <FONT ID="StringLiteral">"WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A \n"</FONT>;
+<A NAME="73"></A>        message += <FONT ID="StringLiteral">"PARTICULAR PURPOSE. See http://www.gnu.org/licenses/licenses.html for more details.\n"</FONT>;
+<A NAME="74"></A>        message += <FONT ID="StringLiteral">"\n\n"</FONT>;
+<A NAME="75"></A>        message += <FONT ID="StringLiteral">"Based on dcm4che library version: "</FONT> + org.dcm4che.Implementation.getVersionName() + <FONT ID="StringLiteral">"\n"</FONT>;
+<A NAME="76"></A>        message += <FONT ID="StringLiteral">"\n\n"</FONT>;
+<A NAME="77"></A>        
+<A NAME="78"></A>        <FONT ID="Return">return</FONT> message;
+<A NAME="79"></A>    }
+<A NAME="80"></A>    
+<A NAME="81"></A>    
+<A NAME="82"></A>    <FONT ID="FormalComment">/**
+<A NAME="83"></A>     * Returns the tag described by a given value. If the value starts with the
+<A NAME="84"></A>     * '$' character it is a reference by name, if it starts with '@' it is a
+<A NAME="85"></A>     * reference by group/element.
+<A NAME="86"></A>     * @param value the property value.
+<A NAME="87"></A>     * @return the tag. 0, if value does not begin with '$' or '@'. -1, if unknown tag.
+<A NAME="88"></A>     */</FONT>
+<A NAME="89"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Int">int</FONT> getTagFromPropertyString(String value) {
+<A NAME="90"></A>        <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT>       NO_TAG = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="91"></A>        <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT>       UNKNOWN_TAG = -<FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="92"></A>        <FONT ID="Int">int</FONT>             tag;
+<A NAME="93"></A>        TagDictionary   td = DictionaryFactory.getInstance().getDefaultTagDictionary();
+<A NAME="94"></A>        
+<A NAME="95"></A>        <FONT ID="If">if</FONT> (value.length() == <FONT ID="IntegerLiteral">0</FONT>) <FONT ID="Return">return</FONT> NO_TAG;
+<A NAME="96"></A>        
+<A NAME="97"></A>        <FONT ID="If">if</FONT> (value.charAt(<FONT ID="IntegerLiteral">0</FONT>) == <FONT ID="CharacerLiteral">'$'</FONT>) {
+<A NAME="98"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="99"></A>                tag = Tags.forName(value.substring(<FONT ID="IntegerLiteral">1</FONT>));
+<A NAME="100"></A>                <FONT ID="Return">return</FONT> tag;
+<A NAME="101"></A>            } <FONT ID="Catch">catch</FONT> (IllegalArgumentException e) {
+<A NAME="102"></A>                <FONT ID="Return">return</FONT> UNKNOWN_TAG;
+<A NAME="103"></A>            }
+<A NAME="104"></A>        }
+<A NAME="105"></A>        
+<A NAME="106"></A>        <FONT ID="If">if</FONT> (value.charAt(<FONT ID="IntegerLiteral">0</FONT>) == <FONT ID="CharacerLiteral">'@'</FONT>) {
+<A NAME="107"></A>            <FONT ID="SingleLineComment">// Reference by group/element
+<A NAME="108"></A></FONT>            <FONT ID="Try">try</FONT> {
+<A NAME="109"></A>                tag = Integer.parseInt(value.substring(<FONT ID="IntegerLiteral">1</FONT>), <FONT ID="IntegerLiteral">16</FONT>);
+<A NAME="110"></A>                TagDictionary.Entry e = td.lookup(tag);
+<A NAME="111"></A>                <FONT ID="If">if</FONT> (e != <FONT ID="Null">null</FONT>) {
+<A NAME="112"></A>                    <FONT ID="Return">return</FONT> tag;
+<A NAME="113"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="114"></A>                    <FONT ID="Return">return</FONT> UNKNOWN_TAG;
+<A NAME="115"></A>                }
+<A NAME="116"></A>            } <FONT ID="Catch">catch</FONT> (NumberFormatException e) {
+<A NAME="117"></A>                <FONT ID="Return">return</FONT> UNKNOWN_TAG;
+<A NAME="118"></A>            }
+<A NAME="119"></A>        }
+<A NAME="120"></A>        
+<A NAME="121"></A>        <FONT ID="Return">return</FONT> NO_TAG;
+<A NAME="122"></A>    }
+<A NAME="123"></A>    
+<A NAME="124"></A>    
+<A NAME="125"></A>    <FONT ID="FormalComment">/**
+<A NAME="126"></A>     * Returns the given value or, if it is a "Tag String", the contents of the tag.
+<A NAME="127"></A>     * Tag Strings are value starts wich start with the '$' character it is a
+<A NAME="128"></A>     * reference by name or with '@' if it is a reference by group/element.
+<A NAME="129"></A>     * @param value the property value.
+<A NAME="130"></A>     * @param ds the dataset to analyse.
+<A NAME="131"></A>     * @return the value or content of tag. null, if unknown tag.
+<A NAME="132"></A>     */</FONT>
+<A NAME="133"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> String getTagStringOrValue(String value, Dataset ds) {
+<A NAME="134"></A>        <FONT ID="Int">int</FONT> tag = getTagFromPropertyString(value);
+<A NAME="135"></A>        
+<A NAME="136"></A>        <FONT ID="SingleLineComment">// Falls kein Tag String -&gt; value zurueckgeben
+<A NAME="137"></A></FONT>        <FONT ID="If">if</FONT> (tag &lt;= <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="138"></A>            <FONT ID="Return">return</FONT> value;
+<A NAME="139"></A>        }
+<A NAME="140"></A>        
+<A NAME="141"></A>        <FONT ID="SingleLineComment">// Ist ein Tag -&gt; dessen Inhalt zurueckgeben
+<A NAME="142"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="143"></A>            <FONT ID="Return">return</FONT> ds.getString(tag);
+<A NAME="144"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="145"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="146"></A>        }
+<A NAME="147"></A>        
+<A NAME="148"></A>    }
+<A NAME="149"></A>    
+<A NAME="150"></A>    
+<A NAME="151"></A>    <FONT ID="FormalComment">/**
+<A NAME="152"></A>     * Adds a subdirectory to a given path. The name of the subdirectory is
+<A NAME="153"></A>     * composed of the patients name followed by '_' followed by the birthdate.
+<A NAME="154"></A>     * @param parent the parent directory.
+<A NAME="155"></A>     * @param ds the dataset to analyse.
+<A NAME="156"></A>     * @return the composed directory.
+<A NAME="157"></A>     */</FONT>
+<A NAME="158"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> File addPatientDirectory(File parent, Dataset ds) {
+<A NAME="159"></A>        String patientName = ds.getString(Tags.PatientName, <FONT ID="StringLiteral">"X^X"</FONT>);
+<A NAME="160"></A>        String patientBirthDate = ds.getString(Tags.PatientBirthDate, <FONT ID="StringLiteral">"19990101"</FONT>);
+<A NAME="161"></A>        <FONT ID="Return">return</FONT> <FONT ID="New">new</FONT> File(parent, patientName + <FONT ID="StringLiteral">"_"</FONT> + patientBirthDate);
+<A NAME="162"></A>    }
+<A NAME="163"></A>    
+<A NAME="164"></A>    
+<A NAME="165"></A>    <FONT ID="FormalComment">/**
+<A NAME="166"></A>     * Create a File from an URI.
+<A NAME="167"></A>     * &lt;span style="font-style: italic;"&gt;file-uri&lt;/span&gt;&lt;br&gt;
+<A NAME="168"></A>     * Describes a file in a operating-system independend way. See the API-Doc
+<A NAME="169"></A>     * of the URI class. For Windows-OS the absolute URI
+<A NAME="170"></A>     * "file:/c:/user/tom/foo.txt" describes the file
+<A NAME="171"></A>     * "C:\\user\\tom\\foo.txt". Relative URI's, e.g. without the "file:"
+<A NAME="172"></A>     * schema-prefix, are relativ to the user-directory, given by the system
+<A NAME="173"></A>     * property user.dir. For example: If the user.dir is "C:\\user\\tom\\"
+<A NAME="174"></A>     * and the relative URI is "/abc/foo.txt" the referenced file is
+<A NAME="175"></A>     * "C:\\user\\tom\\abc\\foo.txt". The abbreviations "." for the current
+<A NAME="176"></A>     * and ".." for the upper directory are valid to form a relative URI.&lt;br&gt;
+<A NAME="177"></A>     * &lt;br&gt;
+<A NAME="178"></A>     *
+<A NAME="179"></A>     * @param uriString The string-description of an absolute or relative URI.
+<A NAME="180"></A>     * @return The file which is described by the uriString. Returns null, if uriString is null or "". Returns null also, if a conversion error occures.
+<A NAME="181"></A>     */</FONT>
+<A NAME="182"></A>    <FONT ID="Static">static</FONT> <FONT ID="Public">public</FONT> File uriToFile(String uriString) {
+<A NAME="183"></A>        URI baseURI;
+<A NAME="184"></A>        URI uri;
+<A NAME="185"></A>        
+<A NAME="186"></A>        <FONT ID="If">if</FONT> (uriString == <FONT ID="Null">null</FONT>) {
+<A NAME="187"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="188"></A>        }
+<A NAME="189"></A>        
+<A NAME="190"></A>        <FONT ID="If">if</FONT> (uriString.equals(<FONT ID="StringLiteral">""</FONT>)) {
+<A NAME="191"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="192"></A>        }
+<A NAME="193"></A>        
+<A NAME="194"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="195"></A>            uri = <FONT ID="New">new</FONT> URI(uriString);
+<A NAME="196"></A>            
+<A NAME="197"></A>            <FONT ID="SingleLineComment">// Redundante Elemente entfernen:
+<A NAME="198"></A></FONT>            <FONT ID="SingleLineComment">// Auakommentiert, weil eine URI der  Form "./a.b" (nicht "./a/b.c") zu
+<A NAME="199"></A></FONT>            <FONT ID="SingleLineComment">// einer ArrayIndexOutOfBoundsException fuehrt. Grund unklar. Interner Fehler?
+<A NAME="200"></A></FONT>            <FONT ID="SingleLineComment">// uri = uri.normalize();
+<A NAME="201"></A></FONT>            <FONT ID="SingleLineComment">// Absolute URI's sind von der Form file://de.iftm/abc/def/g.txt,
+<A NAME="202"></A></FONT>            <FONT ID="SingleLineComment">// relative besitzen kein "schema" dh. im Beispiel "file://" fehlt.
+<A NAME="203"></A></FONT>            <FONT ID="If">if</FONT> (!uri.isAbsolute()) {
+<A NAME="204"></A>                <FONT ID="SingleLineComment">// Relative URI's werden auf das user.dir bezogen.
+<A NAME="205"></A></FONT>                baseURI = (<FONT ID="New">new</FONT> File(System.getProperty(<FONT ID="StringLiteral">"user.dir"</FONT>))).toURI();
+<A NAME="206"></A>                uri = baseURI.resolve(uri);
+<A NAME="207"></A>            }
+<A NAME="208"></A>            
+<A NAME="209"></A>            <FONT ID="Return">return</FONT> <FONT ID="New">new</FONT> File(uri);
+<A NAME="210"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="211"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="212"></A>        }
+<A NAME="213"></A>    }
+<A NAME="214"></A>    
+<A NAME="215"></A>    
+<A NAME="216"></A>    <FONT ID="FormalComment">/**
+<A NAME="217"></A>     * Builds a file ID from the given Dataset. Components are separated by
+<A NAME="218"></A>     * the '/' caharcter:&lt;br&gt;
+<A NAME="219"></A>     * 1. componet: First letter of famely name followed by first letter of given
+<A NAME="220"></A>     * name followed by date of birth, 6 character. Example: TH570522&lt;br&gt;
+<A NAME="221"></A>     * 2. componet: Study date, 6 character. Example: 043012&lt;br&gt;
+<A NAME="222"></A>     * 3. componet: Modality, 2 character followed by study time, 4 character.
+<A NAME="223"></A>     * Example: MR1531&lt;br&gt;
+<A NAME="224"></A>     * 4. componet: Study ID. Example: 4711&lt;br&gt;
+<A NAME="225"></A>     * 5. componet: Series number. Example: 3&lt;br&gt;
+<A NAME="226"></A>     * 6. componet: Instance number. Example: 54&lt;br&gt;
+<A NAME="227"></A>     * All components are compatible to DICOM part 12, e.g. they have a maximum
+<A NAME="228"></A>     * of 8 characters and consists of upper case caracters, numbers or '_'.
+<A NAME="229"></A>     * @param ds the dataset to analyse.
+<A NAME="230"></A>     * @return the file ID as a absolute pathString.
+<A NAME="231"></A>     */</FONT>
+<A NAME="232"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> String datasetToTreeFileID(Dataset ds) {
+<A NAME="233"></A>        String[] nameArray;
+<A NAME="234"></A>        String pathString;
+<A NAME="235"></A>        
+<A NAME="236"></A>        nameArray = datasetToNameArray(ds);
+<A NAME="237"></A>        
+<A NAME="238"></A>        pathString = nameArray[<FONT ID="IntegerLiteral">0</FONT>];
+<A NAME="239"></A>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">1</FONT>; i &lt; nameArray.length; i++) {
+<A NAME="240"></A>            pathString += <FONT ID="StringLiteral">"/"</FONT> + nameArray[i];
+<A NAME="241"></A>        }
+<A NAME="242"></A>        
+<A NAME="243"></A>        <FONT ID="Return">return</FONT> pathString;
+<A NAME="244"></A>    }
+<A NAME="245"></A>    
+<A NAME="246"></A>    
+<A NAME="247"></A>    <FONT ID="FormalComment">/**
+<A NAME="248"></A>     * Builds an array of strings from the given Dataset:&lt;br&gt;
+<A NAME="249"></A>     * [0]: First letter of famely name followed by first letter of given
+<A NAME="250"></A>     * name followed by date of birth, 6 character. Example: TH570522&lt;br&gt;
+<A NAME="251"></A>     * [1]: Study date, 6 character. Example: 043012&lt;br&gt;
+<A NAME="252"></A>     * [2]: Modality, 2 character followed by study time, 4 character.
+<A NAME="253"></A>     * Example: MR1531&lt;br&gt;
+<A NAME="254"></A>     * [3]: Study ID. Example: 4711&lt;br&gt;
+<A NAME="255"></A>     * [4]: Series number. Example: 3&lt;br&gt;
+<A NAME="256"></A>     * [5]: Instance number. Example: 54&lt;br&gt;
+<A NAME="257"></A>     * All components are compatible to DICOM part 12, e.g. they have a maximum
+<A NAME="258"></A>     * of 8 characters and consists of upper case caracters, numbers or '_'.
+<A NAME="259"></A>     * @param ds the dataset to analyse.
+<A NAME="260"></A>     * @return the array of strings.
+<A NAME="261"></A>     */</FONT>
+<A NAME="262"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> String[] datasetToNameArray(Dataset ds) {
+<A NAME="263"></A>        String  s;
+<A NAME="264"></A>        String  pn;
+<A NAME="265"></A>        <FONT ID="Int">int</FONT> i;
+<A NAME="266"></A>        String[] nameArray = <FONT ID="New">new</FONT> String[<FONT ID="IntegerLiteral">6</FONT>];
+<A NAME="267"></A>        
+<A NAME="268"></A>        String patientName = ds.getString(Tags.PatientName, <FONT ID="StringLiteral">"X^X"</FONT>);
+<A NAME="269"></A>        String patientBirthDate = ds.getString(Tags.PatientBirthDate, <FONT ID="StringLiteral">"19990101"</FONT>);
+<A NAME="270"></A>        String studyDate = ds.getString(Tags.StudyDate, <FONT ID="StringLiteral">"20050101"</FONT>);
+<A NAME="271"></A>        String studyTime = ds.getString(Tags.StudyTime, <FONT ID="StringLiteral">"123456.789"</FONT>);
+<A NAME="272"></A>        String modality = ds.getString(Tags.Modality, <FONT ID="StringLiteral">"OT"</FONT>);
+<A NAME="273"></A>        String studyID = ds.getString(Tags.StudyID, <FONT ID="StringLiteral">"0"</FONT>);
+<A NAME="274"></A>        String seriesNumber = ds.getString(Tags.SeriesNumber, <FONT ID="StringLiteral">"0"</FONT>);
+<A NAME="275"></A>        String instanceNumber = ds.getString(Tags.InstanceNumber, <FONT ID="StringLiteral">"0"</FONT>);
+<A NAME="276"></A>        
+<A NAME="277"></A>        <FONT ID="SingleLineComment">// Patientenname mindestens 2 Buchstaben lang machen
+<A NAME="278"></A></FONT>        pn = patientName + <FONT ID="StringLiteral">"XX"</FONT>;
+<A NAME="279"></A>        
+<A NAME="280"></A>        s = pn.substring(<FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="281"></A>        i = pn.indexOf(<FONT ID="CharacerLiteral">'^'</FONT>);
+<A NAME="282"></A>        <FONT ID="If">if</FONT> (i != -<FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="283"></A>            <FONT ID="SingleLineComment">// Vorname vorhanden
+<A NAME="284"></A></FONT>            s += pn.substring(i + <FONT ID="IntegerLiteral">1</FONT>, i + <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="285"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="286"></A>            <FONT ID="SingleLineComment">// Kein Vorname vorhanden, die erstenb zwei Buchstaben des Nachnamens verwenden
+<A NAME="287"></A></FONT>            s = pn.substring(<FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="288"></A>        }
+<A NAME="289"></A>        
+<A NAME="290"></A>        s += patientBirthDate.substring(<FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="291"></A>        nameArray[<FONT ID="IntegerLiteral">0</FONT>] = stringToFileIDComponentString(s);
+<A NAME="292"></A>        
+<A NAME="293"></A>        s = studyDate.substring(<FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="294"></A>        nameArray[<FONT ID="IntegerLiteral">1</FONT>] = stringToFileIDComponentString(s);
+<A NAME="295"></A>        
+<A NAME="296"></A>        s = modality.substring(<FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="297"></A>        s += studyTime.substring(<FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">4</FONT>);
+<A NAME="298"></A>        nameArray[<FONT ID="IntegerLiteral">2</FONT>] = stringToFileIDComponentString(s);
+<A NAME="299"></A>        
+<A NAME="300"></A>        nameArray[<FONT ID="IntegerLiteral">3</FONT>] = stringToFileIDComponentString(studyID);
+<A NAME="301"></A>        
+<A NAME="302"></A>        nameArray[<FONT ID="IntegerLiteral">4</FONT>] = stringToFileIDComponentString(seriesNumber);
+<A NAME="303"></A>        
+<A NAME="304"></A>        nameArray[<FONT ID="IntegerLiteral">5</FONT>] = stringToFileIDComponentString(instanceNumber);
+<A NAME="305"></A>        
+<A NAME="306"></A>        <FONT ID="Return">return</FONT> nameArray;
+<A NAME="307"></A>    }
+<A NAME="308"></A>    
+<A NAME="309"></A>    <FONT ID="FormalComment">/**
+<A NAME="310"></A>     * Checks, if the given file ID is compatible to DICOM Part 12:
+<A NAME="311"></A>     * It may only contain the characters 'A'..'Z','0'..'9' and '_'. The
+<A NAME="312"></A>     * maximal length is 8 character.
+<A NAME="313"></A>     * This method truncates the file ID after 8 characters, converts lower case
+<A NAME="314"></A>     * to upper case characters and replaces all other not valid characters with
+<A NAME="315"></A>     * the '_' character.
+<A NAME="316"></A>     * @param s the file ID to check.
+<A NAME="317"></A>     * @return the converted file ID.
+<A NAME="318"></A>     */</FONT>
+<A NAME="319"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> String stringToFileIDComponentString(String s) {
+<A NAME="320"></A>        <FONT ID="If">if</FONT> ((s == <FONT ID="Null">null</FONT>) || (s.length() == <FONT ID="IntegerLiteral">0</FONT>)) {
+<A NAME="321"></A>            <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">"__NULL__"</FONT>;
+<A NAME="322"></A>        }
+<A NAME="323"></A>        
+<A NAME="324"></A>        <FONT ID="Char">char</FONT>[] in = s.toUpperCase().toCharArray();
+<A NAME="325"></A>        <FONT ID="Char">char</FONT>[] out = <FONT ID="New">new</FONT> <FONT ID="Char">char</FONT>[Math.min(<FONT ID="IntegerLiteral">8</FONT>, in.length)];
+<A NAME="326"></A>        
+<A NAME="327"></A>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; out.length; ++i) {
+<A NAME="328"></A>            out[i] = (((in[i] &gt;= <FONT ID="CharacerLiteral">'0'</FONT>) &amp;&amp; (in[i] &lt;= <FONT ID="CharacerLiteral">'9'</FONT>)) ||
+<A NAME="329"></A>                ((in[i] &gt;= <FONT ID="CharacerLiteral">'A'</FONT>) &amp;&amp; (in[i] &lt;= <FONT ID="CharacerLiteral">'Z'</FONT>))) ? in[i] : <FONT ID="CharacerLiteral">'_'</FONT>;
+<A NAME="330"></A>        }
+<A NAME="331"></A>        
+<A NAME="332"></A>        <FONT ID="Return">return</FONT> <FONT ID="New">new</FONT> String(out);
+<A NAME="333"></A>    }
+<A NAME="334"></A>    
+<A NAME="335"></A>    
+<A NAME="336"></A>    <FONT ID="FormalComment">/**
+<A NAME="337"></A>     * Wait for a given amount of seconds.
+<A NAME="338"></A>     *
+<A NAME="339"></A>     * @param sec amount of seconds to wait.
+<A NAME="340"></A>     */</FONT>
+<A NAME="341"></A>    <FONT ID="Static">static</FONT> <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> wait(<FONT ID="Int">int</FONT> sec) {
+<A NAME="342"></A>        <FONT ID="Long">long</FONT> act = System.currentTimeMillis();
+<A NAME="343"></A>        <FONT ID="While">while</FONT> (System.currentTimeMillis() &lt; act + <FONT ID="IntegerLiteral">1000</FONT>*sec) {}
+<A NAME="344"></A>    }
+<A NAME="345"></A>    
+<A NAME="346"></A>    
+<A NAME="347"></A>    
+<A NAME="348"></A>    <FONT ID="FormalComment">/**
+<A NAME="349"></A>     * Loads a Dataset object from a URI. The URI references a file that must be 
+<A NAME="350"></A>     * conform to PS 3.10 - Media Storage and File Format for Media Interchange
+<A NAME="351"></A>     *
+<A NAME="352"></A>     * @param uri the URI referencing the Dataset.
+<A NAME="353"></A>     * @return the read in Dataset.
+<A NAME="354"></A>     * @throws IOException the exception is thrown, if 1. an input error occured
+<A NAME="355"></A>     *                     during reading or 2. if a parsing error occured (in
+<A NAME="356"></A>     *                     case of a non-DICOM file). In this case an DcmParseException
+<A NAME="357"></A>     *                     is thrown, which is a subclass of IOException.
+<A NAME="358"></A>     */</FONT>
+<A NAME="359"></A>    <FONT ID="Static">static</FONT> <FONT ID="Public">public</FONT> Dataset uriToDataset(String uri) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="360"></A>        <FONT ID="Return">return</FONT> fileToDataset(uriToFile(uri));
+<A NAME="361"></A>    }
+<A NAME="362"></A>    
+<A NAME="363"></A>    
+<A NAME="364"></A>    
+<A NAME="365"></A>    <FONT ID="FormalComment">/**
+<A NAME="366"></A>     * Loads a Dataset object from a file. The file must be conform to
+<A NAME="367"></A>     * PS 3.10 - Media Storage and File Format for Media Interchange
+<A NAME="368"></A>     *
+<A NAME="369"></A>     * @param f the file containing the Dataset.
+<A NAME="370"></A>     * @return the read in Dataset.
+<A NAME="371"></A>     * @throws IOException the exception is thrown, if 1. an input error occured
+<A NAME="372"></A>     *                     during reading or 2. if a parsing error occured (in
+<A NAME="373"></A>     *                     case of a non-DICOM file). In this case an DcmParseException
+<A NAME="374"></A>     *                     is thrown, which is a subclass of IOException.
+<A NAME="375"></A>     */</FONT>
+<A NAME="376"></A>    <FONT ID="Static">static</FONT> <FONT ID="Public">public</FONT> Dataset fileToDataset(File f) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="377"></A>        BufferedInputStream bis = <FONT ID="Null">null</FONT>;
+<A NAME="378"></A>        Dataset             ds = <FONT ID="Null">null</FONT>;
+<A NAME="379"></A>        
+<A NAME="380"></A>        <FONT ID="SingleLineComment">// DICOM files must have a length of at least 132 byte (128 byte header and 'DICM' token)
+<A NAME="381"></A></FONT>        
+<A NAME="382"></A>        <FONT ID="If">if</FONT> (f.length() &lt; <FONT ID="IntegerLiteral">132</FONT>) {
+<A NAME="383"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> DcmParseException(<FONT ID="StringLiteral">"No DICOM object"</FONT>); <FONT ID="SingleLineComment">// DcmParseException extends IOException
+<A NAME="384"></A></FONT>        }
+<A NAME="385"></A>        
+<A NAME="386"></A>        <FONT ID="SingleLineComment">// Create new stream and mark begin of file
+<A NAME="387"></A></FONT>        bis = <FONT ID="New">new</FONT> BufferedInputStream(<FONT ID="New">new</FONT> FileInputStream(f));
+<A NAME="388"></A>        bis.mark(<FONT ID="IntegerLiteral">512</FONT>);
+<A NAME="389"></A>        
+<A NAME="390"></A>        <FONT ID="SingleLineComment">// Test 'DICM' token
+<A NAME="391"></A></FONT>        <FONT ID="Byte">byte</FONT>[] dt = <FONT ID="New">new</FONT> <FONT ID="Byte">byte</FONT>[<FONT ID="IntegerLiteral">4</FONT>];
+<A NAME="392"></A>        bis.skip(<FONT ID="IntegerLiteral">128</FONT>);
+<A NAME="393"></A>        bis.read(dt, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">4</FONT>);
+<A NAME="394"></A>        <FONT ID="If">if</FONT> (dt[<FONT ID="IntegerLiteral">0</FONT>] != <FONT ID="CharacerLiteral">'D'</FONT> || dt[<FONT ID="IntegerLiteral">1</FONT>] != <FONT ID="CharacerLiteral">'I'</FONT> || dt[<FONT ID="IntegerLiteral">2</FONT>] != <FONT ID="CharacerLiteral">'C'</FONT> || dt[<FONT ID="IntegerLiteral">3</FONT>] != <FONT ID="CharacerLiteral">'M'</FONT>) {
+<A NAME="395"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> DcmParseException(<FONT ID="StringLiteral">"No DICOM object"</FONT>); <FONT ID="SingleLineComment">// DcmParseException extends IOException
+<A NAME="396"></A></FONT>        }
+<A NAME="397"></A>        
+<A NAME="398"></A>        <FONT ID="SingleLineComment">// Reset to begin of file
+<A NAME="399"></A></FONT>        bis.reset();
+<A NAME="400"></A>        
+<A NAME="401"></A>        <FONT ID="SingleLineComment">// Load Dataset from stream
+<A NAME="402"></A></FONT>        <FONT ID="Return">return</FONT> bufferedInputStreamToDataset(bis);
+<A NAME="403"></A>    }
+<A NAME="404"></A>    
+<A NAME="405"></A>    
+<A NAME="406"></A>    <FONT ID="FormalComment">/**
+<A NAME="407"></A>     * Loads a Dataset object from an input stream. The stream must be conform to
+<A NAME="408"></A>     * PS 3.10 - Media Storage and File Format for Media Interchange
+<A NAME="409"></A>     *
+<A NAME="410"></A>     * @param bis the input stream containing the Dataset.
+<A NAME="411"></A>     * @return the read in Dataset.
+<A NAME="412"></A>     * @throws IOException the exception is thrown, if 1. an input error occured
+<A NAME="413"></A>     *                     during reading or 2. if a parsing error occured (in
+<A NAME="414"></A>     *                     case of a non-DICOM file). In this case an DcmParseException
+<A NAME="415"></A>     *                     is thrown, which is a subclass of IOException.
+<A NAME="416"></A>     */</FONT>
+<A NAME="417"></A>    <FONT ID="Static">static</FONT> <FONT ID="Public">public</FONT> Dataset bufferedInputStreamToDataset(BufferedInputStream bis) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="418"></A>        Dataset ds = <FONT ID="Null">null</FONT>;
+<A NAME="419"></A>        
+<A NAME="420"></A>        ds = DcmObjectFactory.getInstance().newDataset();
+<A NAME="421"></A>        
+<A NAME="422"></A>        <FONT ID="SingleLineComment">// The API requires an InputStream only. But, if this method is called
+<A NAME="423"></A></FONT>        <FONT ID="SingleLineComment">// with a FileInputStream it does not work reliable. If called with a
+<A NAME="424"></A></FONT>        <FONT ID="SingleLineComment">// BufferedInputStream everything works correct.
+<A NAME="425"></A></FONT>        ds.readFile(bis, <FONT ID="Null">null</FONT>, -<FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="426"></A>        bis.close();
+<A NAME="427"></A>        
+<A NAME="428"></A>        <FONT ID="Return">return</FONT> ds;
+<A NAME="429"></A>    }
+<A NAME="430"></A>    
+<A NAME="431"></A>    
+<A NAME="432"></A>    <FONT ID="FormalComment">/**
+<A NAME="433"></A>     * Loads a Dataset object from an input stream. The stream must be conform to
+<A NAME="434"></A>     * PS 3.10 - Media Storage and File Format for Media Interchange
+<A NAME="435"></A>     *
+<A NAME="436"></A>     * @param is the input stream containing the Dataset.
+<A NAME="437"></A>     * @return the read in Dataset.
+<A NAME="438"></A>     * @throws IOException the exception is thrown, if 1. an input error occured
+<A NAME="439"></A>     *                     during reading or 2. if a parsing error occured (in
+<A NAME="440"></A>     *                     case of a non-DICOM file). In this case an DcmParseException
+<A NAME="441"></A>     *                     is thrown, which is a subclass of IOException.
+<A NAME="442"></A>     */</FONT>
+<A NAME="443"></A>    <FONT ID="Static">static</FONT> <FONT ID="Public">public</FONT> Dataset inputStreamToDataset(InputStream is) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="444"></A>        <FONT ID="Return">return</FONT> bufferedInputStreamToDataset(<FONT ID="New">new</FONT> BufferedInputStream(is));
+<A NAME="445"></A>    }
+<A NAME="446"></A>    
+<A NAME="447"></A>}
+<A NAME="448"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">Util</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

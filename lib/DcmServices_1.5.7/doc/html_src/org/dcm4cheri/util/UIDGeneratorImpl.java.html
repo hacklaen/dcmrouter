@@ -1,0 +1,146 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>org.dcm4cheri.util.UIDGeneratorImpl (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">UIDGeneratorImpl</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/* ***** BEGIN LICENSE BLOCK *****
+<A NAME="2"></A> * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+<A NAME="3"></A> *
+<A NAME="4"></A> * The contents of this file are subject to the Mozilla Public License Version
+<A NAME="5"></A> * 1.1 (the "License"); you may not use this file except in compliance with
+<A NAME="6"></A> * the License. You may obtain a copy of the License at
+<A NAME="7"></A> * http://www.mozilla.org/MPL/
+<A NAME="8"></A> *
+<A NAME="9"></A> * Software distributed under the License is distributed on an "AS IS" basis,
+<A NAME="10"></A> * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+<A NAME="11"></A> * for the specific language governing rights and limitations under the
+<A NAME="12"></A> * License.
+<A NAME="13"></A> *
+<A NAME="14"></A> * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+<A NAME="15"></A> * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+<A NAME="16"></A> *
+<A NAME="17"></A> * The Initial Developer of the Original Code is
+<A NAME="18"></A> * TIANI Medgraph AG.
+<A NAME="19"></A> * Portions created by the Initial Developer are Copyright (C) 2002-2005
+<A NAME="20"></A> * the Initial Developer. All Rights Reserved.
+<A NAME="21"></A> *
+<A NAME="22"></A> * Contributor(s):
+<A NAME="23"></A> * Gunter Zeilinger &lt;gunter.zeilinger@tiani.com&gt;
+<A NAME="24"></A> *
+<A NAME="25"></A> * Alternatively, the contents of this file may be used under the terms of
+<A NAME="26"></A> * either the GNU General Public License Version 2 or later (the "GPL"), or
+<A NAME="27"></A> * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+<A NAME="28"></A> * in which case the provisions of the GPL or the LGPL are applicable instead
+<A NAME="29"></A> * of those above. If you wish to allow use of your version of this file only
+<A NAME="30"></A> * under the terms of either the GPL or the LGPL, and not to allow others to
+<A NAME="31"></A> * use your version of this file under the terms of the MPL, indicate your
+<A NAME="32"></A> * decision by deleting the provisions above and replace them with the notice
+<A NAME="33"></A> * and other provisions required by the GPL or the LGPL. If you do not delete
+<A NAME="34"></A> * the provisions above, a recipient may use your version of this file under
+<A NAME="35"></A> * the terms of any one of the MPL, the GPL or the LGPL.
+<A NAME="36"></A> *
+<A NAME="37"></A> * ***** END LICENSE BLOCK ***** */</FONT>
+<A NAME="38"></A>
+<A NAME="39"></A><FONT ID="Package">package</FONT> <A HREF="../../../org.dcm4cheri.util.index.html" target="packageFrame">org.dcm4cheri.util</A>;
+<A NAME="40"></A>
+<A NAME="41"></A><FONT ID="Import">import</FONT> org.dcm4che.Implementation;
+<A NAME="42"></A><FONT ID="Import">import</FONT> org.dcm4che.util.UIDGenerator;
+<A NAME="43"></A>
+<A NAME="44"></A><FONT ID="Import">import</FONT> java.io.DataOutput;
+<A NAME="45"></A><FONT ID="Import">import</FONT> java.io.IOException;
+<A NAME="46"></A><FONT ID="Import">import</FONT> java.net.InetAddress;
+<A NAME="47"></A><FONT ID="Import">import</FONT> java.net.UnknownHostException;
+<A NAME="48"></A><FONT ID="Import">import</FONT> java.rmi.server.UID;
+<A NAME="49"></A><FONT ID="Import">import</FONT> java.text.SimpleDateFormat;
+<A NAME="50"></A><FONT ID="Import">import</FONT> java.util.Date;
+<A NAME="51"></A>
+<A NAME="52"></A><FONT ID="FormalComment">/**
+<A NAME="53"></A> *
+<A NAME="54"></A> * @author  gunter.zeilinger@tiani.com
+<A NAME="55"></A> * @version 1.0.0
+<A NAME="56"></A> */</FONT>
+<A NAME="57"></A><FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Class">class</FONT> UIDGeneratorImpl <FONT ID="Extends">extends</FONT> UIDGenerator {
+<A NAME="58"></A>    
+<A NAME="59"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> String IP;
+<A NAME="60"></A>    <FONT ID="Static">static</FONT> {
+<A NAME="61"></A>       String tmp;
+<A NAME="62"></A>       <FONT ID="Try">try</FONT> {
+<A NAME="63"></A>          tmp = InetAddress.getLocalHost().getHostAddress();
+<A NAME="64"></A>       } <FONT ID="Catch">catch</FONT> (UnknownHostException e) {
+<A NAME="65"></A>          tmp = <FONT ID="StringLiteral">"127.0.0.1"</FONT>;
+<A NAME="66"></A>       }
+<A NAME="67"></A>       IP = tmp;
+<A NAME="68"></A>    }
+<A NAME="69"></A>
+<A NAME="70"></A>    <FONT ID="FormalComment">/** Creates a new instance of UIDGeneratorImpl */</FONT>
+<A NAME="71"></A>    <FONT ID="Public">public</FONT> UIDGeneratorImpl() {
+<A NAME="72"></A>    }
+<A NAME="73"></A>
+<A NAME="74"></A>    <FONT ID="Public">public</FONT> String createUID() {
+<A NAME="75"></A>        <FONT ID="Return">return</FONT> createUID(Implementation.getClassUID());
+<A NAME="76"></A>    }
+<A NAME="77"></A>    
+<A NAME="78"></A>    <FONT ID="Public">public</FONT> String createUID(String root) {
+<A NAME="79"></A>        <FONT ID="Final">final</FONT> StringBuffer sb = <FONT ID="New">new</FONT> StringBuffer(<FONT ID="IntegerLiteral">64</FONT>).append(root).append(<FONT ID="CharacerLiteral">'.'</FONT>);
+<A NAME="80"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="81"></A>            <FONT ID="New">new</FONT> UID().write(<FONT ID="New">new</FONT> DataOutput() {
+<A NAME="82"></A>                <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> write(<FONT ID="Int">int</FONT> b) {}
+<A NAME="83"></A>                <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> write(<FONT ID="Byte">byte</FONT> b[]) {}
+<A NAME="84"></A>                <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> write(<FONT ID="Byte">byte</FONT> b[], <FONT ID="Int">int</FONT> off, <FONT ID="Int">int</FONT> len) {}
+<A NAME="85"></A>                <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> writeBoolean(<FONT ID="Boolean">boolean</FONT> v) {}
+<A NAME="86"></A>                <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> writeByte(<FONT ID="Int">int</FONT> v) {}
+<A NAME="87"></A>                <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> writeShort(<FONT ID="Int">int</FONT> v) {
+<A NAME="88"></A>                    sb.append(<FONT ID="CharacerLiteral">'.'</FONT>).append(v &amp; <FONT ID="IntegerLiteral">0xffff</FONT>);
+<A NAME="89"></A>                }
+<A NAME="90"></A>                <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> writeChar(<FONT ID="Int">int</FONT> v) {}
+<A NAME="91"></A>                <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> writeInt(<FONT ID="Int">int</FONT> v)  {
+<A NAME="92"></A>                    <FONT ID="If">if</FONT> (<FONT ID="StringLiteral">"127.0.0.1"</FONT>.equals(IP)) {
+<A NAME="93"></A>                        sb.append(v &amp; <FONT ID="IntegerLiteral">0xffffffffL</FONT>);
+<A NAME="94"></A>                    } <FONT ID="Else">else</FONT> {
+<A NAME="95"></A>                        sb.append(IP);
+<A NAME="96"></A>                    }
+<A NAME="97"></A>                }
+<A NAME="98"></A>                <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> writeLong(<FONT ID="Long">long</FONT> v) {
+<A NAME="99"></A>                    sb.append(<FONT ID="CharacerLiteral">'.'</FONT>).append(
+<A NAME="100"></A>                            <FONT ID="New">new</FONT> SimpleDateFormat(<FONT ID="StringLiteral">"yyyyMMddHHmmssSSS"</FONT>).format(<FONT ID="New">new</FONT> Date(v)));
+<A NAME="101"></A>                }
+<A NAME="102"></A>                <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> writeFloat(<FONT ID="Float">float</FONT> v) {}
+<A NAME="103"></A>                <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> writeDouble(<FONT ID="Double">double</FONT> v) {}
+<A NAME="104"></A>                <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> writeBytes(String s) {}
+<A NAME="105"></A>                <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> writeChars(String s) {}
+<A NAME="106"></A>                <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> writeUTF(String str) {}             
+<A NAME="107"></A>            });
+<A NAME="108"></A>        }
+<A NAME="109"></A>        <FONT ID="Catch">catch</FONT> (IOException ex) {
+<A NAME="110"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> RuntimeException(ex.toString());
+<A NAME="111"></A>        }
+<A NAME="112"></A>        <FONT ID="If">if</FONT> (sb.length() &gt; <FONT ID="IntegerLiteral">64</FONT>) {
+<A NAME="113"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> IllegalArgumentException(<FONT ID="StringLiteral">"Too long root prefix"</FONT>);
+<A NAME="114"></A>        }
+<A NAME="115"></A>        <FONT ID="Return">return</FONT> sb.toString();
+<A NAME="116"></A>    }
+<A NAME="117"></A>}
+<A NAME="118"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">UIDGeneratorImpl</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

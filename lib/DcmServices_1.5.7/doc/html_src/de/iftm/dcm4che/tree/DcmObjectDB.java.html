@@ -1,0 +1,863 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.tree.DcmObjectDB (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DcmObjectDB</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * DcmObjectDB.java
+<A NAME="3"></A> *
+<A NAME="4"></A> * Created on 4. Juni 2006, 19:25
+<A NAME="5"></A> *
+<A NAME="6"></A> * To change this template, choose Tools | Template Manager
+<A NAME="7"></A> * and open the template in the editor.
+<A NAME="8"></A> */</FONT>
+<A NAME="9"></A>
+<A NAME="10"></A><FONT ID="Package">package</FONT> <A HREF="../../../../de.iftm.dcm4che.tree.index.html" target="packageFrame">de.iftm.dcm4che.tree</A>;
+<A NAME="11"></A>
+<A NAME="12"></A><FONT ID="Import">import</FONT> java.io.*;
+<A NAME="13"></A><FONT ID="Import">import</FONT> java.sql.*;
+<A NAME="14"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="15"></A>
+<A NAME="16"></A><FONT ID="Import">import</FONT> org.dcm4che.*;
+<A NAME="17"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="18"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.*;
+<A NAME="19"></A><FONT ID="Import">import</FONT> org.dcm4che.util.*;
+<A NAME="20"></A><FONT ID="Import">import</FONT> org.dcm4che.media.*;
+<A NAME="21"></A>
+<A NAME="22"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="23"></A>
+<A NAME="24"></A><FONT ID="FormalComment">/**
+<A NAME="25"></A> *
+<A NAME="26"></A> * @author Tom
+<A NAME="27"></A> */</FONT>
+<A NAME="28"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> DcmObjectDB {
+<A NAME="29"></A>    
+<A NAME="30"></A>    <FONT ID="FormalComment">/** Initialize logger */</FONT>
+<A NAME="31"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> Logger log = Logger.getLogger(<A HREF="../../../../de/iftm/dcm4che/tree/DcmObjectDB.java.html">DcmObjectDB</A>.<FONT ID="Class">class</FONT>);
+<A NAME="32"></A>    
+<A NAME="33"></A>    <FONT ID="FormalComment">/** Connnection to the db - presist for life of program */</FONT>
+<A NAME="34"></A>    <FONT ID="Private">private</FONT> Connection conn = <FONT ID="Null">null</FONT>;
+<A NAME="35"></A>    
+<A NAME="36"></A>    
+<A NAME="37"></A>    <FONT ID="FormalComment">/**
+<A NAME="38"></A>     * Creates a new instance of DcmObjectDB
+<A NAME="39"></A>     */</FONT>
+<A NAME="40"></A>    <FONT ID="Public">public</FONT> DcmObjectDB() <FONT ID="Throws">throws</FONT> ClassNotFoundException, SQLException{
+<A NAME="41"></A>        
+<A NAME="42"></A>        <FONT ID="SingleLineComment">// Load the HSQL Database Engine JDBC driver
+<A NAME="43"></A></FONT>        <FONT ID="SingleLineComment">// hsqldb.jar should be in the class path or made part of the current jar
+<A NAME="44"></A></FONT>        Class.forName(<FONT ID="StringLiteral">"org.hsqldb.jdbcDriver"</FONT>);
+<A NAME="45"></A>        
+<A NAME="46"></A>        <FONT ID="SingleLineComment">// Connect to the database.
+<A NAME="47"></A></FONT>        <FONT ID="SingleLineComment">// This will load the db files and start the database if it is not alread running.
+<A NAME="48"></A></FONT>        conn = DriverManager.getConnection(<FONT ID="StringLiteral">"jdbc:hsqldb:mem:aname"</FONT>, <FONT ID="StringLiteral">"sa"</FONT>, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="49"></A>        
+<A NAME="50"></A>        <FONT ID="SingleLineComment">// Make an empty table.
+<A NAME="51"></A></FONT>        <FONT ID="SingleLineComment">// By declaring the id column IDENTITY, the db will automatically
+<A NAME="52"></A></FONT>        <FONT ID="SingleLineComment">// generate unique values for new rows- useful for row keys
+<A NAME="53"></A></FONT>        update(<FONT ID="StringLiteral">"CREATE TABLE dcm_table ( "</FONT> +
+<A NAME="54"></A>                <FONT ID="StringLiteral">"recordID INTEGER IDENTITY, "</FONT> +
+<A NAME="55"></A>                <FONT ID="StringLiteral">"isProcessed BOOLEAN, "</FONT> +
+<A NAME="56"></A>                <FONT ID="StringLiteral">"filePath VARCHAR, "</FONT> +
+<A NAME="57"></A>                <FONT ID="StringLiteral">"patientName VARCHAR,"</FONT> +
+<A NAME="58"></A>                <FONT ID="StringLiteral">"patientID VARCHAR, "</FONT> +
+<A NAME="59"></A>                <FONT ID="StringLiteral">"patientBirthDate VARCHAR, "</FONT> +
+<A NAME="60"></A>                <FONT ID="StringLiteral">"patientSex VARCHAR, "</FONT> +
+<A NAME="61"></A>                <FONT ID="StringLiteral">"studyInstanceUID VARCHAR, "</FONT> +
+<A NAME="62"></A>                <FONT ID="StringLiteral">"studyDate VARCHAR, "</FONT> +
+<A NAME="63"></A>                <FONT ID="StringLiteral">"studyTime VARCHAR, "</FONT> +
+<A NAME="64"></A>                <FONT ID="StringLiteral">"referringPhysicianName VARCHAR, "</FONT> +
+<A NAME="65"></A>                <FONT ID="StringLiteral">"studyID VARCHAR, "</FONT> +
+<A NAME="66"></A>                <FONT ID="StringLiteral">"accessionNumber VARCHAR, "</FONT> +
+<A NAME="67"></A>                <FONT ID="StringLiteral">"studyDescription VARCHAR, "</FONT> +
+<A NAME="68"></A>                <FONT ID="StringLiteral">"modality VARCHAR, "</FONT> +
+<A NAME="69"></A>                <FONT ID="StringLiteral">"seriesInstanceUID VARCHAR, "</FONT> +
+<A NAME="70"></A>                <FONT ID="StringLiteral">"seriesNumber VARCHAR, "</FONT> +
+<A NAME="71"></A>                <FONT ID="StringLiteral">"instanceNumber VARCHAR, "</FONT> +
+<A NAME="72"></A>                <FONT ID="StringLiteral">"sopClassUID VARCHAR, "</FONT> +
+<A NAME="73"></A>                <FONT ID="StringLiteral">"sopInstanceUID VARCHAR "</FONT> +
+<A NAME="74"></A>                <FONT ID="StringLiteral">")"</FONT>);
+<A NAME="75"></A>    }
+<A NAME="76"></A>    
+<A NAME="77"></A>    
+<A NAME="78"></A>    <FONT ID="FormalComment">/**
+<A NAME="79"></A>     *
+<A NAME="80"></A>     */</FONT>
+<A NAME="81"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> shutdown() <FONT ID="Throws">throws</FONT> SQLException {
+<A NAME="82"></A>        
+<A NAME="83"></A>        Statement stmt = conn.createStatement();
+<A NAME="84"></A>        
+<A NAME="85"></A>        <FONT ID="SingleLineComment">// db writes out to files and performs clean shuts down
+<A NAME="86"></A></FONT>        <FONT ID="SingleLineComment">// otherwise there will be an unclean shutdown when program ends
+<A NAME="87"></A></FONT>        stmt.execute(<FONT ID="StringLiteral">"SHUTDOWN"</FONT>);
+<A NAME="88"></A>        
+<A NAME="89"></A>        <FONT ID="SingleLineComment">// if there are no other open connection
+<A NAME="90"></A></FONT>        conn.close();
+<A NAME="91"></A>    }
+<A NAME="92"></A>    
+<A NAME="93"></A>    
+<A NAME="94"></A>    <FONT ID="FormalComment">/**
+<A NAME="95"></A>     *
+<A NAME="96"></A>     */</FONT>
+<A NAME="97"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> insertDICOMDIR(File f) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="98"></A>        DirReader dirReader = <FONT ID="Null">null</FONT>;
+<A NAME="99"></A>        DirRecord dr;
+<A NAME="100"></A>        Dataset ds;
+<A NAME="101"></A>        DcmObjectRecord dor;
+<A NAME="102"></A>        
+<A NAME="103"></A>        <FONT ID="SingleLineComment">// The content of the directory records of a DICOMDIR are defined
+<A NAME="104"></A></FONT>        <FONT ID="SingleLineComment">// in PS 3.3 - F.5 DEFINITION OF SPECIFIC DIRECTORY RECORDS.
+<A NAME="105"></A></FONT>        <FONT ID="SingleLineComment">//
+<A NAME="106"></A></FONT>        <FONT ID="SingleLineComment">// List of requieren Type 1 and 2 items:
+<A NAME="107"></A></FONT>        <FONT ID="SingleLineComment">//
+<A NAME="108"></A></FONT>        <FONT ID="SingleLineComment">// F.5.1 Patient Directory Record Definition
+<A NAME="109"></A></FONT>        <FONT ID="SingleLineComment">//   - Specific Character Set, Type 1C
+<A NAME="110"></A></FONT>        <FONT ID="SingleLineComment">//   - Patient's Name, Type 2
+<A NAME="111"></A></FONT>        <FONT ID="SingleLineComment">//   - Patient ID, Type 1
+<A NAME="112"></A></FONT>        <FONT ID="SingleLineComment">//
+<A NAME="113"></A></FONT>        <FONT ID="SingleLineComment">// F.5.2 Study Directory record definition
+<A NAME="114"></A></FONT>        <FONT ID="SingleLineComment">//   - Specific Character Set, Type 1C
+<A NAME="115"></A></FONT>        <FONT ID="SingleLineComment">//   - Study Date, Type 1
+<A NAME="116"></A></FONT>        <FONT ID="SingleLineComment">//   - Study Time, Type 1
+<A NAME="117"></A></FONT>        <FONT ID="SingleLineComment">//   - Study Description, Type 2
+<A NAME="118"></A></FONT>        <FONT ID="SingleLineComment">//   - Study Instance UID, Type 1C: The Study Instance UID shall be present as a mandatory key only if no file is referenced by this Directory Record.
+<A NAME="119"></A></FONT>        <FONT ID="SingleLineComment">//   - Study ID, Type 1
+<A NAME="120"></A></FONT>        <FONT ID="SingleLineComment">//   - Accession Number, Type 2
+<A NAME="121"></A></FONT>        <FONT ID="SingleLineComment">//
+<A NAME="122"></A></FONT>        <FONT ID="SingleLineComment">// F.5.3 Series Directory Record Definition
+<A NAME="123"></A></FONT>        <FONT ID="SingleLineComment">//   - Specific Character Set, Type 1C
+<A NAME="124"></A></FONT>        <FONT ID="SingleLineComment">//   - Modality, Type 1
+<A NAME="125"></A></FONT>        <FONT ID="SingleLineComment">//   - Series Instance UID, Type 1
+<A NAME="126"></A></FONT>        <FONT ID="SingleLineComment">//   - Series Number, Type 1
+<A NAME="127"></A></FONT>        <FONT ID="SingleLineComment">//
+<A NAME="128"></A></FONT>        <FONT ID="SingleLineComment">// F.5.4 Image directory record definition
+<A NAME="129"></A></FONT>        <FONT ID="SingleLineComment">//   - Specific Character Set, Type 1C
+<A NAME="130"></A></FONT>        <FONT ID="SingleLineComment">//   - Instance Number, Type 1
+<A NAME="131"></A></FONT>        
+<A NAME="132"></A>        <FONT ID="SingleLineComment">// Get a DirReader
+<A NAME="133"></A></FONT>        dirReader = DirBuilderFactory.getInstance().newDirReader(f);
+<A NAME="134"></A>        
+<A NAME="135"></A>        <FONT ID="SingleLineComment">// Get first Patient
+<A NAME="136"></A></FONT>        dr = dirReader.getFirstRecordBy(DirRecord.PATIENT, <FONT ID="Null">null</FONT>, <FONT ID="False">false</FONT>);
+<A NAME="137"></A>        
+<A NAME="138"></A>        <FONT ID="SingleLineComment">// Loop for all patients
+<A NAME="139"></A></FONT>        <FONT ID="While">while</FONT> (dr != <FONT ID="Null">null</FONT>) {
+<A NAME="140"></A>            
+<A NAME="141"></A>            <FONT ID="SingleLineComment">// Use PATIENT DirRecord as inital value for DcmObjectRecord
+<A NAME="142"></A></FONT>            dor = <FONT ID="New">new</FONT> DcmObjectRecord(f);
+<A NAME="143"></A>            dor.addPatientModule(dr.getDataset());
+<A NAME="144"></A>            
+<A NAME="145"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="146"></A>                getNextChild(dr, dor);
+<A NAME="147"></A>            } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="148"></A>                log.error(e.getMessage());
+<A NAME="149"></A>            }
+<A NAME="150"></A>            
+<A NAME="151"></A>            <FONT ID="SingleLineComment">// Get next Patient
+<A NAME="152"></A></FONT>            dr = dr.getNextSibling();
+<A NAME="153"></A>        }
+<A NAME="154"></A>        
+<A NAME="155"></A>    }
+<A NAME="156"></A>    
+<A NAME="157"></A>    
+<A NAME="158"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> getNextChild(DirRecord dr, DcmObjectRecord dor) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="159"></A>        DirRecord child;
+<A NAME="160"></A>        
+<A NAME="161"></A>        child = dr.getFirstChild();
+<A NAME="162"></A>        
+<A NAME="163"></A>        <FONT ID="SingleLineComment">// Loop for all childs
+<A NAME="164"></A></FONT>        <FONT ID="While">while</FONT> (child != <FONT ID="Null">null</FONT>) {
+<A NAME="165"></A>            
+<A NAME="166"></A>            <FONT ID="SingleLineComment">// Hanging Protocol DR and HL7 Struc Doc DR
+<A NAME="167"></A></FONT>            <FONT ID="SingleLineComment">// are defined in PS 3.3 - F.5. but not in dcm4che 1.3.x
+<A NAME="168"></A></FONT>            <FONT ID="SingleLineComment">// Should be catched before processing other types
+<A NAME="169"></A></FONT>            
+<A NAME="170"></A>            <FONT ID="If">if</FONT> (child.getType().equals(DirRecord.PATIENT)) {
+<A NAME="171"></A>                
+<A NAME="172"></A>                <FONT ID="SingleLineComment">// PATIENT
+<A NAME="173"></A></FONT>                dor.addPatientModule(child.getDataset());
+<A NAME="174"></A>                getNextChild(child, dor);
+<A NAME="175"></A>                
+<A NAME="176"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (child.getType().equals(DirRecord.STUDY)) {
+<A NAME="177"></A>                
+<A NAME="178"></A>                <FONT ID="SingleLineComment">// STUDY
+<A NAME="179"></A></FONT>                dor.addStudyModule(child.getDataset());
+<A NAME="180"></A>                getNextChild(child, dor);
+<A NAME="181"></A>                
+<A NAME="182"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (child.getType().equals(DirRecord.SERIES)) {
+<A NAME="183"></A>                <FONT ID="SingleLineComment">// SERIES
+<A NAME="184"></A></FONT>                dor.addSeriesModule(child.getDataset());
+<A NAME="185"></A>                getNextChild(child, dor);
+<A NAME="186"></A>                
+<A NAME="187"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="188"></A>                
+<A NAME="189"></A>                <FONT ID="SingleLineComment">// Allow all type of instance
+<A NAME="190"></A></FONT>                dor.addInstanceModule(child.getDataset());
+<A NAME="191"></A>                <FONT ID="If">if</FONT> (child.getRefSOPClassUID() != <FONT ID="Null">null</FONT>) {
+<A NAME="192"></A>                    dor.sopClassUID = child.getRefSOPClassUID();
+<A NAME="193"></A>                }
+<A NAME="194"></A>                <FONT ID="If">if</FONT> (child.getRefSOPInstanceUID() != <FONT ID="Null">null</FONT>) {
+<A NAME="195"></A>                    dor.sopClassUID = child.getRefSOPInstanceUID();
+<A NAME="196"></A>                }
+<A NAME="197"></A>                
+<A NAME="198"></A>                String[] sa = child.getRefFileIDs();
+<A NAME="199"></A>                
+<A NAME="200"></A>                <FONT ID="SingleLineComment">// Insert to database only if file IDs are available
+<A NAME="201"></A></FONT>                <FONT ID="If">if</FONT> (!(sa == <FONT ID="Null">null</FONT>)) {
+<A NAME="202"></A>                    dor.buildFilePath(sa);
+<A NAME="203"></A>                    
+<A NAME="204"></A><FONT ID="SingleLineComment">//                    log.info("&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;");
+<A NAME="205"></A></FONT><FONT ID="SingleLineComment">//                    log.info(dor.patientName);
+<A NAME="206"></A></FONT><FONT ID="SingleLineComment">//                    log.info(dor.studyID);
+<A NAME="207"></A></FONT><FONT ID="SingleLineComment">//                    log.info(dor.studyDescription);
+<A NAME="208"></A></FONT><FONT ID="SingleLineComment">//                    log.info(dor.studyInstanceUID);
+<A NAME="209"></A></FONT><FONT ID="SingleLineComment">//                    log.info(dor.seriesNumber);
+<A NAME="210"></A></FONT><FONT ID="SingleLineComment">//                    log.info(dor.seriesInstanceUID);
+<A NAME="211"></A></FONT><FONT ID="SingleLineComment">//                    log.info(dor.instanceNumber);
+<A NAME="212"></A></FONT><FONT ID="SingleLineComment">//                    log.info(dor.sopInstanceUID);
+<A NAME="213"></A></FONT><FONT ID="SingleLineComment">//                    log.info(dor.sopClassUID);
+<A NAME="214"></A></FONT><FONT ID="SingleLineComment">//                    log.info(dor.filePath);
+<A NAME="215"></A></FONT>                    
+<A NAME="216"></A>                    <FONT ID="SingleLineComment">// Insert referenced file to database
+<A NAME="217"></A></FONT>                    <FONT ID="Try">try</FONT> {
+<A NAME="218"></A>                        insertDcmObjectRecord(dor);
+<A NAME="219"></A>                    } <FONT ID="Catch">catch</FONT> (SQLException e) {
+<A NAME="220"></A>                        log.error(e.getMessage());
+<A NAME="221"></A>                    }
+<A NAME="222"></A>                }
+<A NAME="223"></A>            }
+<A NAME="224"></A>            
+<A NAME="225"></A>            child = child.getNextSibling();
+<A NAME="226"></A>        }
+<A NAME="227"></A>    }
+<A NAME="228"></A>    
+<A NAME="229"></A>    
+<A NAME="230"></A>    <FONT ID="FormalComment">/**
+<A NAME="231"></A>     *
+<A NAME="232"></A>     */</FONT>
+<A NAME="233"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> insertFiles(File f, <FONT ID="Boolean">boolean</FONT> deep) {
+<A NAME="234"></A>        String sql;
+<A NAME="235"></A>        File[] contentFiles;
+<A NAME="236"></A>        
+<A NAME="237"></A>        <FONT ID="SingleLineComment">// If input is empty, nothing to do
+<A NAME="238"></A></FONT>        <FONT ID="If">if</FONT> (f == <FONT ID="Null">null</FONT>) {
+<A NAME="239"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="240"></A>        }
+<A NAME="241"></A>        
+<A NAME="242"></A>        <FONT ID="SingleLineComment">// If input is a file, just add it
+<A NAME="243"></A></FONT>        <FONT ID="If">if</FONT> (! f.isDirectory()) {
+<A NAME="244"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="245"></A>                insertSingleDcmFile(f);
+<A NAME="246"></A>                <FONT ID="Return">return</FONT>;
+<A NAME="247"></A>            } <FONT ID="Catch">catch</FONT> (SQLException e) {
+<A NAME="248"></A>                log.error(e.getMessage());
+<A NAME="249"></A>            }
+<A NAME="250"></A>        }
+<A NAME="251"></A>        
+<A NAME="252"></A>        <FONT ID="SingleLineComment">// Input is a directory
+<A NAME="253"></A></FONT>        
+<A NAME="254"></A>        contentFiles = f.listFiles();
+<A NAME="255"></A>        
+<A NAME="256"></A>        <FONT ID="SingleLineComment">// If no content, nothing to do
+<A NAME="257"></A></FONT>        <FONT ID="If">if</FONT> (contentFiles == <FONT ID="Null">null</FONT>) {
+<A NAME="258"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="259"></A>        }
+<A NAME="260"></A>        
+<A NAME="261"></A>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i=<FONT ID="IntegerLiteral">0</FONT>; i&lt;contentFiles.length; i++) {
+<A NAME="262"></A>            
+<A NAME="263"></A>            <FONT ID="If">if</FONT> (contentFiles[i].isDirectory()) {
+<A NAME="264"></A>                
+<A NAME="265"></A>                <FONT ID="SingleLineComment">// Content item is a directory
+<A NAME="266"></A></FONT>                <FONT ID="If">if</FONT> (deep) {
+<A NAME="267"></A>                    <FONT ID="SingleLineComment">// Process recursively
+<A NAME="268"></A></FONT>                    insertFiles(contentFiles[i], <FONT ID="True">true</FONT>);
+<A NAME="269"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="270"></A>                    <FONT ID="SingleLineComment">// Ignore
+<A NAME="271"></A></FONT>                }
+<A NAME="272"></A>                
+<A NAME="273"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="274"></A>                
+<A NAME="275"></A>                <FONT ID="SingleLineComment">// Content item is a file, add it
+<A NAME="276"></A></FONT>                <FONT ID="Try">try</FONT> {
+<A NAME="277"></A>                    insertSingleDcmFile(contentFiles[i]);
+<A NAME="278"></A>                } <FONT ID="Catch">catch</FONT> (SQLException e) {
+<A NAME="279"></A>                    log.error(e.getMessage());
+<A NAME="280"></A>                }
+<A NAME="281"></A>                
+<A NAME="282"></A>            }
+<A NAME="283"></A>        }
+<A NAME="284"></A>    }
+<A NAME="285"></A>    
+<A NAME="286"></A>    
+<A NAME="287"></A>    <FONT ID="FormalComment">/**
+<A NAME="288"></A>     *
+<A NAME="289"></A>     */</FONT>
+<A NAME="290"></A>    <FONT ID="Private">private</FONT> <FONT ID="Synchronized">synchronized</FONT> <FONT ID="Void">void</FONT> insertSingleDcmFile(File f) <FONT ID="Throws">throws</FONT> SQLException {
+<A NAME="291"></A>        Dataset ds;
+<A NAME="292"></A>        DcmObjectRecord dor;
+<A NAME="293"></A>        
+<A NAME="294"></A>        
+<A NAME="295"></A>        <FONT ID="SingleLineComment">// Return if now file given
+<A NAME="296"></A></FONT>        <FONT ID="If">if</FONT> (f == <FONT ID="Null">null</FONT>) {
+<A NAME="297"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="298"></A>        }
+<A NAME="299"></A>        
+<A NAME="300"></A>        <FONT ID="SingleLineComment">// Return if directory
+<A NAME="301"></A></FONT>        <FONT ID="If">if</FONT> (f.isDirectory()) {
+<A NAME="302"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="303"></A>        }
+<A NAME="304"></A>        
+<A NAME="305"></A>        <FONT ID="SingleLineComment">// Return if file is already in database
+<A NAME="306"></A></FONT>        <FONT ID="If">if</FONT> (isFileInDatabase(f)) {
+<A NAME="307"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="308"></A>        }
+<A NAME="309"></A>        
+<A NAME="310"></A>        <FONT ID="SingleLineComment">// Return if not a DICOM file
+<A NAME="311"></A></FONT>        ds = fileToDataset(f);
+<A NAME="312"></A>        <FONT ID="If">if</FONT> (ds == <FONT ID="Null">null</FONT>) {
+<A NAME="313"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="314"></A>        }
+<A NAME="315"></A>        
+<A NAME="316"></A>        <FONT ID="SingleLineComment">// New header obeject
+<A NAME="317"></A></FONT>        dor = <FONT ID="New">new</FONT> DcmObjectRecord(f, ds);
+<A NAME="318"></A>        
+<A NAME="319"></A>        <FONT ID="SingleLineComment">// Store it in database
+<A NAME="320"></A></FONT>        insertDcmObjectRecord(dor);
+<A NAME="321"></A>    }
+<A NAME="322"></A>    
+<A NAME="323"></A>    
+<A NAME="324"></A>    <FONT ID="FormalComment">/**
+<A NAME="325"></A>     *
+<A NAME="326"></A>     */</FONT>
+<A NAME="327"></A>    <FONT ID="Private">private</FONT> <FONT ID="Synchronized">synchronized</FONT> <FONT ID="Void">void</FONT> insertDcmObjectRecord(DcmObjectRecord dor) <FONT ID="Throws">throws</FONT> SQLException {
+<A NAME="328"></A>        
+<A NAME="329"></A>        <FONT ID="SingleLineComment">// Ignore records without SOP Class UID
+<A NAME="330"></A></FONT>        <FONT ID="If">if</FONT> (dor.sopClassUID.length() == <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="331"></A>            log.warn(<FONT ID="StringLiteral">"No SOP Class UID. File not included: "</FONT> + dor.filePath);
+<A NAME="332"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="333"></A>        }
+<A NAME="334"></A>        
+<A NAME="335"></A>        PreparedStatement ps = conn.prepareStatement(<FONT ID="StringLiteral">"INSERT INTO dcm_table("</FONT> +
+<A NAME="336"></A>                <FONT ID="StringLiteral">"isProcessed, "</FONT> +
+<A NAME="337"></A>                <FONT ID="StringLiteral">"filePath, "</FONT> +
+<A NAME="338"></A>                <FONT ID="StringLiteral">"patientName, "</FONT> +
+<A NAME="339"></A>                <FONT ID="StringLiteral">"patientID, "</FONT> +
+<A NAME="340"></A>                <FONT ID="StringLiteral">"patientBirthDate, "</FONT> +
+<A NAME="341"></A>                <FONT ID="StringLiteral">"patientSex, "</FONT> +
+<A NAME="342"></A>                <FONT ID="StringLiteral">"studyInstanceUID, "</FONT> +
+<A NAME="343"></A>                <FONT ID="StringLiteral">"studyDate, "</FONT> +
+<A NAME="344"></A>                <FONT ID="StringLiteral">"studyTime, "</FONT> +
+<A NAME="345"></A>                <FONT ID="StringLiteral">"referringPhysicianName, "</FONT> +
+<A NAME="346"></A>                <FONT ID="StringLiteral">"studyID, "</FONT> +
+<A NAME="347"></A>                <FONT ID="StringLiteral">"accessionNumber, "</FONT> +
+<A NAME="348"></A>                <FONT ID="StringLiteral">"studyDescription, "</FONT> +
+<A NAME="349"></A>                <FONT ID="StringLiteral">"modality, "</FONT> +
+<A NAME="350"></A>                <FONT ID="StringLiteral">"seriesInstanceUID, "</FONT> +
+<A NAME="351"></A>                <FONT ID="StringLiteral">"seriesNumber, "</FONT> +
+<A NAME="352"></A>                <FONT ID="StringLiteral">"instanceNumber, "</FONT> +
+<A NAME="353"></A>                <FONT ID="StringLiteral">"sopClassUID, "</FONT> +
+<A NAME="354"></A>                <FONT ID="StringLiteral">"sopInstanceUID "</FONT> +
+<A NAME="355"></A>                <FONT ID="StringLiteral">") VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"</FONT>);
+<A NAME="356"></A>        
+<A NAME="357"></A>        <FONT ID="SingleLineComment">// Item is not processed
+<A NAME="358"></A></FONT>        ps.setBoolean(<FONT ID="IntegerLiteral">1</FONT>, <FONT ID="False">false</FONT>);
+<A NAME="359"></A>        
+<A NAME="360"></A>        ps.setString(<FONT ID="IntegerLiteral">2</FONT>, dor.filePath);
+<A NAME="361"></A>        
+<A NAME="362"></A>        <FONT ID="SingleLineComment">// Patient IE, Patient Module, PS 3.3 - C.7.1.1, M
+<A NAME="363"></A></FONT>        ps.setString(<FONT ID="IntegerLiteral">3</FONT>, dor.patientName);            <FONT ID="SingleLineComment">// Type 2
+<A NAME="364"></A></FONT>        ps.setString(<FONT ID="IntegerLiteral">4</FONT>, dor.patientID);              <FONT ID="SingleLineComment">// Type 2
+<A NAME="365"></A></FONT>        ps.setString(<FONT ID="IntegerLiteral">5</FONT>, dor.patientBirthDate);       <FONT ID="SingleLineComment">// Type 2
+<A NAME="366"></A></FONT>        ps.setString(<FONT ID="IntegerLiteral">6</FONT>, dor.patientSex);             <FONT ID="SingleLineComment">// Type 2
+<A NAME="367"></A></FONT>        
+<A NAME="368"></A>        <FONT ID="SingleLineComment">// Study IE, General Study Module, PS 3.3 - C.7.2.1, M
+<A NAME="369"></A></FONT>        ps.setString(<FONT ID="IntegerLiteral">7</FONT>, dor.studyInstanceUID);       <FONT ID="SingleLineComment">// Type 1
+<A NAME="370"></A></FONT>        ps.setString(<FONT ID="IntegerLiteral">8</FONT>, dor.studyDate);              <FONT ID="SingleLineComment">// Type 2
+<A NAME="371"></A></FONT>        ps.setString(<FONT ID="IntegerLiteral">9</FONT>, dor.studyTime);              <FONT ID="SingleLineComment">// Type 2
+<A NAME="372"></A></FONT>        ps.setString(<FONT ID="IntegerLiteral">10</FONT>, dor.referringPhysicianName); <FONT ID="SingleLineComment">// Type 2
+<A NAME="373"></A></FONT>        ps.setString(<FONT ID="IntegerLiteral">11</FONT>, dor.studyID);               <FONT ID="SingleLineComment">// Type 2
+<A NAME="374"></A></FONT>        ps.setString(<FONT ID="IntegerLiteral">12</FONT>, dor.accessionNumber);       <FONT ID="SingleLineComment">// Type 2
+<A NAME="375"></A></FONT>        ps.setString(<FONT ID="IntegerLiteral">13</FONT>, dor.studyDescription);      <FONT ID="SingleLineComment">// Type 3
+<A NAME="376"></A></FONT>        
+<A NAME="377"></A>        <FONT ID="SingleLineComment">// Series IE, General Series Module, PS 3.3 - C.7.3.1, M
+<A NAME="378"></A></FONT>        ps.setString(<FONT ID="IntegerLiteral">14</FONT>, dor.modality);               <FONT ID="SingleLineComment">// Type 1
+<A NAME="379"></A></FONT>        ps.setString(<FONT ID="IntegerLiteral">15</FONT>, dor.seriesInstanceUID);      <FONT ID="SingleLineComment">// Type 1
+<A NAME="380"></A></FONT>        ps.setString(<FONT ID="IntegerLiteral">16</FONT>, dor.seriesNumber);           <FONT ID="SingleLineComment">// Type 2
+<A NAME="381"></A></FONT>        
+<A NAME="382"></A>        <FONT ID="SingleLineComment">// Image General Module, PS 3.3 - C.7.6.1 General Image Module
+<A NAME="383"></A></FONT>        ps.setString(<FONT ID="IntegerLiteral">17</FONT>, dor.instanceNumber);         <FONT ID="SingleLineComment">// Type 2
+<A NAME="384"></A></FONT>        
+<A NAME="385"></A>        <FONT ID="SingleLineComment">// SOP Common Module, PS 3.3 - C.12.1, M
+<A NAME="386"></A></FONT>        ps.setString(<FONT ID="IntegerLiteral">18</FONT>, dor.sopClassUID);            <FONT ID="SingleLineComment">// Type 1
+<A NAME="387"></A></FONT>        ps.setString(<FONT ID="IntegerLiteral">19</FONT>, dor.sopInstanceUID);         <FONT ID="SingleLineComment">// Type 1
+<A NAME="388"></A></FONT>        
+<A NAME="389"></A>        ps.executeUpdate();
+<A NAME="390"></A>        
+<A NAME="391"></A>        ps.close();
+<A NAME="392"></A>    }
+<A NAME="393"></A>    
+<A NAME="394"></A>    
+<A NAME="395"></A>    <FONT ID="FormalComment">/**
+<A NAME="396"></A>     *
+<A NAME="397"></A>     */</FONT>
+<A NAME="398"></A>    <FONT ID="Private">private</FONT> <FONT ID="Synchronized">synchronized</FONT> <FONT ID="Boolean">boolean</FONT> isFileInDatabase(File f) <FONT ID="Throws">throws</FONT> SQLException {
+<A NAME="399"></A>        ResultSet rs;
+<A NAME="400"></A>        <FONT ID="Boolean">boolean</FONT>   result;
+<A NAME="401"></A>        
+<A NAME="402"></A>        PreparedStatement ps = conn.prepareStatement(<FONT ID="StringLiteral">"SELECT * FROM dcm_table WHERE filePath = ?"</FONT>);
+<A NAME="403"></A>        
+<A NAME="404"></A>        ps.setString(<FONT ID="IntegerLiteral">1</FONT>, f.getPath());
+<A NAME="405"></A>        
+<A NAME="406"></A>        <FONT ID="SingleLineComment">// run the query
+<A NAME="407"></A></FONT>        rs = ps.executeQuery();
+<A NAME="408"></A>        <FONT ID="If">if</FONT> (rs.next()) {
+<A NAME="409"></A>            result = <FONT ID="True">true</FONT>;
+<A NAME="410"></A>            <FONT ID="SingleLineComment">// log.info("File IN database :" + f.getPath());
+<A NAME="411"></A></FONT>        } <FONT ID="Else">else</FONT>{
+<A NAME="412"></A>            result = <FONT ID="False">false</FONT>;
+<A NAME="413"></A>            <FONT ID="SingleLineComment">// log.info("File NOT in database :" + f.getPath());
+<A NAME="414"></A></FONT>        }
+<A NAME="415"></A>        
+<A NAME="416"></A>        ps.close();
+<A NAME="417"></A>        
+<A NAME="418"></A>        <FONT ID="Return">return</FONT> result;
+<A NAME="419"></A>    }
+<A NAME="420"></A>    
+<A NAME="421"></A>    
+<A NAME="422"></A>    <FONT ID="FormalComment">/**
+<A NAME="423"></A>     *
+<A NAME="424"></A>     */</FONT>
+<A NAME="425"></A>    <FONT ID="Public">public</FONT> <FONT ID="Synchronized">synchronized</FONT> <FONT ID="Void">void</FONT> markRecordAsProcessed(<FONT ID="Int">int</FONT> recordID) <FONT ID="Throws">throws</FONT> SQLException {
+<A NAME="426"></A>        
+<A NAME="427"></A>        PreparedStatement ps = conn.prepareStatement(<FONT ID="StringLiteral">"UPDATE dcm_table SET isProcessed = TRUE WHERE recordID = ?"</FONT>);
+<A NAME="428"></A>        
+<A NAME="429"></A>        ps.setInt(<FONT ID="IntegerLiteral">1</FONT>, recordID);
+<A NAME="430"></A>        
+<A NAME="431"></A>        <FONT ID="SingleLineComment">// run the query
+<A NAME="432"></A></FONT>        ps.executeUpdate();
+<A NAME="433"></A>        ps.close();
+<A NAME="434"></A>    }
+<A NAME="435"></A>    
+<A NAME="436"></A>    
+<A NAME="437"></A>    <FONT ID="FormalComment">/**
+<A NAME="438"></A>     * Use for SQL commands CREATE, DROP, INSERT and UPDATE
+<A NAME="439"></A>     */</FONT>
+<A NAME="440"></A>    <FONT ID="Public">public</FONT> <FONT ID="Synchronized">synchronized</FONT> <FONT ID="Void">void</FONT> update(String expression) <FONT ID="Throws">throws</FONT> SQLException {
+<A NAME="441"></A>        Statement stmt = <FONT ID="Null">null</FONT>;
+<A NAME="442"></A>        
+<A NAME="443"></A>        <FONT ID="SingleLineComment">// statements
+<A NAME="444"></A></FONT>        stmt = conn.createStatement();
+<A NAME="445"></A>        
+<A NAME="446"></A>        <FONT ID="SingleLineComment">// run the query
+<A NAME="447"></A></FONT>        <FONT ID="Int">int</FONT> i = stmt.executeUpdate(expression);
+<A NAME="448"></A>        
+<A NAME="449"></A>        <FONT ID="If">if</FONT> (i == -<FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="450"></A>            log.error(<FONT ID="StringLiteral">"db error : "</FONT> + expression);
+<A NAME="451"></A>        }
+<A NAME="452"></A>        
+<A NAME="453"></A>        stmt.close();
+<A NAME="454"></A>    }
+<A NAME="455"></A>    
+<A NAME="456"></A>    
+<A NAME="457"></A>    <FONT ID="FormalComment">/**
+<A NAME="458"></A>     * Use for SQL command SELECT
+<A NAME="459"></A>     */</FONT>
+<A NAME="460"></A>    <FONT ID="Public">public</FONT> <FONT ID="Synchronized">synchronized</FONT> Vector queryNotProcessedItems() <FONT ID="Throws">throws</FONT> SQLException {
+<A NAME="461"></A>        Vector    v = <FONT ID="New">new</FONT> Vector();
+<A NAME="462"></A>        Statement stmt = <FONT ID="Null">null</FONT>;
+<A NAME="463"></A>        ResultSet rs = <FONT ID="Null">null</FONT>;
+<A NAME="464"></A>        
+<A NAME="465"></A>        <FONT ID="SingleLineComment">// Statement objects can be reused with repeated calls to execute but
+<A NAME="466"></A></FONT>        <FONT ID="SingleLineComment">// we choose to make a new one each time
+<A NAME="467"></A></FONT>        stmt = conn.createStatement();
+<A NAME="468"></A>        
+<A NAME="469"></A>        <FONT ID="SingleLineComment">// Run the query
+<A NAME="470"></A></FONT>        <FONT ID="SingleLineComment">//rs = stmt.executeQuery("SELECT DISTINCT patientName FROM dcm_table");
+<A NAME="471"></A></FONT>        rs = stmt.executeQuery(<FONT ID="StringLiteral">"SELECT * FROM dcm_table WHERE isProcessed = FALSE"</FONT>);
+<A NAME="472"></A>        
+<A NAME="473"></A>        <FONT ID="While">while</FONT> (rs.next()) {
+<A NAME="474"></A>            
+<A NAME="475"></A>            <FONT ID="SingleLineComment">// dump(rs);
+<A NAME="476"></A></FONT>            DcmObjectRecord dor = <FONT ID="New">new</FONT> DcmObjectRecord(rs);
+<A NAME="477"></A>            v.addElement(dor);
+<A NAME="478"></A>            
+<A NAME="479"></A>            <FONT ID="SingleLineComment">// log.info(dor.toPatientString());
+<A NAME="480"></A></FONT>        }
+<A NAME="481"></A>        
+<A NAME="482"></A>        <FONT ID="SingleLineComment">// Close the statement
+<A NAME="483"></A></FONT>        stmt.close();
+<A NAME="484"></A>        
+<A NAME="485"></A>        <FONT ID="Return">return</FONT> v;
+<A NAME="486"></A>    }
+<A NAME="487"></A>    
+<A NAME="488"></A>    
+<A NAME="489"></A>    <FONT ID="FormalComment">/**
+<A NAME="490"></A>     * Use for SQL command SELECT.
+<A NAME="491"></A>     * &lt;p&gt;Samples:
+<A NAME="492"></A>     * &lt;p&gt;  SELECT * FROM dcm_table WHERE patientName &gt;= 'A'
+<A NAME="493"></A>     * &lt;p&gt;  SELECT * FROM dcm_table
+<A NAME="494"></A>     * &lt;p&gt;  SELECT DISTINCT patientName FROM dcm_table
+<A NAME="495"></A>     * &lt;p&gt;  SELECT DISTINCT studyID, studyDescription FROM dcm_table WHERE patientName &gt;= 'A'
+<A NAME="496"></A>     */</FONT>
+<A NAME="497"></A>    <FONT ID="Public">public</FONT> <FONT ID="Synchronized">synchronized</FONT> <FONT ID="Void">void</FONT> query(String expression) <FONT ID="Throws">throws</FONT> SQLException {
+<A NAME="498"></A>        
+<A NAME="499"></A>        Statement stmt = <FONT ID="Null">null</FONT>;
+<A NAME="500"></A>        ResultSet rs = <FONT ID="Null">null</FONT>;
+<A NAME="501"></A>        
+<A NAME="502"></A>        <FONT ID="SingleLineComment">// Statement objects can be reused with repeated calls to execute but
+<A NAME="503"></A></FONT>        <FONT ID="SingleLineComment">// we choose to make a new one each time
+<A NAME="504"></A></FONT>        stmt = conn.createStatement();
+<A NAME="505"></A>        
+<A NAME="506"></A>        <FONT ID="SingleLineComment">// Run the query
+<A NAME="507"></A></FONT>        rs = stmt.executeQuery(expression);
+<A NAME="508"></A>        
+<A NAME="509"></A>        dump(rs);
+<A NAME="510"></A>        
+<A NAME="511"></A>        <FONT ID="SingleLineComment">// NOTE!! if you close a statement the associated ResultSet is closed too.
+<A NAME="512"></A></FONT>        <FONT ID="SingleLineComment">// So you should copy the contents to some other object.
+<A NAME="513"></A></FONT>        <FONT ID="SingleLineComment">// The result set is invalidated also, if you recycle an Statement
+<A NAME="514"></A></FONT>        <FONT ID="SingleLineComment">// and try to execute some other query before the result set has been
+<A NAME="515"></A></FONT>        <FONT ID="SingleLineComment">// completely examined.
+<A NAME="516"></A></FONT>        stmt.close();
+<A NAME="517"></A>    }
+<A NAME="518"></A>    
+<A NAME="519"></A>    
+<A NAME="520"></A>    <FONT ID="FormalComment">/**
+<A NAME="521"></A>     *
+<A NAME="522"></A>     */</FONT>
+<A NAME="523"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Void">void</FONT> dump(ResultSet rs) <FONT ID="Throws">throws</FONT> SQLException {
+<A NAME="524"></A>        ResultSetMetaData meta = <FONT ID="Null">null</FONT>;
+<A NAME="525"></A>        <FONT ID="Int">int</FONT>               colmax;
+<A NAME="526"></A>        Object            o = <FONT ID="Null">null</FONT>;
+<A NAME="527"></A>        
+<A NAME="528"></A>        <FONT ID="SingleLineComment">// The order of the rows in a cursor are implementation dependent unless
+<A NAME="529"></A></FONT>        <FONT ID="SingleLineComment">// you use the SQL ORDER statement
+<A NAME="530"></A></FONT>        
+<A NAME="531"></A>        <FONT ID="SingleLineComment">// Get an object that can be used to get information about the types and
+<A NAME="532"></A></FONT>        <FONT ID="SingleLineComment">// properties of the columns in a ResultSet object
+<A NAME="533"></A></FONT>        meta   = rs.getMetaData();
+<A NAME="534"></A>        
+<A NAME="535"></A>        <FONT ID="SingleLineComment">// Returns the number of columns in this ResultSet object
+<A NAME="536"></A></FONT>        colmax = meta.getColumnCount();
+<A NAME="537"></A>        
+<A NAME="538"></A>        <FONT ID="SingleLineComment">// The result set is a cursor into the data.  You can only point to one
+<A NAME="539"></A></FONT>        <FONT ID="SingleLineComment">// row at a time. Assume we are pointing to BEFORE the first row rs.next()
+<A NAME="540"></A></FONT>        <FONT ID="SingleLineComment">// points to next row and returns true or false if there is no next row,
+<A NAME="541"></A></FONT>        <FONT ID="SingleLineComment">// which breaks the loop
+<A NAME="542"></A></FONT>        <FONT ID="While">while</FONT> (rs.next()) {
+<A NAME="543"></A>            
+<A NAME="544"></A>            <FONT ID="SingleLineComment">// Process row
+<A NAME="545"></A></FONT>            <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; colmax; ++i) {
+<A NAME="546"></A>                
+<A NAME="547"></A>                <FONT ID="SingleLineComment">// Is SQL the first column is indexed with 1 not 0
+<A NAME="548"></A></FONT>                o = rs.getObject(i + <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="549"></A>                
+<A NAME="550"></A>                <FONT ID="SingleLineComment">// Output the object
+<A NAME="551"></A></FONT>                log.info(o.toString() + <FONT ID="StringLiteral">" "</FONT>);
+<A NAME="552"></A>            }
+<A NAME="553"></A>            
+<A NAME="554"></A>            <FONT ID="SingleLineComment">// Output empty line
+<A NAME="555"></A></FONT>            log.info(<FONT ID="StringLiteral">"&lt;&lt;&lt;&lt; end row &lt;&lt;&lt;&lt;&lt;"</FONT>);
+<A NAME="556"></A>        }
+<A NAME="557"></A>    }
+<A NAME="558"></A>    
+<A NAME="559"></A>    
+<A NAME="560"></A>    <FONT ID="FormalComment">/**
+<A NAME="561"></A>     * Loads a Dataset object from a file.
+<A NAME="562"></A>     * @param the filr containing teh Dataset.
+<A NAME="563"></A>     * @result the read in Dataset.
+<A NAME="564"></A>     */</FONT>
+<A NAME="565"></A>    <FONT ID="Private">private</FONT> Dataset fileToDataset(File f) {
+<A NAME="566"></A>        BufferedInputStream in = <FONT ID="Null">null</FONT>;
+<A NAME="567"></A>        FileFormat          ff = <FONT ID="Null">null</FONT>;
+<A NAME="568"></A>        DcmParser           parser = <FONT ID="Null">null</FONT>;
+<A NAME="569"></A>        Dataset             ds = <FONT ID="Null">null</FONT>;
+<A NAME="570"></A>        <FONT ID="Byte">byte</FONT>[]              dt = <FONT ID="New">new</FONT> <FONT ID="Byte">byte</FONT>[<FONT ID="IntegerLiteral">4</FONT>];
+<A NAME="571"></A>        
+<A NAME="572"></A>        <FONT ID="SingleLineComment">// DICOM files must have a length of at least 132 byte
+<A NAME="573"></A></FONT>        <FONT ID="SingleLineComment">// (128 byte header and 'DICM' token)
+<A NAME="574"></A></FONT>        <FONT ID="If">if</FONT> (f.length() &lt; <FONT ID="IntegerLiteral">132</FONT>) {
+<A NAME="575"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="576"></A>        }
+<A NAME="577"></A>        
+<A NAME="578"></A>        <FONT ID="SingleLineComment">// Test DICOM token
+<A NAME="579"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="580"></A>            FileInputStream fis = <FONT ID="New">new</FONT> FileInputStream(f);
+<A NAME="581"></A>            fis.skip(<FONT ID="IntegerLiteral">128</FONT>);
+<A NAME="582"></A>            fis.read(dt, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">4</FONT>);
+<A NAME="583"></A>            fis.close();
+<A NAME="584"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="585"></A>            log.error(<FONT ID="StringLiteral">"Can't read DICOM token: "</FONT> + f.getPath());
+<A NAME="586"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="587"></A>        }
+<A NAME="588"></A>        <FONT ID="If">if</FONT> (dt[<FONT ID="IntegerLiteral">0</FONT>] != <FONT ID="CharacerLiteral">'D'</FONT> || dt[<FONT ID="IntegerLiteral">1</FONT>] != <FONT ID="CharacerLiteral">'I'</FONT> || dt[<FONT ID="IntegerLiteral">2</FONT>] != <FONT ID="CharacerLiteral">'C'</FONT> || dt[<FONT ID="IntegerLiteral">3</FONT>] != <FONT ID="CharacerLiteral">'M'</FONT>) {
+<A NAME="589"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="590"></A>        }
+<A NAME="591"></A>        
+<A NAME="592"></A>        <FONT ID="SingleLineComment">// Read DICOM file
+<A NAME="593"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="594"></A>            in = <FONT ID="New">new</FONT> BufferedInputStream(<FONT ID="New">new</FONT> FileInputStream(f));
+<A NAME="595"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="596"></A>            log.error(<FONT ID="StringLiteral">"Can't read file: "</FONT> + f.getPath());
+<A NAME="597"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="598"></A>        }
+<A NAME="599"></A>        
+<A NAME="600"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="601"></A>            parser = DcmParserFactory.getInstance().newDcmParser(in);
+<A NAME="602"></A>            
+<A NAME="603"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="604"></A>                ff = parser.detectFileFormat();
+<A NAME="605"></A>            } <FONT ID="Catch">catch</FONT> (Exception ioe) {
+<A NAME="606"></A>                log.error(<FONT ID="StringLiteral">"Can't detect DICOM file format for file: "</FONT> + f.getPath());
+<A NAME="607"></A>                <FONT ID="SingleLineComment">// Try next file
+<A NAME="608"></A></FONT>                <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="609"></A>            }
+<A NAME="610"></A>            
+<A NAME="611"></A>            ds = DcmObjectFactory.getInstance().newDataset();
+<A NAME="612"></A>            
+<A NAME="613"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="614"></A>                ds.readFile(in, ff, -<FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="615"></A>            } <FONT ID="Catch">catch</FONT> (IOException ioe) {
+<A NAME="616"></A>                log.error(<FONT ID="StringLiteral">"Can't create Dataset for file: "</FONT> + f.getPath());
+<A NAME="617"></A>                <FONT ID="SingleLineComment">// Try next file
+<A NAME="618"></A></FONT>                <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="619"></A>            }
+<A NAME="620"></A>        } <FONT ID="Finally">finally</FONT> {
+<A NAME="621"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="622"></A>                in.close();
+<A NAME="623"></A>            } <FONT ID="Catch">catch</FONT> (IOException e) {}
+<A NAME="624"></A>        }
+<A NAME="625"></A>        
+<A NAME="626"></A>        <FONT ID="Return">return</FONT> ds;
+<A NAME="627"></A>    }
+<A NAME="628"></A>    
+<A NAME="629"></A>    <FONT ID="SingleLineComment">//////////////////////////////////////////////////////////////////////////
+<A NAME="630"></A></FONT>    
+<A NAME="631"></A>    
+<A NAME="632"></A>    <FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> DcmObjectRecord {
+<A NAME="633"></A>        
+<A NAME="634"></A>        <FONT ID="Private">private</FONT> File dicomdir = <FONT ID="Null">null</FONT>;
+<A NAME="635"></A>        
+<A NAME="636"></A>        <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> recordID = -<FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="637"></A>        <FONT ID="Public">public</FONT> String filePath = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="638"></A>        <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> isProcessed = <FONT ID="False">false</FONT>;
+<A NAME="639"></A>        
+<A NAME="640"></A>        <FONT ID="SingleLineComment">// Patient IE, Patient Module, PS 3.3 - C.7.1.1, M
+<A NAME="641"></A></FONT>        <FONT ID="Public">public</FONT> String patientName = <FONT ID="StringLiteral">""</FONT>;             <FONT ID="SingleLineComment">// Type 2
+<A NAME="642"></A></FONT>        <FONT ID="Public">public</FONT> String patientBirthDate = <FONT ID="StringLiteral">""</FONT>;        <FONT ID="SingleLineComment">// Type 2
+<A NAME="643"></A></FONT>        <FONT ID="Public">public</FONT> String patientSex = <FONT ID="StringLiteral">""</FONT>;              <FONT ID="SingleLineComment">// Type 2
+<A NAME="644"></A></FONT>        <FONT ID="Public">public</FONT> String patientID = <FONT ID="StringLiteral">""</FONT>;               <FONT ID="SingleLineComment">// Type 2
+<A NAME="645"></A></FONT>        
+<A NAME="646"></A>        <FONT ID="SingleLineComment">// Study IE, General Study Module, PS 3.3 - C.7.2.1, M
+<A NAME="647"></A></FONT>        <FONT ID="Public">public</FONT> String studyInstanceUID = <FONT ID="StringLiteral">""</FONT>;        <FONT ID="SingleLineComment">// Type 1
+<A NAME="648"></A></FONT>        <FONT ID="Public">public</FONT> String studyDate = <FONT ID="StringLiteral">""</FONT>;               <FONT ID="SingleLineComment">// Type 2
+<A NAME="649"></A></FONT>        <FONT ID="Public">public</FONT> String studyTime = <FONT ID="StringLiteral">""</FONT>;               <FONT ID="SingleLineComment">// Type 2
+<A NAME="650"></A></FONT>        <FONT ID="Public">public</FONT> String referringPhysicianName = <FONT ID="StringLiteral">""</FONT>;  <FONT ID="SingleLineComment">// Type 2
+<A NAME="651"></A></FONT>        <FONT ID="Public">public</FONT> String studyID = <FONT ID="StringLiteral">""</FONT>;                 <FONT ID="SingleLineComment">// Type 2
+<A NAME="652"></A></FONT>        <FONT ID="Public">public</FONT> String accessionNumber = <FONT ID="StringLiteral">""</FONT>;         <FONT ID="SingleLineComment">// Type 2
+<A NAME="653"></A></FONT>        <FONT ID="Public">public</FONT> String studyDescription = <FONT ID="StringLiteral">""</FONT>;        <FONT ID="SingleLineComment">// Type 3
+<A NAME="654"></A></FONT>        
+<A NAME="655"></A>        <FONT ID="SingleLineComment">// Series IE, General Series Module, PS 3.3 - C.7.3.1, M
+<A NAME="656"></A></FONT>        <FONT ID="Public">public</FONT> String modality = <FONT ID="StringLiteral">""</FONT>;                <FONT ID="SingleLineComment">// Type 1
+<A NAME="657"></A></FONT>        <FONT ID="Public">public</FONT> String seriesInstanceUID = <FONT ID="StringLiteral">""</FONT>;       <FONT ID="SingleLineComment">// Type 1
+<A NAME="658"></A></FONT>        <FONT ID="Public">public</FONT> String seriesNumber = <FONT ID="StringLiteral">""</FONT>;            <FONT ID="SingleLineComment">// Type 2
+<A NAME="659"></A></FONT>        
+<A NAME="660"></A>        <FONT ID="SingleLineComment">// Image General Module, PS 3.3 - C.7.6.1 General Image Module
+<A NAME="661"></A></FONT>        <FONT ID="Public">public</FONT> String instanceNumber = <FONT ID="StringLiteral">""</FONT>;          <FONT ID="SingleLineComment">// Type 2
+<A NAME="662"></A></FONT>        
+<A NAME="663"></A>        <FONT ID="SingleLineComment">// SOP Common Module, PS 3.3 - C.12.1, M
+<A NAME="664"></A></FONT>        <FONT ID="Public">public</FONT> String sopClassUID = <FONT ID="StringLiteral">""</FONT>;             <FONT ID="SingleLineComment">// Type 1
+<A NAME="665"></A></FONT>        <FONT ID="Public">public</FONT> String sopInstanceUID = <FONT ID="StringLiteral">""</FONT>;          <FONT ID="SingleLineComment">// Type 1
+<A NAME="666"></A></FONT>        
+<A NAME="667"></A>        
+<A NAME="668"></A>        <FONT ID="Public">public</FONT> DcmObjectRecord(File dicomdir) {
+<A NAME="669"></A>            <FONT ID="This">this</FONT>.dicomdir = dicomdir;
+<A NAME="670"></A>        }
+<A NAME="671"></A>        
+<A NAME="672"></A>        
+<A NAME="673"></A>        <FONT ID="Public">public</FONT> DcmObjectRecord(File f, Dataset ds) {
+<A NAME="674"></A>            <FONT ID="This">this</FONT>(ds);
+<A NAME="675"></A>            filePath = f.getPath();
+<A NAME="676"></A>        }
+<A NAME="677"></A>        
+<A NAME="678"></A>        
+<A NAME="679"></A>        <FONT ID="Public">public</FONT> DcmObjectRecord(Dataset ds) {
+<A NAME="680"></A>            addPatientModule(ds);
+<A NAME="681"></A>            addStudyModule(ds);
+<A NAME="682"></A>            addSeriesModule(ds);
+<A NAME="683"></A>            addInstanceModule(ds);
+<A NAME="684"></A>        }
+<A NAME="685"></A>        
+<A NAME="686"></A>        
+<A NAME="687"></A>        <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> addPatientModule(Dataset ds) {
+<A NAME="688"></A>            
+<A NAME="689"></A>            <FONT ID="SingleLineComment">// Patient IE, Patient Module, PS 3.3 - C.7.1.1, M
+<A NAME="690"></A></FONT>            patientName = ds.getString(Tags.PatientName, <FONT ID="StringLiteral">""</FONT>);                       <FONT ID="SingleLineComment">// Type 2
+<A NAME="691"></A></FONT>            patientID = ds.getString(Tags.PatientID, <FONT ID="StringLiteral">""</FONT>);                           <FONT ID="SingleLineComment">// Type 2
+<A NAME="692"></A></FONT>            patientBirthDate = ds.getString(Tags.PatientBirthDate, <FONT ID="StringLiteral">""</FONT>);             <FONT ID="SingleLineComment">// Type 2
+<A NAME="693"></A></FONT>            patientSex = ds.getString(Tags.PatientSex, <FONT ID="StringLiteral">""</FONT>);                         <FONT ID="SingleLineComment">// Type 2
+<A NAME="694"></A></FONT>        }
+<A NAME="695"></A>        
+<A NAME="696"></A>        
+<A NAME="697"></A>        <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> addStudyModule(Dataset ds) {
+<A NAME="698"></A>            
+<A NAME="699"></A>            <FONT ID="SingleLineComment">// Study IE, General Study Module, PS 3.3 - C.7.2.1, M
+<A NAME="700"></A></FONT>            studyInstanceUID = ds.getString(Tags.StudyInstanceUID, <FONT ID="StringLiteral">""</FONT>);             <FONT ID="SingleLineComment">// Type 1
+<A NAME="701"></A></FONT>            studyDate = ds.getString(Tags.StudyDate, <FONT ID="StringLiteral">""</FONT>);                           <FONT ID="SingleLineComment">// Type 2
+<A NAME="702"></A></FONT>            studyTime = ds.getString(Tags.StudyTime, <FONT ID="StringLiteral">""</FONT>);                           <FONT ID="SingleLineComment">// Type 2
+<A NAME="703"></A></FONT>            referringPhysicianName = ds.getString(Tags.ReferringPhysicianName, <FONT ID="StringLiteral">""</FONT>); <FONT ID="SingleLineComment">// Type 2
+<A NAME="704"></A></FONT>            studyID = ds.getString(Tags.StudyID, <FONT ID="StringLiteral">""</FONT>);                               <FONT ID="SingleLineComment">// Type 2
+<A NAME="705"></A></FONT>            accessionNumber = ds.getString(Tags.AccessionNumber, <FONT ID="StringLiteral">""</FONT>);               <FONT ID="SingleLineComment">// Type 2
+<A NAME="706"></A></FONT>            studyDescription = ds.getString(Tags.StudyDescription, <FONT ID="StringLiteral">""</FONT>);             <FONT ID="SingleLineComment">// Type 3
+<A NAME="707"></A></FONT>        }
+<A NAME="708"></A>        
+<A NAME="709"></A>        
+<A NAME="710"></A>        <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> addSeriesModule(Dataset ds) {
+<A NAME="711"></A>            
+<A NAME="712"></A>            <FONT ID="SingleLineComment">// Series IE, General Series Module, PS 3.3 - C.7.3.1, M
+<A NAME="713"></A></FONT>            modality = ds.getString(Tags.Modality, <FONT ID="StringLiteral">""</FONT>);                             <FONT ID="SingleLineComment">// Type 1
+<A NAME="714"></A></FONT>            seriesInstanceUID = ds.getString(Tags.SeriesInstanceUID, <FONT ID="StringLiteral">""</FONT>);           <FONT ID="SingleLineComment">// Type 1
+<A NAME="715"></A></FONT>            <FONT ID="SingleLineComment">// seriesNumber = ds.getString(Tags.SeriesNumber, "");                  // Type 2
+<A NAME="716"></A></FONT>            <FONT ID="Int">int</FONT> i = ds.getInt(Tags.SeriesNumber, <FONT ID="IntegerLiteral">1</FONT>);                                <FONT ID="SingleLineComment">// Type 2
+<A NAME="717"></A></FONT>            seriesNumber = String.valueOf(i);
+<A NAME="718"></A>            <FONT ID="If">if</FONT> (i &lt; <FONT ID="IntegerLiteral">1000</FONT>) {
+<A NAME="719"></A>                seriesNumber = <FONT ID="StringLiteral">"000"</FONT> + seriesNumber;
+<A NAME="720"></A>                seriesNumber =seriesNumber.substring(seriesNumber.length() - <FONT ID="IntegerLiteral">3</FONT>);
+<A NAME="721"></A>            }
+<A NAME="722"></A>        }
+<A NAME="723"></A>        
+<A NAME="724"></A>        
+<A NAME="725"></A>        <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> addInstanceModule(Dataset ds) {
+<A NAME="726"></A>            
+<A NAME="727"></A>            <FONT ID="SingleLineComment">// Image General Module, PS 3.3 - C.7.6.1 General Image Module
+<A NAME="728"></A></FONT>            <FONT ID="SingleLineComment">// instanceNumber = ds.getString(Tags.InstanceNumber, "");              // Type 2
+<A NAME="729"></A></FONT>            <FONT ID="Int">int</FONT> i = ds.getInt(Tags.InstanceNumber, <FONT ID="IntegerLiteral">1</FONT>);                              <FONT ID="SingleLineComment">// Type 2
+<A NAME="730"></A></FONT>            instanceNumber = String.valueOf(i);
+<A NAME="731"></A>            <FONT ID="If">if</FONT> (i &lt; <FONT ID="IntegerLiteral">1000</FONT>) {
+<A NAME="732"></A>                instanceNumber = <FONT ID="StringLiteral">"000"</FONT> + instanceNumber;
+<A NAME="733"></A>                instanceNumber = instanceNumber.substring(instanceNumber.length() - <FONT ID="IntegerLiteral">3</FONT>);
+<A NAME="734"></A>            }
+<A NAME="735"></A>            
+<A NAME="736"></A>            <FONT ID="SingleLineComment">// SOP Common Module, PS 3.3 - C.12.1, M
+<A NAME="737"></A></FONT>            sopClassUID = ds.getString(Tags.SOPClassUID, <FONT ID="StringLiteral">""</FONT>);                       <FONT ID="SingleLineComment">// Type 1
+<A NAME="738"></A></FONT>            sopInstanceUID = ds.getString(Tags.SOPInstanceUID, <FONT ID="StringLiteral">""</FONT>);                 <FONT ID="SingleLineComment">// Type 1
+<A NAME="739"></A></FONT>        }
+<A NAME="740"></A>        
+<A NAME="741"></A>        
+<A NAME="742"></A>        <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> buildFilePath(String[] refFileIDs) {
+<A NAME="743"></A>            File f;
+<A NAME="744"></A>            
+<A NAME="745"></A>            <FONT ID="SingleLineComment">// refFileIDs must be given
+<A NAME="746"></A></FONT>            <FONT ID="If">if</FONT> (refFileIDs == <FONT ID="Null">null</FONT>) <FONT ID="Return">return</FONT>;
+<A NAME="747"></A>            
+<A NAME="748"></A>            <FONT ID="SingleLineComment">// Start with DICOMDIR directory
+<A NAME="749"></A></FONT>            f = dicomdir.getParentFile();
+<A NAME="750"></A>            <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; refFileIDs.length; i++) {
+<A NAME="751"></A>                <FONT ID="SingleLineComment">// Add descending IDs
+<A NAME="752"></A></FONT>                f = <FONT ID="New">new</FONT> File(f, refFileIDs[i]);
+<A NAME="753"></A>            }
+<A NAME="754"></A>            
+<A NAME="755"></A>            <FONT ID="SingleLineComment">// Store the complete path in field
+<A NAME="756"></A></FONT>            filePath = f.getPath();
+<A NAME="757"></A>            <FONT ID="SingleLineComment">// log.info(filePath);
+<A NAME="758"></A></FONT>        }
+<A NAME="759"></A>        
+<A NAME="760"></A>        
+<A NAME="761"></A>        <FONT ID="Public">public</FONT> DcmObjectRecord(ResultSet rs) <FONT ID="Throws">throws</FONT> SQLException {
+<A NAME="762"></A>            
+<A NAME="763"></A>            recordID = rs.getInt(<FONT ID="StringLiteral">"recordID"</FONT>);
+<A NAME="764"></A>            isProcessed = rs.getBoolean(<FONT ID="StringLiteral">"isProcessed"</FONT>);
+<A NAME="765"></A>            
+<A NAME="766"></A>            filePath = rs.getString(<FONT ID="StringLiteral">"filePath"</FONT>);
+<A NAME="767"></A>            
+<A NAME="768"></A>            patientBirthDate = rs.getString(<FONT ID="StringLiteral">"patientBirthDate"</FONT>);
+<A NAME="769"></A>            patientName = rs.getString(<FONT ID="StringLiteral">"patientName"</FONT>);
+<A NAME="770"></A>            patientID = rs.getString(<FONT ID="StringLiteral">"patientID"</FONT>);
+<A NAME="771"></A>            patientBirthDate = rs.getString(<FONT ID="StringLiteral">"patientBirthDate"</FONT>);
+<A NAME="772"></A>            patientSex = rs.getString(<FONT ID="StringLiteral">"patientSex"</FONT>);
+<A NAME="773"></A>            studyInstanceUID = rs.getString(<FONT ID="StringLiteral">"studyInstanceUID"</FONT>);
+<A NAME="774"></A>            studyDate = rs.getString(<FONT ID="StringLiteral">"studyDate"</FONT>);
+<A NAME="775"></A>            studyTime = rs.getString(<FONT ID="StringLiteral">"studyTime"</FONT>);
+<A NAME="776"></A>            referringPhysicianName = rs.getString(<FONT ID="StringLiteral">"referringPhysicianName"</FONT>);
+<A NAME="777"></A>            studyID = rs.getString(<FONT ID="StringLiteral">"studyID"</FONT>);
+<A NAME="778"></A>            accessionNumber = rs.getString(<FONT ID="StringLiteral">"accessionNumber"</FONT>);
+<A NAME="779"></A>            studyDescription = rs.getString(<FONT ID="StringLiteral">"studyDescription"</FONT>);
+<A NAME="780"></A>            modality = rs.getString(<FONT ID="StringLiteral">"modality"</FONT>);
+<A NAME="781"></A>            seriesInstanceUID = rs.getString(<FONT ID="StringLiteral">"seriesInstanceUID"</FONT>);
+<A NAME="782"></A>            seriesNumber = rs.getString(<FONT ID="StringLiteral">"seriesNumber"</FONT>);
+<A NAME="783"></A>            instanceNumber = rs.getString(<FONT ID="StringLiteral">"instanceNumber"</FONT>);
+<A NAME="784"></A>            sopClassUID = rs.getString(<FONT ID="StringLiteral">"sopClassUID"</FONT>);
+<A NAME="785"></A>            sopInstanceUID = rs.getString(<FONT ID="StringLiteral">"sopInstanceUID"</FONT>);
+<A NAME="786"></A>        }
+<A NAME="787"></A>        
+<A NAME="788"></A>        
+<A NAME="789"></A>        <FONT ID="Public">public</FONT> String toPatientString() {
+<A NAME="790"></A>            String s  = patientName + <FONT ID="StringLiteral">", "</FONT>;
+<A NAME="791"></A>            s += formatDate(patientBirthDate) + <FONT ID="StringLiteral">", "</FONT>;
+<A NAME="792"></A>            s += patientSex + <FONT ID="StringLiteral">", "</FONT>;
+<A NAME="793"></A>            s += patientID;
+<A NAME="794"></A>            <FONT ID="Return">return</FONT> s;
+<A NAME="795"></A>        }
+<A NAME="796"></A>        
+<A NAME="797"></A>        <FONT ID="Public">public</FONT> String toStudyString() {
+<A NAME="798"></A>            String s  = <FONT ID="StringLiteral">"Study: "</FONT> + studyID + <FONT ID="StringLiteral">", "</FONT>;
+<A NAME="799"></A>            s += formatDate(studyDate) + <FONT ID="StringLiteral">", "</FONT>;
+<A NAME="800"></A>            s += formatTime(studyTime) + <FONT ID="StringLiteral">", "</FONT>;
+<A NAME="801"></A>            s += studyDescription;
+<A NAME="802"></A>            <FONT ID="Return">return</FONT> s;
+<A NAME="803"></A>        }
+<A NAME="804"></A>        
+<A NAME="805"></A>        <FONT ID="Public">public</FONT> String toSeriesString() {
+<A NAME="806"></A>            String s  = <FONT ID="StringLiteral">"Series: "</FONT> + seriesNumber + <FONT ID="StringLiteral">", "</FONT>;
+<A NAME="807"></A>            s += modality;
+<A NAME="808"></A>            <FONT ID="Return">return</FONT> s;
+<A NAME="809"></A>        }
+<A NAME="810"></A>        
+<A NAME="811"></A>        <FONT ID="Public">public</FONT> String toInstanceString() {
+<A NAME="812"></A>            String s  = <FONT ID="StringLiteral">"Instance: "</FONT> + instanceNumber;
+<A NAME="813"></A>            <FONT ID="Return">return</FONT> s;
+<A NAME="814"></A>        }
+<A NAME="815"></A>        
+<A NAME="816"></A>        <FONT ID="Private">private</FONT> String formatDate(String date) {
+<A NAME="817"></A>            <FONT ID="If">if</FONT> (date.length() &lt; <FONT ID="IntegerLiteral">7</FONT>) <FONT ID="Return">return</FONT> date;
+<A NAME="818"></A>            
+<A NAME="819"></A>            String s = date.substring(<FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">4</FONT>) + <FONT ID="StringLiteral">"-"</FONT>;
+<A NAME="820"></A>            s += date.substring(<FONT ID="IntegerLiteral">4</FONT>, <FONT ID="IntegerLiteral">6</FONT>) + <FONT ID="StringLiteral">"-"</FONT>;
+<A NAME="821"></A>            s += date.substring(<FONT ID="IntegerLiteral">6</FONT>);
+<A NAME="822"></A>            <FONT ID="Return">return</FONT> s;
+<A NAME="823"></A>        }
+<A NAME="824"></A>        
+<A NAME="825"></A>        <FONT ID="Private">private</FONT> String formatTime(String time) {
+<A NAME="826"></A>            <FONT ID="If">if</FONT> (time.length() &lt; <FONT ID="IntegerLiteral">4</FONT>) <FONT ID="Return">return</FONT> time;
+<A NAME="827"></A>            
+<A NAME="828"></A>            String s = time.substring(<FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">2</FONT>) + <FONT ID="StringLiteral">":"</FONT>;
+<A NAME="829"></A>            s += time.substring(<FONT ID="IntegerLiteral">2</FONT>, <FONT ID="IntegerLiteral">4</FONT>);
+<A NAME="830"></A>            <FONT ID="Return">return</FONT> s;
+<A NAME="831"></A>        }
+<A NAME="832"></A>    }
+<A NAME="833"></A>    
+<A NAME="834"></A>}
+<A NAME="835"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DcmObjectDB</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

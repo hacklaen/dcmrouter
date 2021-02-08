@@ -1,0 +1,406 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.receiver.GeneralFileReceiver (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">GeneralFileReceiver</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  Copyright (c) 2006 by
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Thomas Hacklaender @ IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="5"></A> *
+<A NAME="6"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="7"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="8"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="9"></A> *  (at your option) any later version.
+<A NAME="10"></A> *
+<A NAME="11"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="12"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="13"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="14"></A> *  Lesser General Public License for more details.
+<A NAME="15"></A> *
+<A NAME="16"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="17"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="18"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="19"></A> *
+<A NAME="20"></A> *****************************************************************************/</FONT>
+<A NAME="21"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.receiver.index.html" target="packageFrame">de.iftm.dcm4che.router.receiver</A>;
+<A NAME="22"></A>
+<A NAME="23"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.receiver.index.html" target="packageFrame">de.iftm.dcm4che.router.receiver.*</A>;
+<A NAME="24"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">de.iftm.dcm4che.router.plugin.DicomRouterPlugin</A>;
+<A NAME="25"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/PluginChain.java.html">de.iftm.dcm4che.router.plugin.PluginChain</A>;
+<A NAME="26"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.property.index.html" target="packageFrame">de.iftm.dcm4che.router.property.*</A>;
+<A NAME="27"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.util.index.html" target="packageFrame">de.iftm.dcm4che.router.util.*</A>;
+<A NAME="28"></A>
+<A NAME="29"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="30"></A>
+<A NAME="31"></A><FONT ID="Import">import</FONT> java.io.*;
+<A NAME="32"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="33"></A><FONT ID="Import">import</FONT> java.lang.reflect.*;
+<A NAME="34"></A>
+<A NAME="35"></A><FONT ID="Import">import</FONT> org.apache.log4j.Logger;
+<A NAME="36"></A>
+<A NAME="37"></A>
+<A NAME="38"></A><FONT ID="FormalComment">/**
+<A NAME="39"></A> * @author  hacklaender
+<A NAME="40"></A> * @version 2006.11.10
+<A NAME="41"></A> */</FONT>
+<A NAME="42"></A><FONT ID="Public">public</FONT> <FONT ID="Abstract">abstract</FONT> <FONT ID="Class">class</FONT> GeneralFileReceiver  <FONT ID="Extends">extends</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/receiver/DicomReceiver.java.html">DicomReceiver</A> {
+<A NAME="43"></A>    <FONT ID="MultiLineComment">/*
+<A NAME="44"></A>     * Gives an oppertunity to recieve outprints at different appenders in
+<A NAME="45"></A>     * a better and faster way as use System.out
+<A NAME="46"></A>     */</FONT>
+<A NAME="47"></A>    
+<A NAME="48"></A>    <FONT ID="FormalComment">/** The version string */</FONT>
+<A NAME="49"></A>    <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> String VERSION = <FONT ID="StringLiteral">"2006.11.10"</FONT>;
+<A NAME="50"></A>    
+<A NAME="51"></A>    <FONT ID="FormalComment">/** DOCUMENT ME! */</FONT>
+<A NAME="52"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger log = Logger.getLogger(<A HREF="../../../../../de/iftm/dcm4che/router/receiver/DicomFileReceiver.java.html">DicomFileReceiver</A>.<FONT ID="Class">class</FONT>);
+<A NAME="53"></A>    
+<A NAME="54"></A>    <FONT ID="FormalComment">/** Holds the properties of the FileReceiver. */</FONT>
+<A NAME="55"></A>    <FONT ID="Protected">protected</FONT> Properties props = <FONT ID="Null">null</FONT>;
+<A NAME="56"></A>    
+<A NAME="57"></A>    <FONT ID="FormalComment">/** Holds the Files to process. */</FONT>
+<A NAME="58"></A>    <FONT ID="Protected">protected</FONT> Vector fileVector = <FONT ID="Null">null</FONT>;
+<A NAME="59"></A>    
+<A NAME="60"></A>    <FONT ID="FormalComment">/** Holds the chain of plugins. */</FONT>
+<A NAME="61"></A>    <FONT ID="Protected">protected</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/PluginChain.java.html">PluginChain</A> pluginChain = <FONT ID="Null">null</FONT>;
+<A NAME="62"></A>    
+<A NAME="63"></A>    <FONT ID="FormalComment">/** Signals the thread to stop */</FONT>
+<A NAME="64"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Boolean">boolean</FONT> stopFlag = <FONT ID="False">false</FONT>;
+<A NAME="65"></A>
+<A NAME="66"></A>    
+<A NAME="67"></A>    <FONT ID="SingleLineComment">// &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  Local fields defined by properties: &gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="68"></A></FONT>    
+<A NAME="69"></A>    <FONT ID="FormalComment">/** Holds the value of property fileURI. */</FONT>
+<A NAME="70"></A>    <FONT ID="Private">private</FONT> String file_uri = <FONT ID="Null">null</FONT>;
+<A NAME="71"></A>    
+<A NAME="72"></A>    <FONT ID="FormalComment">/** Holds the value of property include_subdirectories. */</FONT>
+<A NAME="73"></A>    <FONT ID="Private">private</FONT> <FONT ID="Boolean">boolean</FONT> include_subdirectories = <FONT ID="False">false</FONT>;
+<A NAME="74"></A>
+<A NAME="75"></A>    
+<A NAME="76"></A>    <FONT ID="SingleLineComment">//&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+<A NAME="77"></A></FONT>        
+<A NAME="78"></A>    <FONT ID="FormalComment">/**
+<A NAME="79"></A>     * Creates a new instance of Class
+<A NAME="80"></A>     * @param props the properties for the receiver and plugins.
+<A NAME="81"></A>     */</FONT>
+<A NAME="82"></A>    <FONT ID="Public">public</FONT> GeneralFileReceiver(Properties props) {
+<A NAME="83"></A>        <FONT ID="Super">super</FONT>(props);
+<A NAME="84"></A>    }
+<A NAME="85"></A>    
+<A NAME="86"></A>    
+<A NAME="87"></A>    <FONT ID="FormalComment">/**
+<A NAME="88"></A>     * Creates a new instance of Class
+<A NAME="89"></A>     * @param uri the URI of the properties file for the receiver and plugins.
+<A NAME="90"></A>     */</FONT>
+<A NAME="91"></A>    <FONT ID="Public">public</FONT> GeneralFileReceiver(String uri) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="92"></A>        <FONT ID="Super">super</FONT>(uri);
+<A NAME="93"></A>    }
+<A NAME="94"></A>    
+<A NAME="95"></A>    
+<A NAME="96"></A>    <FONT ID="FormalComment">/**
+<A NAME="97"></A>     * Creates a new instance of Class
+<A NAME="98"></A>     * @param argv the arguments passed to the programs main method.
+<A NAME="99"></A>     */</FONT>
+<A NAME="100"></A>    <FONT ID="Public">public</FONT> GeneralFileReceiver(String[] argv) {
+<A NAME="101"></A>        <FONT ID="Super">super</FONT>(argv);
+<A NAME="102"></A>    }
+<A NAME="103"></A>    
+<A NAME="104"></A>    
+<A NAME="105"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Static methods &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="106"></A></FONT>      
+<A NAME="107"></A>    <FONT ID="FormalComment">/**
+<A NAME="108"></A>     *
+<A NAME="109"></A>     */</FONT>
+<A NAME="110"></A>    <FONT ID="Static">static</FONT> <FONT ID="Public">public</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/receiver/GeneralFileReceiver.java.html">GeneralFileReceiver</A> createByName(File propFile) {
+<A NAME="111"></A>        Class                   theClass;
+<A NAME="112"></A>        Constructor             theClassConstructor;
+<A NAME="113"></A>        <A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">DicomRouterProperties</A>   drProps;
+<A NAME="114"></A>        <A HREF="../../../../../de/iftm/dcm4che/router/receiver/GeneralFileReceiver.java.html">GeneralFileReceiver</A>     fileReceiver;
+<A NAME="115"></A>        Properties              receiverProps;
+<A NAME="116"></A>        String                  receiverName;
+<A NAME="117"></A>        <FONT ID="Boolean">boolean</FONT>                 success;
+<A NAME="118"></A>        Class[]                 parameterTypes = <FONT ID="New">new</FONT> Class[] {Properties.<FONT ID="Class">class</FONT>};
+<A NAME="119"></A>        Object[]                initargs;
+<A NAME="120"></A>        
+<A NAME="121"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="122"></A>            drProps = <FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">DicomRouterProperties</A>(propFile);
+<A NAME="123"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="124"></A>            log.error(<FONT ID="StringLiteral">"Can't load properties for receiver"</FONT>);
+<A NAME="125"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="126"></A>        }
+<A NAME="127"></A>        receiverProps = drProps.extractReceiverProperties();
+<A NAME="128"></A>        receiverName = receiverProps.getProperty(<FONT ID="StringLiteral">"name"</FONT>);
+<A NAME="129"></A>        <FONT ID="If">if</FONT> (receiverName == <FONT ID="Null">null</FONT>) {
+<A NAME="130"></A>            log.error(<FONT ID="StringLiteral">"No name for a file receiver given in properties"</FONT>);
+<A NAME="131"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="132"></A>        }
+<A NAME="133"></A>        
+<A NAME="134"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="135"></A>            theClass = Class.forName(receiverName);
+<A NAME="136"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="137"></A>            log.error(<FONT ID="StringLiteral">"Can't load receiver: "</FONT> + receiverName);
+<A NAME="138"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="139"></A>        }
+<A NAME="140"></A>        
+<A NAME="141"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="142"></A>            theClassConstructor = theClass.getConstructor(parameterTypes);
+<A NAME="143"></A>        } <FONT ID="Catch">catch</FONT> (NoSuchMethodException e) {
+<A NAME="144"></A>            log.error(<FONT ID="StringLiteral">"Can't get constructor of receiver: "</FONT> + receiverName);
+<A NAME="145"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="146"></A>        }
+<A NAME="147"></A>        
+<A NAME="148"></A>        initargs = <FONT ID="New">new</FONT> Object[] {drProps};
+<A NAME="149"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="150"></A>            fileReceiver = (<A HREF="../../../../../de/iftm/dcm4che/router/receiver/GeneralFileReceiver.java.html">GeneralFileReceiver</A>) theClassConstructor.newInstance(initargs);
+<A NAME="151"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="152"></A>            log.error(<FONT ID="StringLiteral">"Can't instantiate receiver: "</FONT> + receiverName);
+<A NAME="153"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="154"></A>        }
+<A NAME="155"></A>        
+<A NAME="156"></A>        <FONT ID="Return">return</FONT> fileReceiver;
+<A NAME="157"></A>    }
+<A NAME="158"></A>    
+<A NAME="159"></A>    
+<A NAME="160"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Other methods &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="161"></A></FONT>      
+<A NAME="162"></A>    <FONT ID="FormalComment">/**
+<A NAME="163"></A>     * Copies the relevant properties to local fields.
+<A NAME="164"></A>     */</FONT>
+<A NAME="165"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> init() {
+<A NAME="166"></A>        String  s;
+<A NAME="167"></A>        File f;
+<A NAME="168"></A>        
+<A NAME="169"></A>        <FONT ID="SingleLineComment">// Use properties set in the parent class DicomReceiver
+<A NAME="170"></A></FONT>        <FONT ID="SingleLineComment">// Store the properties in a local field
+<A NAME="171"></A></FONT>        props = drProperties.extractReceiverProperties();
+<A NAME="172"></A>        
+<A NAME="173"></A>        <FONT ID="If">if</FONT> (props == <FONT ID="Null">null</FONT>) {
+<A NAME="174"></A>            <FONT ID="SingleLineComment">// nichts zu tun
+<A NAME="175"></A></FONT>            <FONT ID="Return">return</FONT>;
+<A NAME="176"></A>        }
+<A NAME="177"></A>        
+<A NAME="178"></A>        <FONT ID="SingleLineComment">// file_uri
+<A NAME="179"></A></FONT>        s = props.getProperty(<FONT ID="StringLiteral">"file-uri"</FONT>);
+<A NAME="180"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="181"></A>            <FONT ID="SingleLineComment">// URI speichern
+<A NAME="182"></A></FONT>            file_uri = s;
+<A NAME="183"></A>        }
+<A NAME="184"></A>        
+<A NAME="185"></A>        <FONT ID="SingleLineComment">// include_subdirectories
+<A NAME="186"></A></FONT>        s = props.getProperty(<FONT ID="StringLiteral">"include-subdirectories"</FONT>);
+<A NAME="187"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="188"></A>            <FONT ID="If">if</FONT> (s.toLowerCase().charAt(<FONT ID="IntegerLiteral">0</FONT>) == <FONT ID="CharacerLiteral">'t'</FONT>) {
+<A NAME="189"></A>                include_subdirectories = <FONT ID="True">true</FONT>;
+<A NAME="190"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="191"></A>                include_subdirectories = <FONT ID="False">false</FONT>;
+<A NAME="192"></A>            }
+<A NAME="193"></A>        }
+<A NAME="194"></A>        
+<A NAME="195"></A>        <FONT ID="SingleLineComment">// Vector von Files festlegen
+<A NAME="196"></A></FONT>        f = Util.uriToFile(file_uri);
+<A NAME="197"></A>        setFileToProcess(f);
+<A NAME="198"></A>        
+<A NAME="199"></A>    }
+<A NAME="200"></A>    
+<A NAME="201"></A>    <FONT ID="FormalComment">/**
+<A NAME="202"></A>     * Should be called after setDicomRouterProperties to consider the router properties.
+<A NAME="203"></A>     *
+<A NAME="204"></A>     * @param f
+<A NAME="205"></A>     */</FONT>
+<A NAME="206"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setFileToProcess(File f) {
+<A NAME="207"></A>        setFileVectorToProcess(fileToFileVector(f));
+<A NAME="208"></A>    }
+<A NAME="209"></A>    
+<A NAME="210"></A>    
+<A NAME="211"></A>    <FONT ID="FormalComment">/**
+<A NAME="212"></A>     * Should be called after setDicomRouterProperties to consider the router properties.
+<A NAME="213"></A>     *
+<A NAME="214"></A>     * @param v
+<A NAME="215"></A>     */</FONT>
+<A NAME="216"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setFileVectorToProcess(Vector v) {
+<A NAME="217"></A>        fileVector = v;
+<A NAME="218"></A>    }
+<A NAME="219"></A>
+<A NAME="220"></A> 
+<A NAME="221"></A>      
+<A NAME="222"></A>    <FONT ID="FormalComment">/**
+<A NAME="223"></A>     * Generates a Vector of files from the local fields file_uri and include_subdirectories.
+<A NAME="224"></A>     *
+<A NAME="225"></A>     * @param f The file to process.
+<A NAME="226"></A>     * @return The Vector or null in the case of an error.
+<A NAME="227"></A>     */</FONT>
+<A NAME="228"></A>    <FONT ID="Protected">protected</FONT> Vector fileToFileVector(File f) {
+<A NAME="229"></A>        File[] fileList = <FONT ID="Null">null</FONT>;
+<A NAME="230"></A>        Vector fVec = <FONT ID="New">new</FONT> Vector();
+<A NAME="231"></A>        
+<A NAME="232"></A>        <FONT ID="If">if</FONT> (f == <FONT ID="Null">null</FONT>) {
+<A NAME="233"></A>            <FONT ID="SingleLineComment">//nichts zu tun
+<A NAME="234"></A></FONT>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="235"></A>        }
+<A NAME="236"></A>        
+<A NAME="237"></A>        <FONT ID="SingleLineComment">// Wenn der Pfad ungueltig ist null zurueckgeben
+<A NAME="238"></A></FONT>        <FONT ID="If">if</FONT> (!f.exists()) {
+<A NAME="239"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="240"></A>        }
+<A NAME="241"></A>        
+<A NAME="242"></A>        <FONT ID="SingleLineComment">// File(s) zum Filevector hinzufuegen
+<A NAME="243"></A></FONT>        addFile(f, fVec);
+<A NAME="244"></A>        
+<A NAME="245"></A>        <FONT ID="Return">return</FONT> fVec;
+<A NAME="246"></A>    }
+<A NAME="247"></A>    
+<A NAME="248"></A>    
+<A NAME="249"></A>    <FONT ID="FormalComment">/**
+<A NAME="250"></A>     * Adds one or more files to a given Vector of File's.
+<A NAME="251"></A>     *
+<A NAME="252"></A>     * @param f The file or directory to add.
+<A NAME="253"></A>     * @param fVec The Vector of files.
+<A NAME="254"></A>     */</FONT>
+<A NAME="255"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> addFile(File f, Vector fVec) {
+<A NAME="256"></A>        File[] fList;
+<A NAME="257"></A>        
+<A NAME="258"></A>        <FONT ID="If">if</FONT> (f.isFile()) {
+<A NAME="259"></A>            <FONT ID="SingleLineComment">// f ist ein File: nur diesen File zum Vector hinzufuegen
+<A NAME="260"></A></FONT>            fVec.add(f);
+<A NAME="261"></A>            
+<A NAME="262"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="263"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="264"></A>            <FONT ID="SingleLineComment">// f ist ein Directory: Alle Files aus dem Diectory hinzufuegen
+<A NAME="265"></A></FONT>            <FONT ID="SingleLineComment">// Liste aller Files und Subdirectories erstellen
+<A NAME="266"></A></FONT>            fList = f.listFiles();
+<A NAME="267"></A>            
+<A NAME="268"></A>            <FONT ID="SingleLineComment">// Liste abarbeiten
+<A NAME="269"></A></FONT>            <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; fList.length; i++) {
+<A NAME="270"></A>                <FONT ID="If">if</FONT> (include_subdirectories) {
+<A NAME="271"></A>                    <FONT ID="SingleLineComment">// Subdirectories mit einschliessen: Recursiver Aufruf
+<A NAME="272"></A></FONT>                    addFile(fList[i], fVec);
+<A NAME="273"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="274"></A>                    <FONT ID="SingleLineComment">// Subdirectories nicht einschliessen: Ignorieren
+<A NAME="275"></A></FONT>                    <FONT ID="If">if</FONT> (fList[i].isFile()) {
+<A NAME="276"></A>                        fVec.add(fList[i]);
+<A NAME="277"></A>                    }
+<A NAME="278"></A>                }
+<A NAME="279"></A>            }
+<A NAME="280"></A>        }
+<A NAME="281"></A>    }
+<A NAME="282"></A>    
+<A NAME="283"></A>    
+<A NAME="284"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Thread to process file vector &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="285"></A></FONT>    
+<A NAME="286"></A>    <FONT ID="FormalComment">/**
+<A NAME="287"></A>     * Process the files in a separed Thread.
+<A NAME="288"></A>     * &lt;p&gt;This implementation assumes, that the read in file contains already a 
+<A NAME="289"></A>     * valid DICOM object.
+<A NAME="290"></A>     */</FONT>
+<A NAME="291"></A>    <FONT ID="Class">class</FONT> ProcessFileVector <FONT ID="Extends">extends</FONT> Thread {
+<A NAME="292"></A>        
+<A NAME="293"></A>        <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> run() {
+<A NAME="294"></A>            File                f = <FONT ID="Null">null</FONT>;
+<A NAME="295"></A>            BufferedInputStream in = <FONT ID="Null">null</FONT>;
+<A NAME="296"></A>            FileFormat          ff = <FONT ID="Null">null</FONT>;
+<A NAME="297"></A>            Dataset             ds = <FONT ID="Null">null</FONT>;
+<A NAME="298"></A>            <FONT ID="Int">int</FONT>                 chainResultCode;
+<A NAME="299"></A>            <A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEvent.java.html">DicomRouterEvent</A>    dre;
+<A NAME="300"></A>                       
+<A NAME="301"></A>            <FONT ID="SingleLineComment">// Notify listeners: STARTING_EVENT
+<A NAME="302"></A></FONT>            dre = <FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEvent.java.html">DicomRouterEvent</A>(<FONT ID="This">this</FONT>);
+<A NAME="303"></A>            dre.setStartingEvent();
+<A NAME="304"></A>            fireDicomRouterEvent(dre);
+<A NAME="305"></A>            
+<A NAME="306"></A>            process_filevector_block: <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; fileVector.size(); i++) {
+<A NAME="307"></A>                
+<A NAME="308"></A>                <FONT ID="If">if</FONT> (stopFlag) {
+<A NAME="309"></A>                    <FONT ID="SingleLineComment">// Abort processing the file vector
+<A NAME="310"></A></FONT>                    <FONT ID="Break">break</FONT> process_filevector_block;
+<A NAME="311"></A>                }
+<A NAME="312"></A>                
+<A NAME="313"></A>                <FONT ID="Try">try</FONT> {
+<A NAME="314"></A>                    f = (File) fileVector.get(i);
+<A NAME="315"></A>                    in = <FONT ID="New">new</FONT> BufferedInputStream(<FONT ID="New">new</FONT> FileInputStream(f));
+<A NAME="316"></A>                } <FONT ID="Catch">catch</FONT> (IOException ioe) {
+<A NAME="317"></A>                    log.error(<FONT ID="StringLiteral">"Can't read file: "</FONT> + f.getPath());
+<A NAME="318"></A>                    <FONT ID="SingleLineComment">// Try next file
+<A NAME="319"></A></FONT>                    <FONT ID="Continue">continue</FONT>;
+<A NAME="320"></A>                }
+<A NAME="321"></A>                
+<A NAME="322"></A>                DcmParser  parser = DcmParserFactory.getInstance().newDcmParser(in);
+<A NAME="323"></A>                
+<A NAME="324"></A>                <FONT ID="Try">try</FONT> {
+<A NAME="325"></A>                    ff = parser.detectFileFormat();
+<A NAME="326"></A>                } <FONT ID="Catch">catch</FONT> (Exception ioe) {
+<A NAME="327"></A>                    log.error(<FONT ID="StringLiteral">"Can't detect DICOM file format for file: "</FONT> + f.getPath());
+<A NAME="328"></A>                    <FONT ID="SingleLineComment">// Try next file
+<A NAME="329"></A></FONT>                    <FONT ID="Continue">continue</FONT>;
+<A NAME="330"></A>                }
+<A NAME="331"></A>                
+<A NAME="332"></A>                ds = DcmObjectFactory.getInstance().newDataset();
+<A NAME="333"></A>                
+<A NAME="334"></A>                <FONT ID="Try">try</FONT> {
+<A NAME="335"></A>                    ds.readFile(in, ff, -<FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="336"></A>                } <FONT ID="Catch">catch</FONT> (IOException ioe) {
+<A NAME="337"></A>                    log.error(<FONT ID="StringLiteral">"Can't create Dataset for file: "</FONT> + f.getPath());
+<A NAME="338"></A>                    <FONT ID="SingleLineComment">// Try next file
+<A NAME="339"></A></FONT>                    <FONT ID="Continue">continue</FONT>;
+<A NAME="340"></A>                }
+<A NAME="341"></A>                
+<A NAME="342"></A>                <FONT ID="SingleLineComment">// Notify listeners: PROGRESS_EVENT
+<A NAME="343"></A></FONT>                dre = <FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEvent.java.html">DicomRouterEvent</A>(<FONT ID="This">this</FONT>);
+<A NAME="344"></A>                dre.setProgressEvent(i, fileVector.size()- <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="345"></A>                fireDicomRouterEvent(dre);
+<A NAME="346"></A>                
+<A NAME="347"></A>                <FONT ID="SingleLineComment">// Notify listeners: NEXT_OBJECT_EVENT
+<A NAME="348"></A></FONT>                dre = <FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEvent.java.html">DicomRouterEvent</A>(<FONT ID="This">this</FONT>);
+<A NAME="349"></A>                dre.setNextObjectEvent(ds);
+<A NAME="350"></A>                fireDicomRouterEvent(dre);
+<A NAME="351"></A>                
+<A NAME="352"></A>                <FONT ID="SingleLineComment">// Process Dataset
+<A NAME="353"></A></FONT>                chainResultCode = pluginChain.process(ds);
+<A NAME="354"></A>                
+<A NAME="355"></A>                <FONT ID="If">if</FONT> (chainResultCode != DicomRouterPlugin.CONTINUE) {
+<A NAME="356"></A>                    <FONT ID="SingleLineComment">// Abort processingthe DICOM object set
+<A NAME="357"></A></FONT>                    <FONT ID="Break">break</FONT> process_filevector_block;
+<A NAME="358"></A>                }
+<A NAME="359"></A>            }
+<A NAME="360"></A>                       
+<A NAME="361"></A>            <FONT ID="SingleLineComment">// Notify listeners: FINISHED_EVENT
+<A NAME="362"></A></FONT>            dre = <FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEvent.java.html">DicomRouterEvent</A>(<FONT ID="This">this</FONT>);
+<A NAME="363"></A>            dre.setFinishedEvent();
+<A NAME="364"></A>            fireDicomRouterEvent(dre);
+<A NAME="365"></A>            
+<A NAME="366"></A>            <FONT ID="SingleLineComment">// Close all plugins
+<A NAME="367"></A></FONT>            pluginChain.closePlugins();
+<A NAME="368"></A>        }
+<A NAME="369"></A>    }
+<A NAME="370"></A>    
+<A NAME="371"></A>}
+<A NAME="372"></A>
+<A NAME="373"></A><FONT ID="FormalComment">/**
+<A NAME="374"></A> * Revisions:
+<A NAME="375"></A> *
+<A NAME="376"></A> * 2006.04.29 hacklaender: Totally rewritten.
+<A NAME="377"></A> */</FONT>
+<A NAME="378"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">GeneralFileReceiver</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

@@ -1,0 +1,172 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.plugin.PrivateRemovePlugin (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">PrivateRemovePlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  PrivateRemovePlugin.java
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Copyright (c) 2003 by
+<A NAME="5"></A> *
+<A NAME="6"></A> *  IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="7"></A> *  VISUS Technology Transfer GmbH
+<A NAME="8"></A> *
+<A NAME="9"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="10"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="11"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="12"></A> *  (at your option) any later version.
+<A NAME="13"></A> *
+<A NAME="14"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="15"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="16"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="17"></A> *  Lesser General Public License for more details.
+<A NAME="18"></A> *
+<A NAME="19"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="20"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="21"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="22"></A> *
+<A NAME="23"></A> *
+<A NAME="24"></A> *****************************************************************************/</FONT>
+<A NAME="25"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.plugin.index.html" target="packageFrame">de.iftm.dcm4che.router.plugin</A>;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">de.iftm.dcm4che.router.property.DicomRouterProperties</A>;
+<A NAME="28"></A>
+<A NAME="29"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="30"></A>
+<A NAME="31"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="32"></A>
+<A NAME="33"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.*;
+<A NAME="34"></A>
+<A NAME="35"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="36"></A>
+<A NAME="37"></A>
+<A NAME="38"></A><FONT ID="FormalComment">/**
+<A NAME="39"></A> * This removes all private elements of the submitted Dataset. Elements are
+<A NAME="40"></A> * private, if (1) the group number is odd or (2) if the element is not found in
+<A NAME="41"></A> * the dictionary of elements.&lt;br&gt;
+<A NAME="42"></A> * &lt;br&gt;
+<A NAME="43"></A> * It supports no properties.
+<A NAME="44"></A> *
+<A NAME="45"></A> * @author Thomas Hacklaender
+<A NAME="46"></A> * @version 2003.11.14
+<A NAME="47"></A> */</FONT>
+<A NAME="48"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> PrivateRemovePlugin <FONT ID="Extends">extends</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">DicomRouterPlugin</A> {
+<A NAME="49"></A>    <FONT ID="FormalComment">/** The version string */</FONT>
+<A NAME="50"></A>    <FONT ID="Final">final</FONT> String VERSION = <FONT ID="StringLiteral">"2006.11.10"</FONT>;
+<A NAME="51"></A>
+<A NAME="52"></A>    <FONT ID="FormalComment">/** The logger for this plugin */</FONT>
+<A NAME="53"></A>    Logger log = Logger.getLogger(<A HREF="../../../../../de/iftm/dcm4che/router/plugin/PrivateRemovePlugin.java.html">PrivateRemovePlugin</A>.<FONT ID="Class">class</FONT>);
+<A NAME="54"></A>
+<A NAME="55"></A>    <FONT ID="FormalComment">/**
+<A NAME="56"></A>     * Constructor.
+<A NAME="57"></A>     */</FONT>
+<A NAME="58"></A>    <FONT ID="Public">public</FONT> PrivateRemovePlugin() {
+<A NAME="59"></A>        <FONT ID="SingleLineComment">// Nichts zu tun.
+<A NAME="60"></A></FONT>    }
+<A NAME="61"></A>
+<A NAME="62"></A>    <FONT ID="FormalComment">/**
+<A NAME="63"></A>     * Inits the DicomRouterPlugin with the specified Properties.
+<A NAME="64"></A>     * @param p  Properties containing the configuration of the plugin
+<A NAME="65"></A>     */</FONT>
+<A NAME="66"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> init(<A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">Properties</A> p) {
+<A NAME="67"></A>        <FONT ID="SingleLineComment">// Fuer das Plugin sind keine Properties definiert
+<A NAME="68"></A></FONT>    }
+<A NAME="69"></A>
+<A NAME="70"></A>    <FONT ID="FormalComment">/**
+<A NAME="71"></A>     * Returns a version string.
+<A NAME="72"></A>     *
+<A NAME="73"></A>     * @return The version string
+<A NAME="74"></A>     */</FONT>
+<A NAME="75"></A>    <FONT ID="Public">public</FONT> String getVersion() {
+<A NAME="76"></A>        <FONT ID="Return">return</FONT> VERSION;
+<A NAME="77"></A>    }
+<A NAME="78"></A>
+<A NAME="79"></A>    
+<A NAME="80"></A>    <FONT ID="FormalComment">/**
+<A NAME="81"></A>     * Closes the Plugin.
+<A NAME="82"></A>     */</FONT>
+<A NAME="83"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> close() {
+<A NAME="84"></A>        <FONT ID="SingleLineComment">// Nichts zu tun.
+<A NAME="85"></A></FONT>    }
+<A NAME="86"></A>
+<A NAME="87"></A>    <FONT ID="FormalComment">/**
+<A NAME="88"></A>     * Contains the proccesing of this plugin. This implementation handels all
+<A NAME="89"></A>     * exeptions inside the method and sends logging information about the exeption.
+<A NAME="90"></A>     * 
+<A NAME="91"></A>     * 
+<A NAME="92"></A>     * 
+<A NAME="93"></A>     * @param dataset The Dataset to process.
+<A NAME="94"></A>     * @return If succesfull CONTINUE, REQUEST_ABORT_RECEIVER otherwise
+<A NAME="95"></A>     */</FONT>
+<A NAME="96"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> process(Dataset dataset) {
+<A NAME="97"></A>        DcmElement element;
+<A NAME="98"></A>        <FONT ID="Int">int</FONT> tagGroup;
+<A NAME="99"></A>        <FONT ID="Int">int</FONT> tagElement;
+<A NAME="100"></A>        Dataset original;
+<A NAME="101"></A>        TagDictionary dict = DictionaryFactory.getInstance()
+<A NAME="102"></A>                                              .getDefaultTagDictionary();
+<A NAME="103"></A>
+<A NAME="104"></A>        <FONT ID="SingleLineComment">// Nur dann weitermachen, wenn ein Datset vorhanden ist
+<A NAME="105"></A></FONT>        <FONT ID="If">if</FONT> (dataset == <FONT ID="Null">null</FONT>) {
+<A NAME="106"></A>            log.warn(<FONT ID="StringLiteral">"No Dataset given."</FONT>);
+<A NAME="107"></A>
+<A NAME="108"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="109"></A>        }
+<A NAME="110"></A>
+<A NAME="111"></A>        <FONT ID="SingleLineComment">// Das urspruengliche Datset fuer die Iteration kopieren
+<A NAME="112"></A></FONT>        original = DcmObjectFactory.getInstance().newDataset();
+<A NAME="113"></A>        original.putAll(dataset);
+<A NAME="114"></A>
+<A NAME="115"></A>        <FONT ID="SingleLineComment">// Alle Elemente des Dataset bearbeiten
+<A NAME="116"></A></FONT>        <FONT ID="For">for</FONT> (Iterator iter = original.iterator(); iter.hasNext();) {
+<A NAME="117"></A>            <FONT ID="SingleLineComment">// Element holen
+<A NAME="118"></A></FONT>            element = (DcmElement) iter.next();
+<A NAME="119"></A>            tagGroup = element.tag() &gt;&gt;&gt; <FONT ID="IntegerLiteral">16</FONT>;
+<A NAME="120"></A>            tagElement = element.tag() &amp; <FONT ID="IntegerLiteral">0xffff</FONT>;
+<A NAME="121"></A>
+<A NAME="122"></A>            <FONT ID="SingleLineComment">// Keine privaten Elemente uebernehmen:
+<A NAME="123"></A></FONT>            <FONT ID="SingleLineComment">// 1. Alle Elemente, bei denen "group" eine ungerade Zahl ist
+<A NAME="124"></A></FONT>            <FONT ID="SingleLineComment">//    sind immer privat.
+<A NAME="125"></A></FONT>            <FONT ID="If">if</FONT> ((tagGroup % <FONT ID="IntegerLiteral">2</FONT>) == <FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="126"></A>                dataset.remove(element.tag());
+<A NAME="127"></A>                log.info(<FONT ID="StringLiteral">"Private Element ("</FONT> + tagGroup + <FONT ID="StringLiteral">", "</FONT> + tagElement +
+<A NAME="128"></A>                    <FONT ID="StringLiteral">") removed"</FONT>);
+<A NAME="129"></A>            }
+<A NAME="130"></A>
+<A NAME="131"></A>            <FONT ID="SingleLineComment">// 2. Alle Elemente, die nicht implements Dictionary stehen sind
+<A NAME="132"></A></FONT>            <FONT ID="SingleLineComment">//    privat
+<A NAME="133"></A></FONT>            <FONT ID="If">if</FONT> (dict.lookup(element.tag()) == <FONT ID="Null">null</FONT>) {
+<A NAME="134"></A>                dataset.remove(element.tag());
+<A NAME="135"></A>                log.info(<FONT ID="StringLiteral">"Private Element ("</FONT> + tagGroup + <FONT ID="StringLiteral">", "</FONT> + tagElement +
+<A NAME="136"></A>                    <FONT ID="StringLiteral">") removed"</FONT>);
+<A NAME="137"></A>            }
+<A NAME="138"></A>        }
+<A NAME="139"></A>
+<A NAME="140"></A>        <FONT ID="SingleLineComment">// Plugin ohne schwerwiegende Fehler beendet
+<A NAME="141"></A></FONT>        <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="142"></A>    }
+<A NAME="143"></A>}
+<A NAME="144"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">PrivateRemovePlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

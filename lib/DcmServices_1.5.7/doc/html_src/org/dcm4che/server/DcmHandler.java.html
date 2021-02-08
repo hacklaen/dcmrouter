@@ -1,0 +1,193 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>org.dcm4che.server.DcmHandler (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DcmHandler</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/* ***** BEGIN LICENSE BLOCK *****
+<A NAME="2"></A> * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+<A NAME="3"></A> *
+<A NAME="4"></A> * The contents of this file are subject to the Mozilla Public License Version
+<A NAME="5"></A> * 1.1 (the "License"); you may not use this file except in compliance with
+<A NAME="6"></A> * the License. You may obtain a copy of the License at
+<A NAME="7"></A> * http://www.mozilla.org/MPL/
+<A NAME="8"></A> *
+<A NAME="9"></A> * Software distributed under the License is distributed on an "AS IS" basis,
+<A NAME="10"></A> * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+<A NAME="11"></A> * for the specific language governing rights and limitations under the
+<A NAME="12"></A> * License.
+<A NAME="13"></A> *
+<A NAME="14"></A> * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+<A NAME="15"></A> * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+<A NAME="16"></A> *
+<A NAME="17"></A> * The Initial Developer of the Original Code is
+<A NAME="18"></A> * TIANI Medgraph AG.
+<A NAME="19"></A> * Portions created by the Initial Developer are Copyright (C) 2002-2005
+<A NAME="20"></A> * the Initial Developer. All Rights Reserved.
+<A NAME="21"></A> *
+<A NAME="22"></A> * Contributor(s):
+<A NAME="23"></A> * Gunter Zeilinger &lt;gunter.zeilinger@tiani.com&gt;
+<A NAME="24"></A> *
+<A NAME="25"></A> * Alternatively, the contents of this file may be used under the terms of
+<A NAME="26"></A> * either the GNU General Public License Version 2 or later (the "GPL"), or
+<A NAME="27"></A> * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+<A NAME="28"></A> * in which case the provisions of the GPL or the LGPL are applicable instead
+<A NAME="29"></A> * of those above. If you wish to allow use of your version of this file only
+<A NAME="30"></A> * under the terms of either the GPL or the LGPL, and not to allow others to
+<A NAME="31"></A> * use your version of this file under the terms of the MPL, indicate your
+<A NAME="32"></A> * decision by deleting the provisions above and replace them with the notice
+<A NAME="33"></A> * and other provisions required by the GPL or the LGPL. If you do not delete
+<A NAME="34"></A> * the provisions above, a recipient may use your version of this file under
+<A NAME="35"></A> * the terms of any one of the MPL, the GPL or the LGPL.
+<A NAME="36"></A> *
+<A NAME="37"></A> * ***** END LICENSE BLOCK ***** */</FONT>
+<A NAME="38"></A>
+<A NAME="39"></A><FONT ID="Package">package</FONT> <A HREF="../../../org.dcm4che.server.index.html" target="packageFrame">org.dcm4che.server</A>;
+<A NAME="40"></A>
+<A NAME="41"></A><FONT ID="Import">import</FONT> org.dcm4che.net.AcceptorPolicy;
+<A NAME="42"></A><FONT ID="Import">import</FONT> org.dcm4che.net.AssociationListener;
+<A NAME="43"></A><FONT ID="Import">import</FONT> org.dcm4che.net.DcmServiceRegistry;
+<A NAME="44"></A>
+<A NAME="45"></A><FONT ID="FormalComment">/**
+<A NAME="46"></A> * @author     &lt;a href="mailto:gunter@tiani.com"&gt;Gunter Zeilinger&lt;/a&gt;
+<A NAME="47"></A> * @since      June, 2002
+<A NAME="48"></A> * @version    $Revision: 1.6 $ $Date: 2005/10/05 16:26:15 $
+<A NAME="49"></A> */</FONT>
+<A NAME="50"></A><FONT ID="Public">public</FONT> <FONT ID="Interface">interface</FONT> DcmHandler <FONT ID="Extends">extends</FONT> Server.Handler
+<A NAME="51"></A>{
+<A NAME="52"></A>    <FONT ID="FormalComment">/**
+<A NAME="53"></A>     *  Adds a feature to the AssociationListener attribute of the DcmHandler
+<A NAME="54"></A>     *  object
+<A NAME="55"></A>     *
+<A NAME="56"></A>     * @param  l  The feature to be added to the AssociationListener attribute
+<A NAME="57"></A>     */</FONT>
+<A NAME="58"></A>    <FONT ID="Void">void</FONT> addAssociationListener(AssociationListener l);
+<A NAME="59"></A>
+<A NAME="60"></A>
+<A NAME="61"></A>    <FONT ID="FormalComment">/**
+<A NAME="62"></A>     *  Description of the Method
+<A NAME="63"></A>     *
+<A NAME="64"></A>     * @param  l  Description of the Parameter
+<A NAME="65"></A>     */</FONT>
+<A NAME="66"></A>    <FONT ID="Void">void</FONT> removeAssociationListener(AssociationListener l);
+<A NAME="67"></A>
+<A NAME="68"></A>
+<A NAME="69"></A>    <FONT ID="FormalComment">/**
+<A NAME="70"></A>     *  Sets the acceptorPolicy attribute of the DcmHandler object
+<A NAME="71"></A>     *
+<A NAME="72"></A>     * @param  policy  The new acceptorPolicy value
+<A NAME="73"></A>     */</FONT>
+<A NAME="74"></A>    <FONT ID="Void">void</FONT> setAcceptorPolicy(AcceptorPolicy policy);
+<A NAME="75"></A>
+<A NAME="76"></A>
+<A NAME="77"></A>    <FONT ID="FormalComment">/**
+<A NAME="78"></A>     *  Gets the acceptorPolicy attribute of the DcmHandler object
+<A NAME="79"></A>     *
+<A NAME="80"></A>     * @return    The acceptorPolicy value
+<A NAME="81"></A>     */</FONT>
+<A NAME="82"></A>    AcceptorPolicy getAcceptorPolicy();
+<A NAME="83"></A>
+<A NAME="84"></A>
+<A NAME="85"></A>    <FONT ID="FormalComment">/**
+<A NAME="86"></A>     *  Sets the dcmServiceRegistry attribute of the DcmHandler object
+<A NAME="87"></A>     *
+<A NAME="88"></A>     * @param  services  The new dcmServiceRegistry value
+<A NAME="89"></A>     */</FONT>
+<A NAME="90"></A>    <FONT ID="Void">void</FONT> setDcmServiceRegistry(DcmServiceRegistry services);
+<A NAME="91"></A>
+<A NAME="92"></A>
+<A NAME="93"></A>    <FONT ID="FormalComment">/**
+<A NAME="94"></A>     *  Gets the dcmServiceRegistry attribute of the DcmHandler object
+<A NAME="95"></A>     *
+<A NAME="96"></A>     * @return    The dcmServiceRegistry value
+<A NAME="97"></A>     */</FONT>
+<A NAME="98"></A>    DcmServiceRegistry getDcmServiceRegistry();
+<A NAME="99"></A>
+<A NAME="100"></A>
+<A NAME="101"></A>    <FONT ID="FormalComment">/**
+<A NAME="102"></A>     *  Getter for property rqTimeout.
+<A NAME="103"></A>     *
+<A NAME="104"></A>     * @return    Value of property rqTimeout.
+<A NAME="105"></A>     */</FONT>
+<A NAME="106"></A>    <FONT ID="Int">int</FONT> getRqTimeout();
+<A NAME="107"></A>
+<A NAME="108"></A>
+<A NAME="109"></A>    <FONT ID="FormalComment">/**
+<A NAME="110"></A>     *  Setter for property rqTimeout.
+<A NAME="111"></A>     *
+<A NAME="112"></A>     * @param  timeout  The new rqTimeout value
+<A NAME="113"></A>     */</FONT>
+<A NAME="114"></A>    <FONT ID="Void">void</FONT> setRqTimeout(<FONT ID="Int">int</FONT> timeout);
+<A NAME="115"></A>
+<A NAME="116"></A>
+<A NAME="117"></A>    <FONT ID="FormalComment">/**
+<A NAME="118"></A>     *  Getter for property dimseTimeout.
+<A NAME="119"></A>     *
+<A NAME="120"></A>     * @return    Value of property dimseTimeout.
+<A NAME="121"></A>     */</FONT>
+<A NAME="122"></A>    <FONT ID="Int">int</FONT> getDimseTimeout();
+<A NAME="123"></A>
+<A NAME="124"></A>
+<A NAME="125"></A>    <FONT ID="FormalComment">/**
+<A NAME="126"></A>     *  Setter for property dimseTimeout.
+<A NAME="127"></A>     *
+<A NAME="128"></A>     * @param  dimseTimeout  New value of property dimseTimeout.
+<A NAME="129"></A>     */</FONT>
+<A NAME="130"></A>    <FONT ID="Void">void</FONT> setDimseTimeout(<FONT ID="Int">int</FONT> dimseTimeout);
+<A NAME="131"></A>
+<A NAME="132"></A>
+<A NAME="133"></A>    <FONT ID="FormalComment">/**
+<A NAME="134"></A>     *  Getter for property soCloseDelay.
+<A NAME="135"></A>     *
+<A NAME="136"></A>     * @return    Value of property soCloseDelay.
+<A NAME="137"></A>     */</FONT>
+<A NAME="138"></A>    <FONT ID="Int">int</FONT> getSoCloseDelay();
+<A NAME="139"></A>
+<A NAME="140"></A>
+<A NAME="141"></A>    <FONT ID="FormalComment">/**
+<A NAME="142"></A>     *  Setter for property soCloseDelay.
+<A NAME="143"></A>     *
+<A NAME="144"></A>     * @param  soCloseDelay  New value of property soCloseDelay.
+<A NAME="145"></A>     */</FONT>
+<A NAME="146"></A>    <FONT ID="Void">void</FONT> setSoCloseDelay(<FONT ID="Int">int</FONT> soCloseDelay);
+<A NAME="147"></A>
+<A NAME="148"></A>
+<A NAME="149"></A>    <FONT ID="FormalComment">/**
+<A NAME="150"></A>     *  Getter for property packPDVs.
+<A NAME="151"></A>     *
+<A NAME="152"></A>     * @return    Value of property packPDVs.
+<A NAME="153"></A>     */</FONT>
+<A NAME="154"></A>    <FONT ID="Boolean">boolean</FONT> isPackPDVs();
+<A NAME="155"></A>
+<A NAME="156"></A>
+<A NAME="157"></A>    <FONT ID="FormalComment">/**
+<A NAME="158"></A>     *  Setter for property packPDVs.
+<A NAME="159"></A>     *
+<A NAME="160"></A>     * @param  packPDVs  New value of property packPDVs.
+<A NAME="161"></A>     */</FONT>
+<A NAME="162"></A>    <FONT ID="Void">void</FONT> setPackPDVs(<FONT ID="Boolean">boolean</FONT> packPDVs);
+<A NAME="163"></A>}
+<A NAME="164"></A>
+<A NAME="165"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DcmHandler</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

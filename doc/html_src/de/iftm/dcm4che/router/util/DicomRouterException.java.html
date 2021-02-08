@@ -1,0 +1,118 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.util.DicomRouterException (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DicomRouterException</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  DicomReceiverException.java
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Copyright (c) 2003 by
+<A NAME="5"></A> *
+<A NAME="6"></A> *  IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="7"></A> *  VISUS Technology Transfer GmbH
+<A NAME="8"></A> *
+<A NAME="9"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="10"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="11"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="12"></A> *  (at your option) any later version.
+<A NAME="13"></A> *
+<A NAME="14"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="15"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="16"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="17"></A> *  Lesser General Public License for more details.
+<A NAME="18"></A> *
+<A NAME="19"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="20"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="21"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="22"></A> *
+<A NAME="23"></A> *
+<A NAME="24"></A> *****************************************************************************/</FONT>
+<A NAME="25"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.util.index.html" target="packageFrame">de.iftm.dcm4che.router.util</A>;
+<A NAME="26"></A>
+<A NAME="27"></A>
+<A NAME="28"></A><FONT ID="FormalComment">/**
+<A NAME="29"></A> *
+<A NAME="30"></A> * @author  hacklaender
+<A NAME="31"></A> */</FONT>
+<A NAME="32"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> DicomRouterException  <FONT ID="Extends">extends</FONT> Exception {
+<A NAME="33"></A>    
+<A NAME="34"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> UNSPECIFIED_ERROR = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="35"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> NO_PLUGINS_SPECIFIED = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="36"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> PLUGIN_INDEX_SYNTAX_ERROR = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="37"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> NO_PROPERTIES_FOR_PLUGIN = <FONT ID="IntegerLiteral">3</FONT>;
+<A NAME="38"></A>    
+<A NAME="39"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> theID;
+<A NAME="40"></A>
+<A NAME="41"></A>    
+<A NAME="42"></A>    <FONT ID="FormalComment">/**
+<A NAME="43"></A>     * Creates a new instance of DicomRouterException.
+<A NAME="44"></A>     */</FONT>
+<A NAME="45"></A>    <FONT ID="Public">public</FONT> DicomRouterException() {
+<A NAME="46"></A>        <FONT ID="Super">super</FONT>();
+<A NAME="47"></A>        theID = UNSPECIFIED_ERROR;
+<A NAME="48"></A>    }
+<A NAME="49"></A>    
+<A NAME="50"></A>    
+<A NAME="51"></A>    <FONT ID="FormalComment">/**
+<A NAME="52"></A>     * Creates a new instance of DicomRouterException.
+<A NAME="53"></A>     */</FONT>
+<A NAME="54"></A>    <FONT ID="Public">public</FONT> DicomRouterException(<FONT ID="Int">int</FONT> id) {
+<A NAME="55"></A>        <FONT ID="Super">super</FONT>();
+<A NAME="56"></A>        theID = id;
+<A NAME="57"></A>    }
+<A NAME="58"></A>    
+<A NAME="59"></A>    
+<A NAME="60"></A>    <FONT ID="FormalComment">/**
+<A NAME="61"></A>     * Creates a new instance of DicomRouterException.
+<A NAME="62"></A>     */</FONT>
+<A NAME="63"></A>    <FONT ID="Public">public</FONT> String getMessage() {
+<A NAME="64"></A>        <FONT ID="Switch">switch</FONT> (theID) {
+<A NAME="65"></A>            
+<A NAME="66"></A>            <FONT ID="Case">case</FONT> NO_PLUGINS_SPECIFIED:
+<A NAME="67"></A>                <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">"No plugins specified"</FONT>;
+<A NAME="68"></A>             
+<A NAME="69"></A>            <FONT ID="Case">case</FONT> PLUGIN_INDEX_SYNTAX_ERROR:
+<A NAME="70"></A>                <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">"Plugin index syntax error"</FONT>;
+<A NAME="71"></A>            
+<A NAME="72"></A>            <FONT ID="Case">case</FONT> NO_PROPERTIES_FOR_PLUGIN:
+<A NAME="73"></A>                <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">"No properties specified for plugin"</FONT>;
+<A NAME="74"></A>               
+<A NAME="75"></A>            <FONT ID="Case">case</FONT> UNSPECIFIED_ERROR:
+<A NAME="76"></A>            <FONT ID="Default">default</FONT>:
+<A NAME="77"></A>                <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">"Unspecified error"</FONT>;
+<A NAME="78"></A>                
+<A NAME="79"></A>        }
+<A NAME="80"></A>    }
+<A NAME="81"></A>    
+<A NAME="82"></A>    
+<A NAME="83"></A>    <FONT ID="FormalComment">/**
+<A NAME="84"></A>     * Returns the event ID (type).
+<A NAME="85"></A>     */</FONT>
+<A NAME="86"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getID() {
+<A NAME="87"></A>        <FONT ID="Return">return</FONT> theID;
+<A NAME="88"></A>    }
+<A NAME="89"></A>}
+<A NAME="90"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DicomRouterException</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

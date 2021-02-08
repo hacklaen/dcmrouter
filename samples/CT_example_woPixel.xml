@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dicomfile>
+<filemetainfo>
+<preamble>0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0\0</preamble>
+<attr tag="00020000" vr="UL" pos="132" name="Group Length" vm="1" len="4">176</attr>
+<attr tag="00020001" vr="OB" pos="144" name="File Meta Information Version" vm="1" len="2">0\1</attr>
+<attr tag="00020002" vr="UI" pos="158" name="Media Storage SOP Class UID" vm="1" len="26">1.2.840.10008.5.1.4.1.1.2</attr>
+<attr tag="00020003" vr="UI" pos="192" name="Media Storage SOP Instance UID" vm="1" len="46">1.3.12.2.1107.5.1.4.50245.4.0.2552847323173079</attr>
+<attr tag="00020010" vr="UI" pos="246" name="Transfer Syntax UID" vm="1" len="18">1.2.840.10008.1.2</attr>
+<attr tag="00020012" vr="UI" pos="272" name="Implementation Class UID" vm="1" len="16">1.2.40.0.13.1.1</attr>
+<attr tag="00020013" vr="SH" pos="296" name="Implementation Version Name" vm="1" len="16">DCM4CHE20030225 </attr>
+</filemetainfo>
+<dataset>
+<attr tag="00080000" vr="UL" pos="342" name="Group Length" vm="1" len="4">844</attr>
+<attr tag="00080005" vr="CS" pos="354" name="Specific Character Set" vm="1" len="10">ISO_IR 100</attr>
+<attr tag="00080008" vr="CS" pos="372" name="Image Type" vm="4" len="34">ORIGINAL\PRIMARY\AXIAL\CT_SOM5 SPI</attr>
+<attr tag="00080016" vr="UI" pos="414" name="SOP Class UID" vm="1" len="26">1.2.840.10008.5.1.4.1.1.2</attr>
+<attr tag="00080018" vr="UI" pos="448" name="SOP Instance UID" vm="1" len="46">1.3.12.2.1107.5.1.4.50245.4.0.2552847323173079</attr>
+<attr tag="00080020" vr="DA" pos="502" name="Study Date" vm="1" len="8">20030709</attr>
+<attr tag="00080021" vr="DA" pos="518" name="Series Date" vm="1" len="8">20030709</attr>
+<attr tag="00080022" vr="DA" pos="534" name="Acquisition Date" vm="1" len="8">20030709</attr>
+<attr tag="00080023" vr="DA" pos="550" name="Content Date" vm="1" len="8">20030709</attr>
+<attr tag="00080030" vr="TM" pos="566" name="Study Time" vm="1" len="14">083303.390000 </attr>
+<attr tag="00080031" vr="TM" pos="588" name="Series Time" vm="1" len="14">083939.437000 </attr>
+<attr tag="00080032" vr="TM" pos="610" name="Acquisition Time" vm="1" len="14">084020.482600 </attr>
+<attr tag="00080033" vr="TM" pos="632" name="Content Time" vm="1" len="14">084020.482600 </attr>
+<attr tag="00080050" vr="SH" pos="654" name="Accession Number" vm="1" len="6">567959</attr>
+<attr tag="00080060" vr="CS" pos="668" name="Modality" vm="1" len="2">CT</attr>
+<attr tag="00080070" vr="LO" pos="678" name="Manufacturer" vm="1" len="8">SIEMENS </attr>
+<attr tag="00080080" vr="LO" pos="694" name="Institution Name" vm="1" len="22">Krankenhaus Nordstadt </attr>
+<attr tag="00080081" vr="ST" pos="724" name="Institution Address" vm="1" len="40">Heunerstrasse
+Wuppertal
+District
+Germany</attr>
+<attr tag="00080090" vr="PN" pos="772" name="Referring Physician's Name" vm="1" len="4">ST3 </attr>
+<attr tag="00081010" vr="SH" pos="784" name="Station Name" vm="1" len="6">ctnav </attr>
+<attr tag="00081030" vr="LO" pos="798" name="Study Description" vm="1" len="28">Abdomen^01 Abdomen Standard </attr>
+<attr tag="0008103E" vr="LO" pos="834" name="Series Description" vm="1" len="28">Arterielle Phase  8.0  B40f </attr>
+<attr tag="00081050" vr="PN" pos="870" name="Performing Physician's Name" vm="1" len="30">Papathanassiou^Drosoula-Aliki </attr>
+<attr tag="00081090" vr="LO" pos="908" name="Manufacturer's Model Name" vm="1" len="12">Sensation 16</attr>
+<attr tag="00081120" vr="SQ" pos="928" name="Referenced Patient Sequence" len="36">
+<item id="1" pos="936" len="28">
+<attr tag="00080000" vr="UL" pos="944" name="Group Length" vm="1" len="4">16</attr>
+<attr tag="00081150" vr="UI" pos="956" name="Referenced SOP Class UID" vm="0" len="0"/>
+<attr tag="00081155" vr="UI" pos="964" name="Referenced SOP Instance UID" vm="0" len="0"/>
+</item>
+</attr>
+<attr tag="00081140" vr="SQ" pos="972" name="Referenced Image Sequence" len="108">
+<item id="1" pos="980" len="100">
+<attr tag="00080000" vr="UL" pos="988" name="Group Length" vm="1" len="4">88</attr>
+<attr tag="00081150" vr="UI" pos="1000" name="Referenced SOP Class UID" vm="1" len="26">1.2.840.10008.5.1.4.1.1.2</attr>
+<attr tag="00081155" vr="UI" pos="1034" name="Referenced SOP Instance UID" vm="1" len="46">1.3.12.2.1107.5.1.4.50245.4.0.2552229195152354</attr>
+</item>
+</attr>
+<attr tag="00082112" vr="SQ" pos="1088" name="Source Image Sequence" len="102">
+<item id="1" pos="1096" len="94">
+<attr tag="00080000" vr="UL" pos="1104" name="Group Length" vm="1" len="4">82</attr>
+<attr tag="00081150" vr="UI" pos="1116" name="Referenced SOP Class UID" vm="1" len="20">1.3.12.2.1107.5.9.1</attr>
+<attr tag="00081155" vr="UI" pos="1144" name="Referenced SOP Instance UID" vm="1" len="46">1.3.12.2.1107.5.1.4.50245.4.0.2552774032282092</attr>
+</item>
+</attr>
+<attr tag="00090000" vr="UL" pos="1198" name="Group Length" vm="1" len="4">28</attr>
+<attr tag="00090010" vr="LO" pos="1210" vm="1" len="20">SIEMENS CT VA1 DUMMY</attr>
+<attr tag="00100000" vr="UL" pos="1238" name="Group Length" vm="1" len="4">62</attr>
+<attr tag="00100010" vr="PN" pos="1250" name="Patient's Name" vm="1" len="12">Frau^Andrea </attr>
+<attr tag="00100020" vr="LO" pos="1270" name="Patient ID" vm="1" len="8">_311042 </attr>
+<attr tag="00100030" vr="DA" pos="1286" name="Patient's Birth Date" vm="1" len="8">19230811</attr>
+<attr tag="00100040" vr="CS" pos="1302" name="Patient's Sex" vm="1" len="2">F </attr>
+<attr tag="00180000" vr="UL" pos="1312" name="Group Length" vm="1" len="4">360</attr>
+<attr tag="00180010" vr="LO" pos="1324" name="Contrast/Bolus Agent" vm="1" len="8">APPLIED </attr>
+<attr tag="00180015" vr="CS" pos="1340" name="Body Part Examined" vm="1" len="8">ABDOMEN </attr>
+<attr tag="00180050" vr="DS" pos="1356" name="Slice Thickness" vm="1" len="2">8 </attr>
+<attr tag="00180060" vr="DS" pos="1366" name="KVP" vm="1" len="4">120 </attr>
+<attr tag="00180090" vr="DS" pos="1378" name="Data Collection Diameter" vm="1" len="4">500 </attr>
+<attr tag="00181000" vr="LO" pos="1390" name="Device Serial Number" vm="1" len="6">50245 </attr>
+<attr tag="00181020" vr="LO" pos="1404" name="Software Version(s)" vm="1" len="6">VA70A </attr>
+<attr tag="00181030" vr="LO" pos="1418" name="Protocol Name" vm="1" len="20">01 Abdomen Standard </attr>
+<attr tag="00181041" vr="DS" pos="1446" name="Contrast/Bolus Volume" vm="1" len="2">0 </attr>
+<attr tag="00181046" vr="DS" pos="1456" name="Contrast Flow Rate" vm="1" len="2">0 </attr>
+<attr tag="00181047" vr="DS" pos="1466" name="Contrast Flow Duration" vm="1" len="2">0 </attr>
+<attr tag="00181049" vr="DS" pos="1476" name="Contrast/Bolus Ingredient Concentration" vm="1" len="2">0 </attr>
+<attr tag="00181100" vr="DS" pos="1486" name="Reconstruction Diameter" vm="1" len="4">300 </attr>
+<attr tag="00181110" vr="DS" pos="1498" name="Distance Source to Detector" vm="1" len="4">1040</attr>
+<attr tag="00181111" vr="DS" pos="1510" name="Distance Source to Patient" vm="1" len="4">570 </attr>
+<attr tag="00181120" vr="DS" pos="1522" name="Gantry/Detector Tilt" vm="1" len="2">0 </attr>
+<attr tag="00181130" vr="DS" pos="1532" name="Table Height" vm="1" len="4">125 </attr>
+<attr tag="00181140" vr="CS" pos="1544" name="Rotation Direction" vm="1" len="2">CW</attr>
+<attr tag="00181150" vr="IS" pos="1554" name="Exposure Time" vm="1" len="4">500 </attr>
+<attr tag="00181151" vr="IS" pos="1566" name="X-ray Tube Current" vm="1" len="4">290 </attr>
+<attr tag="00181152" vr="IS" pos="1578" name="Exposure" vm="1" len="4">145 </attr>
+<attr tag="00181160" vr="SH" pos="1590" name="Filter Type" vm="1" len="2">0 </attr>
+<attr tag="00181170" vr="IS" pos="1600" name="Generator Power" vm="1" len="2">39</attr>
+<attr tag="00181190" vr="DS" pos="1610" name="Focal Spot(s)" vm="1" len="4">1.2 </attr>
+<attr tag="00181200" vr="DA" pos="1622" name="Date of Last Calibration" vm="1" len="8">20030709</attr>
+<attr tag="00181201" vr="TM" pos="1638" name="Time of Last Calibration" vm="1" len="14">073339.000000 </attr>
+<attr tag="00181210" vr="SH" pos="1660" name="Convolution Kernel" vm="1" len="4">B40f</attr>
+<attr tag="00185100" vr="CS" pos="1672" name="Patient Position" vm="1" len="4">HFS </attr>
+<attr tag="00190000" vr="UL" pos="1684" name="Group Length" vm="1" len="4">28</attr>
+<attr tag="00190010" vr="LO" pos="1696" vm="1" len="20">SIEMENS CT VA0  COAD</attr>
+<attr tag="00200000" vr="UL" pos="1724" name="Group Length" vm="1" len="4">314</attr>
+<attr tag="0020000D" vr="UI" pos="1736" name="Study Instance UID" vm="1" len="32">1.2.276.0.14.200.3215.13.567959</attr>
+<attr tag="0020000E" vr="UI" pos="1776" name="Series Instance UID" vm="1" len="46">1.3.12.2.1107.5.1.4.50245.4.0.255282641074145</attr>
+<attr tag="00200010" vr="SH" pos="1830" name="Study ID" vm="1" len="6">567959</attr>
+<attr tag="00200011" vr="IS" pos="1844" name="Series Number" vm="1" len="2">6 </attr>
+<attr tag="00200012" vr="IS" pos="1854" name="Acquisition Number" vm="1" len="2">34</attr>
+<attr tag="00200013" vr="IS" pos="1864" name="Instance Number" vm="1" len="2">10</attr>
+<attr tag="00200032" vr="DS" pos="1874" name="Image Position (Patient)" vm="3" len="28">-173.70703\-274.70703\-1038 </attr>
+<attr tag="00200037" vr="DS" pos="1910" name="Image Orientation (Patient)" vm="6" len="12">1\0\0\0\1\0 </attr>
+<attr tag="00200052" vr="UI" pos="1930" name="Frame of Reference UID" vm="1" len="46">1.3.12.2.1107.5.1.4.50245.4.0.2551610292311937</attr>
+<attr tag="00201040" vr="LO" pos="1984" name="Position Reference Indicator" vm="0" len="0"/>
+<attr tag="00201041" vr="DS" pos="1992" name="Slice Location" vm="1" len="6">-1038 </attr>
+<attr tag="00204000" vr="LT" pos="2006" name="Image Comments" vm="1" len="36">100/3/bolus
+Rectale Füllung km oral </attr>
+<attr tag="00210000" vr="UL" pos="2050" name="Group Length" vm="1" len="4">20</attr>
+<attr tag="00210010" vr="LO" pos="2062" vm="1" len="12">SIEMENS MED </attr>
+<attr tag="00280000" vr="UL" pos="2082" name="Group Length" vm="1" len="4">216</attr>
+<attr tag="00280002" vr="US" pos="2094" name="Samples per Pixel" vm="1" len="2">1</attr>
+<attr tag="00280004" vr="CS" pos="2104" name="Photometric Interpretation" vm="1" len="12">MONOCHROME2 </attr>
+<attr tag="00280010" vr="US" pos="2124" name="Rows" vm="1" len="2">512</attr>
+<attr tag="00280011" vr="US" pos="2134" name="Columns" vm="1" len="2">512</attr>
+<attr tag="00280030" vr="DS" pos="2144" name="Pixel Spacing" vm="2" len="20">0.5859375\0.5859375 </attr>
+<attr tag="00280100" vr="US" pos="2172" name="Bits Allocated" vm="1" len="2">16</attr>
+<attr tag="00280101" vr="US" pos="2182" name="Bits Stored" vm="1" len="2">12</attr>
+<attr tag="00280102" vr="US" pos="2192" name="High Bit" vm="1" len="2">11</attr>
+<attr tag="00280103" vr="US" pos="2202" name="Pixel Representation" vm="1" len="2">0</attr>
+<attr tag="00280106" vr="US" pos="2212" name="Smallest Image Pixel Value" vm="1" len="2">0</attr>
+<attr tag="00280107" vr="US" pos="2222" name="Largest Image Pixel Value" vm="1" len="2">1939</attr>
+<attr tag="00281050" vr="DS" pos="2232" name="Window Center" vm="2" len="6">80\300</attr>
+<attr tag="00281051" vr="DS" pos="2246" name="Window Width" vm="2" len="8">400\1500</attr>
+<attr tag="00281052" vr="DS" pos="2262" name="Rescale Intercept" vm="1" len="6">-1024 </attr>
+<attr tag="00281053" vr="DS" pos="2276" name="Rescale Slope" vm="1" len="2">1 </attr>
+<attr tag="00281055" vr="LO" pos="2286" name="Window Center &amp; Width Explanation" vm="2" len="16">WINDOW1\WINDOW2 </attr>
+<attr tag="00290000" vr="UL" pos="2310" name="Group Length" vm="1" len="4">56</attr>
+<attr tag="00290010" vr="LO" pos="2322" vm="1" len="18">SIEMENS CSA HEADER</attr>
+<attr tag="00290011" vr="LO" pos="2348" vm="1" len="22">SIEMENS MEDCOM HEADER </attr>
+<attr tag="00320000" vr="UL" pos="2378" name="Group Length" vm="1" len="4">42</attr>
+<attr tag="00321032" vr="PN" pos="2390" name="Requesting Physician" vm="1" len="10">B5-7 - STR</attr>
+<attr tag="00321060" vr="LO" pos="2408" name="Requested Procedure Description" vm="1" len="16">CT des Abdomens </attr>
+<attr tag="00400000" vr="UL" pos="2432" name="Group Length" vm="1" len="4">80</attr>
+<attr tag="00400275" vr="SQ" pos="2444" name="Request Attributes Sequence" len="72">
+<item id="1" pos="2452" len="64">
+<attr tag="00400000" vr="UL" pos="2460" name="Group Length" vm="1" len="4">52</attr>
+<attr tag="00400007" vr="LO" pos="2472" name="Scheduled Procedure Step Description" vm="1" len="16">CT des Abdomens </attr>
+<attr tag="00400009" vr="SH" pos="2496" name="Scheduled Procedure Step ID" vm="1" len="6">567959</attr>
+<attr tag="00401001" vr="SH" pos="2510" name="Requested Procedure ID" vm="1" len="6">567959</attr>
+</item>
+</attr>
+<attr tag="7FE00000" vr="UL" pos="2524" name="Group Length" vm="1" len="4">524296</attr>
+<attr tag="7FE00010" vr="OW" pos="2536" name="Pixel Data" vm="1" len="524288" hide="true"/>
+</dataset>
+</dicomfile>

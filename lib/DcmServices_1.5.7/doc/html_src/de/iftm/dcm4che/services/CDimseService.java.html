@@ -1,0 +1,1008 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.services.CDimseService (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">CDimseService</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/* ***** BEGIN LICENSE BLOCK *****
+<A NAME="2"></A> * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+<A NAME="3"></A> *
+<A NAME="4"></A> * The contents of this file are subject to the Mozilla Public License Version
+<A NAME="5"></A> * 1.1 (the "License"); you may not use this file except in compliance with
+<A NAME="6"></A> * the License. You may obtain a copy of the License at
+<A NAME="7"></A> * http://www.mozilla.org/MPL/
+<A NAME="8"></A> *
+<A NAME="9"></A> * Software distributed under the License is distributed on an "AS IS" basis,
+<A NAME="10"></A> * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+<A NAME="11"></A> * for the specific language governing rights and limitations under the
+<A NAME="12"></A> * License.
+<A NAME="13"></A> *
+<A NAME="14"></A> * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+<A NAME="15"></A> * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+<A NAME="16"></A> *
+<A NAME="17"></A> * The Initial Developer of the Original Code is
+<A NAME="18"></A> * TIANI Medgraph AG.
+<A NAME="19"></A> * Portions created by the Initial Developer are Copyright (C) 2002-2005
+<A NAME="20"></A> * the Initial Developer. All Rights Reserved.
+<A NAME="21"></A> *
+<A NAME="22"></A> * Contributor(s):
+<A NAME="23"></A> * Gunter Zeilinger &lt;gunter.zeilinger@tiani.com&gt;
+<A NAME="24"></A> *
+<A NAME="25"></A> * Alternatively, the contents of this file may be used under the terms of
+<A NAME="26"></A> * either the GNU General Public License Version 2 or later (the "GPL"), or
+<A NAME="27"></A> * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+<A NAME="28"></A> * in which case the provisions of the GPL or the LGPL are applicable instead
+<A NAME="29"></A> * of those above. If you wish to allow use of your version of this file only
+<A NAME="30"></A> * under the terms of either the GPL or the LGPL, and not to allow others to
+<A NAME="31"></A> * use your version of this file under the terms of the MPL, indicate your
+<A NAME="32"></A> * decision by deleting the provisions above and replace them with the notice
+<A NAME="33"></A> * and other provisions required by the GPL or the LGPL. If you do not delete
+<A NAME="34"></A> * the provisions above, a recipient may use your version of this file under
+<A NAME="35"></A> * the terms of any one of the MPL, the GPL or the LGPL.
+<A NAME="36"></A> *
+<A NAME="37"></A> * ***** END LICENSE BLOCK ***** */</FONT>
+<A NAME="38"></A><FONT ID="Package">package</FONT> <A HREF="../../../../de.iftm.dcm4che.services.index.html" target="packageFrame">de.iftm.dcm4che.services</A>;
+<A NAME="39"></A>
+<A NAME="40"></A><FONT ID="Import">import</FONT> java.io.File;
+<A NAME="41"></A><FONT ID="Import">import</FONT> java.io.IOException;
+<A NAME="42"></A><FONT ID="Import">import</FONT> java.io.StringWriter;
+<A NAME="43"></A><FONT ID="Import">import</FONT> java.net.Socket;
+<A NAME="44"></A><FONT ID="Import">import</FONT> java.net.URL;
+<A NAME="45"></A><FONT ID="Import">import</FONT> java.net.ConnectException;
+<A NAME="46"></A><FONT ID="Import">import</FONT> java.security.GeneralSecurityException;
+<A NAME="47"></A><FONT ID="Import">import</FONT> java.util.Enumeration;
+<A NAME="48"></A><FONT ID="Import">import</FONT> java.util.Iterator;
+<A NAME="49"></A><FONT ID="Import">import</FONT> java.util.LinkedList;
+<A NAME="50"></A><FONT ID="Import">import</FONT> java.util.List;
+<A NAME="51"></A><FONT ID="Import">import</FONT> java.util.Vector;
+<A NAME="52"></A><FONT ID="Import">import</FONT> java.text.ParseException;
+<A NAME="53"></A>
+<A NAME="54"></A><FONT ID="Import">import</FONT> org.dcm4che.data.Command;
+<A NAME="55"></A><FONT ID="Import">import</FONT> org.dcm4che.data.Dataset;
+<A NAME="56"></A><FONT ID="Import">import</FONT> org.dcm4che.data.DcmDecodeParam;
+<A NAME="57"></A><FONT ID="Import">import</FONT> org.dcm4che.data.DcmElement;
+<A NAME="58"></A><FONT ID="Import">import</FONT> org.dcm4che.data.DcmEncodeParam;
+<A NAME="59"></A><FONT ID="Import">import</FONT> org.dcm4che.data.DcmObjectFactory;
+<A NAME="60"></A><FONT ID="Import">import</FONT> org.dcm4che.data.DcmParseException;
+<A NAME="61"></A><FONT ID="Import">import</FONT> org.dcm4che.data.DcmParser;
+<A NAME="62"></A><FONT ID="Import">import</FONT> org.dcm4che.data.DcmParserFactory;
+<A NAME="63"></A><FONT ID="Import">import</FONT> org.dcm4che.data.FileFormat;
+<A NAME="64"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.DictionaryFactory;
+<A NAME="65"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.Tags;
+<A NAME="66"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.UIDDictionary;
+<A NAME="67"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.UIDs;
+<A NAME="68"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.VRs;
+<A NAME="69"></A><FONT ID="Import">import</FONT> org.dcm4che.net.AAssociateAC;
+<A NAME="70"></A><FONT ID="Import">import</FONT> org.dcm4che.net.AAssociateRQ;
+<A NAME="71"></A><FONT ID="Import">import</FONT> org.dcm4che.net.ActiveAssociation;
+<A NAME="72"></A><FONT ID="Import">import</FONT> org.dcm4che.net.Association;
+<A NAME="73"></A><FONT ID="Import">import</FONT> org.dcm4che.net.AssociationFactory;
+<A NAME="74"></A><FONT ID="Import">import</FONT> org.dcm4che.net.Dimse;
+<A NAME="75"></A><FONT ID="Import">import</FONT> org.dcm4che.net.DataSource;
+<A NAME="76"></A><FONT ID="Import">import</FONT> org.dcm4che.net.FutureRSP;
+<A NAME="77"></A><FONT ID="Import">import</FONT> org.dcm4che.net.PDU;
+<A NAME="78"></A><FONT ID="Import">import</FONT> org.dcm4che.net.PresContext;
+<A NAME="79"></A><FONT ID="Import">import</FONT> org.dcm4che.server.PollDirSrv;
+<A NAME="80"></A><FONT ID="Import">import</FONT> org.dcm4che.server.PollDirSrvFactory;
+<A NAME="81"></A><FONT ID="Import">import</FONT> org.dcm4che.util.DcmURL;
+<A NAME="82"></A><FONT ID="Import">import</FONT> org.dcm4che.util.SSLContextAdapter;
+<A NAME="83"></A>
+<A NAME="84"></A><FONT ID="Import">import</FONT> org.apache.log4j.Logger;
+<A NAME="85"></A>
+<A NAME="86"></A>
+<A NAME="87"></A><FONT ID="FormalComment">/**
+<A NAME="88"></A> * Implementation of C-DIMSE services.
+<A NAME="89"></A> * &lt;p&gt;
+<A NAME="90"></A> * &lt;p&gt; Usage:
+<A NAME="91"></A> * &lt;p&gt; 1. Create a new instance of this class.
+<A NAME="92"></A> * &lt;p&gt; 2. Use the aASSOCIATE method to establish an association.
+<A NAME="93"></A> * &lt;p&gt; 3. Use the cFIND method to query  the archive.
+<A NAME="94"></A> * &lt;p&gt; 4. Use the cMOVE method to move an object from the archive to a destination server.
+<A NAME="95"></A> * &lt;p&gt; 5. Use the cSTORE to store an object into an archive.
+<A NAME="96"></A> * &lt;p&gt; 6. Use the cECHO to verfy a association.
+<A NAME="97"></A> * &lt;p&gt; 7. If you are ready with the C-DIMSE services use the aRELEASE method to close the association.
+<A NAME="98"></A> * &lt;p&gt;
+<A NAME="99"></A> * &lt;p&gt;The query/retrieve levels used by C-FIND and C-MOVE are defined as enummerated constants.
+<A NAME="100"></A> * Use the method getQueryRetrieveLevel to convert these values to the String representation
+<A NAME="101"></A> * used in the DICOM element QueryRetrieveLevel (0008,0052).
+<A NAME="102"></A> * &lt;p&gt;
+<A NAME="103"></A> * &lt;p&gt;Based on dcm4che 1.4.0 sample: MoveStudy.java revision date 2005-10-05
+<A NAME="104"></A> * &lt;p&gt;Based on dcm4che 1.4.0 sample: DcmSnd.java revision date 2005-10-05
+<A NAME="105"></A> * &lt;p&gt;
+<A NAME="106"></A> * &lt;p&gt;See: PS 3.4 - Annex B STORAGE SERVICE CLASS
+<A NAME="107"></A> * &lt;p&gt;See: PS 3.4 - Annex C QUERY/RETRIEVE SERVICE CLASS
+<A NAME="108"></A> * &lt;p&gt;See: PS 3.4 - C.6 SOP CLASS DEFINITIONS
+<A NAME="109"></A> * &lt;p&gt;See: PS 3.4 - C.6.2 Study Root SOP Class Group
+<A NAME="110"></A> * &lt;p&gt;
+<A NAME="111"></A> * &lt;p&gt;Details of how to run the services is given in a configuration property file.
+<A NAME="112"></A> * A sample may be found at "./resources/CDimseService.cfg".
+<A NAME="113"></A> *
+<A NAME="114"></A> *
+<A NAME="115"></A> * @author Thomas Hacklaender
+<A NAME="116"></A> * @version 2006-08-28
+<A NAME="117"></A> */</FONT>
+<A NAME="118"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> CDimseService {
+<A NAME="119"></A>    
+<A NAME="120"></A>    <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger log = Logger.getLogger(<FONT ID="StringLiteral">"CDimseService"</FONT>);
+<A NAME="121"></A>    
+<A NAME="122"></A>    <FONT ID="FormalComment">/** The DEBUG flag is set, if the logging level of this class is Debug */</FONT>
+<A NAME="123"></A>    <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> <FONT ID="Boolean">boolean</FONT> DEBUG = log.isDebugEnabled();
+<A NAME="124"></A>    
+<A NAME="125"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Factorys &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="126"></A></FONT>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> UIDDictionary uidDict = DictionaryFactory.getInstance().getDefaultUIDDictionary();
+<A NAME="127"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> AssociationFactory aFact = AssociationFactory.getInstance();
+<A NAME="128"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> DcmObjectFactory oFact = DcmObjectFactory.getInstance();
+<A NAME="129"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> DcmParserFactory pFact = DcmParserFactory.getInstance();
+<A NAME="130"></A>    <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> DcmObjectFactory dof = DcmObjectFactory.getInstance();
+<A NAME="131"></A>    
+<A NAME="132"></A>    <FONT ID="FormalComment">/** Default AE title used for the association if it is not explicit given in the url filed. */</FONT>
+<A NAME="133"></A>    <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> String DEFAULT_CALLING_AET = <FONT ID="StringLiteral">"MYAET"</FONT>;
+<A NAME="134"></A>    
+<A NAME="135"></A>    <FONT ID="FormalComment">/** Query/Retrieve Level Values for Study = "PATIENT". See PS 3.4 - C.6 SOP CLASS DEFINITIONS*/</FONT>
+<A NAME="136"></A>    <FONT ID="Static">static</FONT> <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> PATIENT_LEVEL = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="137"></A>     
+<A NAME="138"></A>    <FONT ID="FormalComment">/** Query/Retrieve Level Values for Study = "STUDY". See PS 3.4 - C.6. SOP CLASS DEFINITIONS*/</FONT>
+<A NAME="139"></A>    <FONT ID="Static">static</FONT> <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> STUDY_LEVEL = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="140"></A>    
+<A NAME="141"></A>    <FONT ID="FormalComment">/** Query/Retrieve Level Values for Series = "SERIES". See PS 3.4 - C.6 SOP CLASS DEFINITIONS*/</FONT>
+<A NAME="142"></A>    <FONT ID="Static">static</FONT> <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> SERIES_LEVEL = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="143"></A>    
+<A NAME="144"></A>    <FONT ID="FormalComment">/** Query/Retrieve Level Values for Image = "IMAGE". See PS 3.4 - C.6 SOP CLASS DEFINITIONS*/</FONT>
+<A NAME="145"></A>    <FONT ID="Static">static</FONT> <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> IMAGE_LEVEL = <FONT ID="IntegerLiteral">3</FONT>;
+<A NAME="146"></A>    
+<A NAME="147"></A>    <FONT ID="FormalComment">/** DICOM URL to define a communication partner for an association.
+<A NAME="148"></A>     * &lt;p&gt;PROTOCOL://CALLED[:CALLING]@HOST[:PORT]
+<A NAME="149"></A>     * &lt;p&gt;
+<A NAME="150"></A>     * &lt;p&gt;PROTOCOL Specifies protocol. Possible values:
+<A NAME="151"></A>     * &lt;p&gt;   - dicom            DICOM default (without TLS)
+<A NAME="152"></A>     * &lt;p&gt;   - dicom-tls        DICOM on TLS (offer AES and DES encryption)
+<A NAME="153"></A>     * &lt;p&gt;   - dicom-tls.aes    DICOM on TLS (force AES or DES encryption)
+<A NAME="154"></A>     * &lt;p&gt;   - dicom-tls.3des   DICOM on TLS (force DES encryption)
+<A NAME="155"></A>     * &lt;p&gt;   - dicom-tls.nodes  DICOM on TLS (no encryption)
+<A NAME="156"></A>     * &lt;p&gt;CALLED  Called AET in association request (max 16 chars)
+<A NAME="157"></A>     * &lt;p&gt;CALLING Calling AET in association request (max 16 chars) [default id final field DEFAULT_CALLING_AET = MYAET]
+<A NAME="158"></A>     * &lt;p&gt;HOST    Name or IP address of host, where the server is running
+<A NAME="159"></A>     * &lt;p&gt;PORT    TCP port address, on which the server is listing for
+<A NAME="160"></A>     * &lt;p&gt;        incoming TCP Transport Connection Indication [default=104] */</FONT>
+<A NAME="161"></A>    <FONT ID="Private">private</FONT> DcmURL url = <FONT ID="Null">null</FONT>;
+<A NAME="162"></A>    
+<A NAME="163"></A>    <FONT ID="FormalComment">/** Message priority. Possible values Command.LOW = 2, Command.MEDIUM = 0, Command.HIGH = 1*/</FONT>
+<A NAME="164"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> priority = Command.MEDIUM;
+<A NAME="165"></A>    
+<A NAME="166"></A>    <FONT ID="FormalComment">/** Time-out waiting [in msec] for A-ASSOCIATE-AC acknowlage, 0 is interpreted
+<A NAME="167"></A>     * as an infinite timeout [default=5000]. */</FONT>
+<A NAME="168"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> acTimeout = <FONT ID="IntegerLiteral">5000</FONT>;
+<A NAME="169"></A>    
+<A NAME="170"></A>    <FONT ID="FormalComment">/** Time-out waiting [in msec] for DIMSE on aASSOCIATE association, 0 is
+<A NAME="171"></A>     * interpreted as an infinite timeout [default=0]. */</FONT>
+<A NAME="172"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> dimseTimeout = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="173"></A>    
+<A NAME="174"></A>    <FONT ID="FormalComment">/** Time delay [in msec] for socket aRELEASE after sending A-ABORT [default=500]. */</FONT>
+<A NAME="175"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> soCloseDelay = <FONT ID="IntegerLiteral">500</FONT>;
+<A NAME="176"></A>    
+<A NAME="177"></A>    <FONT ID="FormalComment">/** Association Request package (A-ASSOCIATE-RQ) is part of the connection
+<A NAME="178"></A>     * service ACSE (Association Control Service Element). In TCP/IP networks
+<A NAME="179"></A>     * connection services are emulated by the "DICOM Upper Layer Service".
+<A NAME="180"></A>     * This presentation srvice encapsulats the data in PDUs (Protocol Data Unit). */</FONT>
+<A NAME="181"></A>    <FONT ID="Private">private</FONT> AAssociateRQ assocRQ = aFact.newAAssociateRQ();
+<A NAME="182"></A>    
+<A NAME="183"></A>    <FONT ID="FormalComment">/** Association object for establishing an active association. */</FONT>
+<A NAME="184"></A>    <FONT ID="Private">private</FONT> Association assoc = <FONT ID="Null">null</FONT>;
+<A NAME="185"></A>    
+<A NAME="186"></A>    <FONT ID="FormalComment">/** Accepted association */</FONT>
+<A NAME="187"></A>    <FONT ID="Private">private</FONT> ActiveAssociation aassoc = <FONT ID="Null">null</FONT>;
+<A NAME="188"></A>    
+<A NAME="189"></A>    <FONT ID="FormalComment">/** Activates packing of command PDV (Presentation Data Value) + (first) data
+<A NAME="190"></A>     * PDV into one P-DATA-TF PDU (Protocol Data Unit) */</FONT>
+<A NAME="191"></A>    <FONT ID="Private">private</FONT> <FONT ID="Boolean">boolean</FONT> packPDVs = <FONT ID="False">false</FONT>;
+<A NAME="192"></A>    
+<A NAME="193"></A>    <FONT ID="FormalComment">/** TLS context. Set by method initTLS */</FONT>
+<A NAME="194"></A>    <FONT ID="Private">private</FONT> SSLContextAdapter tls = <FONT ID="Null">null</FONT>;
+<A NAME="195"></A>    
+<A NAME="196"></A>    <FONT ID="FormalComment">/** An array of implemented ciphers for the communication protocol (given in url). */</FONT>
+<A NAME="197"></A>    <FONT ID="Private">private</FONT> String[] cipherSuites = <FONT ID="Null">null</FONT>;
+<A NAME="198"></A>    
+<A NAME="199"></A>    <FONT ID="FormalComment">/** Specifies Key Attributes used for C-FIND.
+<A NAME="200"></A>     * Wildcards '*','?', '-' and '\' are allowed as element-values (see PS 3.4 - C.2.2.2 Attribute Matching).
+<A NAME="201"></A>     * If an key attribute is defined, but has an empty value, it matches every value at the storage side.
+<A NAME="202"></A>     * &lt;p&gt;Key attributes have a type (PS 3.4 - C.2.2.1 Attribute Types)
+<A NAME="203"></A>     * &lt;p&gt;  - U = one Attribute shall be defined as a Unique Key.
+<A NAME="204"></A>     * &lt;p&gt;  - R = a set of Attributes shall be defined as Required Keys.
+<A NAME="205"></A>     * &lt;p&gt;  - O = a set of Attributes shall be defined as Optional Keys.
+<A NAME="206"></A>     * &lt;p&gt;The complete list of Key Attributes can be found at PS 3.4 - C.6.2 Study Root SOP Class Group.
+<A NAME="207"></A>     * &lt;p&gt;As a result of C-FIND for each matching item in the archive a DIMSE object containing
+<A NAME="208"></A>     * the Key Attributes is send back. In this object the Key Attributes are set corresponding to
+<A NAME="209"></A>     * values found in the archive. Attributes of type "O" may be send back with empty value.
+<A NAME="210"></A>     * Only used by C-FIND. */</FONT>
+<A NAME="211"></A>    <FONT ID="Private">private</FONT> Dataset keys = dof.newDataset();
+<A NAME="212"></A>    
+<A NAME="213"></A>    <FONT ID="FormalComment">/** Application Entity Title (AET) of the destination for the C-MOVE. The
+<A NAME="214"></A>     * AET must be known by the archive together with the host IP adress and the
+<A NAME="215"></A>     * port number. Only used by C-MOVE. */</FONT>
+<A NAME="216"></A>    <FONT ID="Private">private</FONT> String dest;
+<A NAME="217"></A>    
+<A NAME="218"></A>    
+<A NAME="219"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Constructor &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="220"></A></FONT>    
+<A NAME="221"></A>    <FONT ID="FormalComment">/**
+<A NAME="222"></A>     *  Constructor for the StorageSCUServiceClass object. Initializes everything.
+<A NAME="223"></A>     *
+<A NAME="224"></A>     * &lt;p&gt;Details of how to run the server is given in another configuration property file.
+<A NAME="225"></A>     * A sample may be found at "./resources/StorageSCUServiceClass.cfg".
+<A NAME="226"></A>     *
+<A NAME="227"></A>     * @param cfg the configuration properties for this class.
+<A NAME="228"></A>     * @param url the DcmURL of the communication partner.
+<A NAME="229"></A>     * @throws ParseException
+<A NAME="230"></A>     */</FONT>
+<A NAME="231"></A>    <FONT ID="Public">public</FONT> CDimseService(<A HREF="../../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A> cfg, DcmURL url) <FONT ID="Throws">throws</FONT> ParseException {
+<A NAME="232"></A>        <FONT ID="This">this</FONT>.url = url;
+<A NAME="233"></A>        <FONT ID="This">this</FONT>.priority = Integer.parseInt(cfg.getProperty(<FONT ID="StringLiteral">"prior"</FONT>, <FONT ID="StringLiteral">"0"</FONT>));
+<A NAME="234"></A>        <FONT ID="This">this</FONT>.packPDVs = <FONT ID="StringLiteral">"true"</FONT>.equalsIgnoreCase(cfg.getProperty(<FONT ID="StringLiteral">"pack-pdvs"</FONT>, <FONT ID="StringLiteral">"false"</FONT>));
+<A NAME="235"></A>        initAssocParam(cfg, url);
+<A NAME="236"></A>        <FONT ID="SingleLineComment">// initEchoAssocParam(cfg, url);
+<A NAME="237"></A></FONT>        initTLS(cfg);
+<A NAME="238"></A>        
+<A NAME="239"></A>        <FONT ID="SingleLineComment">// Only used by C-FIND
+<A NAME="240"></A></FONT>        initKeys(cfg);
+<A NAME="241"></A>        
+<A NAME="242"></A>        <FONT ID="SingleLineComment">// Only used by C-MOVE
+<A NAME="243"></A></FONT>        <FONT ID="This">this</FONT>.dest = cfg.getProperty(<FONT ID="StringLiteral">"dest"</FONT>);
+<A NAME="244"></A>    }
+<A NAME="245"></A>    
+<A NAME="246"></A>    
+<A NAME="247"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Methods &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="248"></A></FONT>    
+<A NAME="249"></A>    <FONT ID="FormalComment">/**
+<A NAME="250"></A>     * Initializes Association related parameters.
+<A NAME="251"></A>     *
+<A NAME="252"></A>     * @param cfg the configuration properties for this class.
+<A NAME="253"></A>     * @param url the DcmURL of the communication partner.
+<A NAME="254"></A>     */</FONT>
+<A NAME="255"></A>    <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> <FONT ID="Void">void</FONT> initAssocParam(<A HREF="../../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A> cfg, DcmURL url) {
+<A NAME="256"></A>        String callingAET = <FONT ID="Null">null</FONT>;
+<A NAME="257"></A>        
+<A NAME="258"></A>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Get data for filling the Association object for establishing an
+<A NAME="259"></A></FONT>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; active association from configuration file
+<A NAME="260"></A></FONT>        
+<A NAME="261"></A>        acTimeout = Integer.parseInt(cfg.getProperty(<FONT ID="StringLiteral">"ac-timeout"</FONT>, <FONT ID="StringLiteral">"5000"</FONT>));
+<A NAME="262"></A>        dimseTimeout = Integer.parseInt(cfg.getProperty(<FONT ID="StringLiteral">"dimse-timeout"</FONT>, <FONT ID="StringLiteral">"0"</FONT>));
+<A NAME="263"></A>        soCloseDelay = Integer.parseInt(cfg.getProperty(<FONT ID="StringLiteral">"so-close-delay"</FONT>, <FONT ID="StringLiteral">"500"</FONT>));
+<A NAME="264"></A>        
+<A NAME="265"></A>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Fill the Association Request package (A-ASSOCIATE-RQ)
+<A NAME="266"></A></FONT>        
+<A NAME="267"></A>        <FONT ID="SingleLineComment">// Identifying the communication partner by an AET (Application Entity Title)
+<A NAME="268"></A></FONT>        assocRQ.setCalledAET(url.getCalledAET());
+<A NAME="269"></A>        
+<A NAME="270"></A>        <FONT ID="SingleLineComment">// Identifying ourselves by an AET (Application Entity Title)
+<A NAME="271"></A></FONT>        <FONT ID="If">if</FONT> (url.getCallingAET() != <FONT ID="Null">null</FONT>) {
+<A NAME="272"></A>            callingAET = url.getCallingAET();
+<A NAME="273"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="274"></A>            callingAET = DEFAULT_CALLING_AET;
+<A NAME="275"></A>        }
+<A NAME="276"></A>        assocRQ.setCallingAET(callingAET);
+<A NAME="277"></A>        
+<A NAME="278"></A>        <FONT ID="SingleLineComment">// Maximum size of one PDU (Protocol Data Unit)
+<A NAME="279"></A></FONT>        assocRQ.setMaxPDULength(Integer.parseInt(cfg.getProperty(<FONT ID="StringLiteral">"max-pdu-len"</FONT>, <FONT ID="StringLiteral">"16352"</FONT>)));
+<A NAME="280"></A>        
+<A NAME="281"></A>        <FONT ID="SingleLineComment">// Defines possibilities for asynchron DIMSE communication. Noramly synchron DIMSE communication is used.
+<A NAME="282"></A></FONT>        <FONT ID="SingleLineComment">// API doc: AssociationFactory.newAsyncOpsWindow(int maxOpsInvoked, int maxOpsPerfomed)
+<A NAME="283"></A></FONT>        <FONT ID="SingleLineComment">// PS 3.7 - Annex D.3.3.3 ASYNCHRONOUS OPERATIONS WINDOW NEGOTIATION
+<A NAME="284"></A></FONT>        <FONT ID="SingleLineComment">// maxOpsInvoked: This field shall contain the Maximum-number-operationsinvoked as defined for the Association-requester
+<A NAME="285"></A></FONT>        <FONT ID="SingleLineComment">// maxOpsPerfomed: This field shall contain the Maximum-number-operationsperformed as defined for the Association-requester
+<A NAME="286"></A></FONT>        assocRQ.setAsyncOpsWindow(aFact.newAsyncOpsWindow(Integer.parseInt(cfg.getProperty(<FONT ID="StringLiteral">"max-op-invoked"</FONT>, <FONT ID="StringLiteral">"0"</FONT>)), <FONT ID="IntegerLiteral">1</FONT>));
+<A NAME="287"></A>        
+<A NAME="288"></A>        <FONT ID="For">for</FONT> (Enumeration it = cfg.keys(); it.hasMoreElements();) {
+<A NAME="289"></A>            String key = (String) it.nextElement();
+<A NAME="290"></A>            
+<A NAME="291"></A>            <FONT ID="SingleLineComment">// Setup available transfer syntaces for storage SOP classes
+<A NAME="292"></A></FONT>            <FONT ID="SingleLineComment">// PS 3.4 - Annex B STORAGE SERVICE CLASS
+<A NAME="293"></A></FONT>            <FONT ID="SingleLineComment">// PS 3.4 - B.5 STANDARD SOP CLASSES
+<A NAME="294"></A></FONT>            <FONT ID="If">if</FONT> (key.startsWith(<FONT ID="StringLiteral">"pc."</FONT>)) {
+<A NAME="295"></A>                initPresContext(Integer.parseInt(key.substring(<FONT ID="IntegerLiteral">3</FONT>)), cfg.tokenize(cfg.getProperty(key), <FONT ID="New">new</FONT> LinkedList()));
+<A NAME="296"></A>            }
+<A NAME="297"></A>        }
+<A NAME="298"></A>    }
+<A NAME="299"></A>    
+<A NAME="300"></A>    
+<A NAME="301"></A>    <FONT ID="FormalComment">/**
+<A NAME="302"></A>     * Only used by method initAssocParam:
+<A NAME="303"></A>     * Sets up available transfer syntaces for storage SOP classes.
+<A NAME="304"></A>     * @param pcid is a for the association unique odd number between 1 and 255.
+<A NAME="305"></A>     * @param val a list: First element is the symbolic name of the UID of the
+<A NAME="306"></A>     *            SOP to transmit, the following elements are the supportet
+<A NAME="307"></A>     *            transfer syntax for that SOP.
+<A NAME="308"></A>     */</FONT>
+<A NAME="309"></A>    <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> <FONT ID="Void">void</FONT> initPresContext(<FONT ID="Int">int</FONT> pcid, List val) {
+<A NAME="310"></A>        Iterator it = val.iterator();
+<A NAME="311"></A>        String as = UIDs.forName((String) it.next());
+<A NAME="312"></A>        String[] tsUIDs = <FONT ID="New">new</FONT> String[val.size() - <FONT ID="IntegerLiteral">1</FONT>];
+<A NAME="313"></A>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; tsUIDs.length; ++i) {
+<A NAME="314"></A>            tsUIDs[i] = UIDs.forName((String) it.next());
+<A NAME="315"></A>        }
+<A NAME="316"></A>        <FONT ID="SingleLineComment">// API doc: AssociationFactory.newPresContext(int pcid, String asuid, String[] tsuid)
+<A NAME="317"></A></FONT>        <FONT ID="SingleLineComment">// pcid is a for the association unique odd number between 1 and 255.
+<A NAME="318"></A></FONT>        <FONT ID="SingleLineComment">// asuid is the UID of a SOP class
+<A NAME="319"></A></FONT>        <FONT ID="SingleLineComment">// TS list of transfer syntaces supported by this class for asuid.
+<A NAME="320"></A></FONT>        assocRQ.addPresContext(aFact.newPresContext(pcid, as, tsUIDs));
+<A NAME="321"></A>    }
+<A NAME="322"></A>    
+<A NAME="323"></A>    
+<A NAME="324"></A>    <FONT ID="FormalComment">/**
+<A NAME="325"></A>     * Initializes TLS (Transport Layer Security, predecessor of SSL, Secure
+<A NAME="326"></A>     * Sockets Layer) connection related parameters. TLS expects RSA (Ron Rivest,
+<A NAME="327"></A>     * Adi Shamir and Len Adleman) encoded keys and certificates.
+<A NAME="328"></A>     *
+<A NAME="329"></A>     * &lt;p&gt;Keys and certificates may be stored in PKCS #12 (Public Key
+<A NAME="330"></A>     * Cryptography Standards) or JKS (Java Keystore) containers.
+<A NAME="331"></A>     *
+<A NAME="332"></A>     * &lt;p&gt;TSL is used to encrypt data during transmission, which is accomplished
+<A NAME="333"></A>     * when the connection between the two partners A (normally the client) and B
+<A NAME="334"></A>     * (normally the server) is established. If A asks B to send TSL encrypted
+<A NAME="335"></A>     * data, both partners exchange some handshake information. In a first step
+<A NAME="336"></A>     * B tries to authentify itself against A (server authentification, optional
+<A NAME="337"></A>     * in TSL but implementet in this way in dcm4che). For that B presents its
+<A NAME="338"></A>     * public key for A to accept or deny. If the authentification is accepted,
+<A NAME="339"></A>     * A tries to authentify itself against B (client authentification, optional
+<A NAME="340"></A>     * in TSL but implementet in this way in dcm4che).If B accepts the
+<A NAME="341"></A>     * authentification A and B agree on a hash (symmetric key, which is
+<A NAME="342"></A>     * independent of the private/public keys used for authentification) for the
+<A NAME="343"></A>     * duration of their conversation, which is used to encrypt the data.
+<A NAME="344"></A>     *
+<A NAME="345"></A>     * &lt;p&gt;To be able to establish a TSL connection B needs a privat/public key
+<A NAME="346"></A>     * pair, which identifies B unambiguously. For that the private key is
+<A NAME="347"></A>     * generated first; than the root-public key is derived from that private
+<A NAME="348"></A>     * key. To bind the root-public key with the identity of B a Certificate
+<A NAME="349"></A>     * Authority (CA) is used: The root-public key is send to CA, which returns
+<A NAME="350"></A>     * a certified-public key, which includes information about the CA as well
+<A NAME="351"></A>     * as the root-public key. Optionally this process can be repeated several
+<A NAME="352"></A>     * times so that the certified-public key contains a chain of certificates
+<A NAME="353"></A>     * of different CA's.
+<A NAME="354"></A>     *
+<A NAME="355"></A>     * &lt;p&gt;The certified-public key of B is presented to A during server
+<A NAME="356"></A>     * authentification. Partner A should accept this key, if it can match the
+<A NAME="357"></A>     * last certificate in the chain with a root-certificat found in its local
+<A NAME="358"></A>     * list of root-certificates of CA's. That means, that A does not check the
+<A NAME="359"></A>     * identity of B, but "trusts" B because it was certified by an authority.
+<A NAME="360"></A>     * The same happens for client authentification. Handling of authentification
+<A NAME="361"></A>     * of the identity of the communication partner is subject of PS 3.15 -
+<A NAME="362"></A>     * Security and System Management Profiles.
+<A NAME="363"></A>     *
+<A NAME="364"></A>     * &lt;p&gt;In the configuration files of this method the certified-public key is
+<A NAME="365"></A>     * stored in the property "tls-key" and the root-certificates of the known
+<A NAME="366"></A>     * CA's in "tls-cacerts".
+<A NAME="367"></A>     *
+<A NAME="368"></A>     * &lt;p&gt;Usually the certified-public keys of A and B are different, but they
+<A NAME="369"></A>     * also may be the same. In this case the root-certificates are also the same.
+<A NAME="370"></A>     *
+<A NAME="371"></A>     * &lt;p&gt;It is possible to establish a TLS connection without using a CA: In
+<A NAME="372"></A>     * this case both partners creates a individual container holding their
+<A NAME="373"></A>     * private and root-public key. These containers could be used for certifying
+<A NAME="374"></A>     * also, because the length of the certifying chain is one and therefore the
+<A NAME="375"></A>     * root-public key is also the last certified-public key. Therefore the
+<A NAME="376"></A>     * root-public key works in this scenario also as the root-certificate of
+<A NAME="377"></A>     * the "certifying authoroty".
+<A NAME="378"></A>     *
+<A NAME="379"></A>     * &lt;p&gt;If no keystores are specified in the configuration properties, the
+<A NAME="380"></A>     * not-certified default-keystore "resources/identityJava.jks" is used for
+<A NAME="381"></A>     * "tls-key" and "tls-cacerts" when establishing the connection.
+<A NAME="382"></A>     *
+<A NAME="383"></A>     * @param cfg the configuration properties for this class.
+<A NAME="384"></A>     * @throws ParseException
+<A NAME="385"></A>     */</FONT>
+<A NAME="386"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> initTLS(<A HREF="../../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A> cfg) <FONT ID="Throws">throws</FONT> ParseException {
+<A NAME="387"></A>        <FONT ID="Char">char</FONT>[]  keystorepasswd;
+<A NAME="388"></A>        <FONT ID="Char">char</FONT>[]  keypasswd;
+<A NAME="389"></A>        <FONT ID="Char">char</FONT>[]  cacertspasswd;
+<A NAME="390"></A>        URL     keyURL;
+<A NAME="391"></A>        URL     cacertURL;
+<A NAME="392"></A>        String  value;
+<A NAME="393"></A>        
+<A NAME="394"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="395"></A>            
+<A NAME="396"></A>            <FONT ID="SingleLineComment">// Cipher suites for protokoll:
+<A NAME="397"></A></FONT>            <FONT ID="SingleLineComment">// dicom = null
+<A NAME="398"></A></FONT>            <FONT ID="SingleLineComment">// dicom-tls = SSL_RSA_WITH_NULL_SHA, TLS_RSA_WITH_AES_128_CBC_SHA, SSL_RSA_WITH_3DES_EDE_CBC_SHA
+<A NAME="399"></A></FONT>            <FONT ID="SingleLineComment">// dicom-tls.3des = SSL_RSA_WITH_3DES_EDE_CBC_SHA
+<A NAME="400"></A></FONT>            <FONT ID="SingleLineComment">// dicom-tls.aes = TLS_RSA_WITH_AES_128_CBC_SHA, SSL_RSA_WITH_3DES_EDE_CBC_SHA
+<A NAME="401"></A></FONT>            <FONT ID="SingleLineComment">// dicom-tls.nodes = SSL_RSA_WITH_NULL_SHA
+<A NAME="402"></A></FONT>            cipherSuites = url.getCipherSuites();
+<A NAME="403"></A>            <FONT ID="If">if</FONT> (cipherSuites == <FONT ID="Null">null</FONT>) {
+<A NAME="404"></A>                <FONT ID="Return">return</FONT>;
+<A NAME="405"></A>            }
+<A NAME="406"></A>            
+<A NAME="407"></A>            <FONT ID="SingleLineComment">// Get a new TLS context
+<A NAME="408"></A></FONT>            tls = SSLContextAdapter.getInstance();
+<A NAME="409"></A>            
+<A NAME="410"></A>            <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Managing the keystore file containing the privat key and
+<A NAME="411"></A></FONT>            <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; certified-public key to establish the communication
+<A NAME="412"></A></FONT>            
+<A NAME="413"></A>            <FONT ID="SingleLineComment">// Password of the keystore [default: secret]
+<A NAME="414"></A></FONT>            keystorepasswd = cfg.getProperty(<FONT ID="StringLiteral">"tls-keystore-passwd"</FONT>, <FONT ID="StringLiteral">"secret"</FONT>).toCharArray();
+<A NAME="415"></A>            
+<A NAME="416"></A>            <FONT ID="SingleLineComment">// Password of the private key [default: secret]
+<A NAME="417"></A></FONT>            keypasswd = cfg.getProperty(<FONT ID="StringLiteral">"tls-key-passwd"</FONT>, <FONT ID="StringLiteral">"secret"</FONT>).toCharArray();
+<A NAME="418"></A>            
+<A NAME="419"></A>            <FONT ID="SingleLineComment">// URL of the file containing the default-keystore
+<A NAME="420"></A></FONT>            keyURL = <A HREF="../../../../de/iftm/dcm4che/services/CDimseService.java.html">CDimseService</A>.<FONT ID="Class">class</FONT>.getResource(<FONT ID="StringLiteral">"resources/identityJava.jks"</FONT>);
+<A NAME="421"></A>            
+<A NAME="422"></A>            <FONT ID="SingleLineComment">// If availabel, replace URL with the one specified in the configuration file
+<A NAME="423"></A></FONT>            <FONT ID="If">if</FONT> ((value = cfg.getProperty(<FONT ID="StringLiteral">"tls-key"</FONT>)) != <FONT ID="Null">null</FONT>) {
+<A NAME="424"></A>                <FONT ID="Try">try</FONT> {
+<A NAME="425"></A>                    <FONT ID="SingleLineComment">// Property specified, try to set to specified value
+<A NAME="426"></A></FONT>                    keyURL = ConfigProperties.fileRefToURL(<A HREF="../../../../de/iftm/dcm4che/services/CDimseService.java.html">CDimseService</A>.<FONT ID="Class">class</FONT>.getResource(<FONT ID="StringLiteral">""</FONT>), value);
+<A NAME="427"></A>                } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="428"></A>                    log.warn(<FONT ID="StringLiteral">"Wrong value for tls-key: "</FONT> + value + <FONT ID="StringLiteral">". tls-key was set to default value."</FONT>);
+<A NAME="429"></A>                }
+<A NAME="430"></A>            }
+<A NAME="431"></A>            
+<A NAME="432"></A>            <FONT ID="SingleLineComment">// log.info("Key URL: " + keyURL.toString());
+<A NAME="433"></A></FONT>            
+<A NAME="434"></A>            <FONT ID="SingleLineComment">// Sets the key attribute of the SSLContextAdapter object
+<A NAME="435"></A></FONT>            <FONT ID="SingleLineComment">// API doc: SSLContextAdapter.loadKeyStore(java.net.URL url, char[] password)
+<A NAME="436"></A></FONT>            <FONT ID="SingleLineComment">// API doc: SSLContextAdapter.setKey(java.security.KeyStore key, char[] password)
+<A NAME="437"></A></FONT>            tls.setKey(tls.loadKeyStore(keyURL, keystorepasswd), keypasswd);
+<A NAME="438"></A>            
+<A NAME="439"></A>            <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Managing the keystore containing the root-certificates of the Ceritifying Authorities
+<A NAME="440"></A></FONT>            <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; used for signing the public key
+<A NAME="441"></A></FONT>            
+<A NAME="442"></A>            <FONT ID="SingleLineComment">// Password of the keystore [default: secret]
+<A NAME="443"></A></FONT>            cacertspasswd = cfg.getProperty(<FONT ID="StringLiteral">"tls-cacerts-passwd"</FONT>, <FONT ID="StringLiteral">"secret"</FONT>).toCharArray();
+<A NAME="444"></A>            
+<A NAME="445"></A>            <FONT ID="SingleLineComment">// URL of the file containing the default-keystore
+<A NAME="446"></A></FONT>            cacertURL = <A HREF="../../../../de/iftm/dcm4che/services/CDimseService.java.html">CDimseService</A>.<FONT ID="Class">class</FONT>.getResource(<FONT ID="StringLiteral">"resources/identityJava.jks"</FONT>);
+<A NAME="447"></A>            
+<A NAME="448"></A>            <FONT ID="SingleLineComment">// If availabel, replace URL with the one specified in the configuration file
+<A NAME="449"></A></FONT>            <FONT ID="If">if</FONT> ((value = cfg.getProperty(<FONT ID="StringLiteral">"tls-cacerts"</FONT>)) != <FONT ID="Null">null</FONT>) {
+<A NAME="450"></A>                <FONT ID="Try">try</FONT> {
+<A NAME="451"></A>                    <FONT ID="SingleLineComment">// Property specified, try to set to specified value
+<A NAME="452"></A></FONT>                    cacertURL = ConfigProperties.fileRefToURL(<A HREF="../../../../de/iftm/dcm4che/services/CDimseService.java.html">CDimseService</A>.<FONT ID="Class">class</FONT>.getResource(<FONT ID="StringLiteral">""</FONT>), value);
+<A NAME="453"></A>                } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="454"></A>                    log.warn(<FONT ID="StringLiteral">"Wrong value for tls-cacerts: "</FONT> + value + <FONT ID="StringLiteral">". tls-cacerts was set to default value."</FONT>);
+<A NAME="455"></A>                }
+<A NAME="456"></A>            }
+<A NAME="457"></A>            
+<A NAME="458"></A>            <FONT ID="SingleLineComment">// log.info("Root-certificat of CA URL: " + cacertURL.toString());
+<A NAME="459"></A></FONT>            
+<A NAME="460"></A>            <FONT ID="SingleLineComment">// Sets the trust attribute of the SSLContextAdapter object
+<A NAME="461"></A></FONT>            <FONT ID="SingleLineComment">// API doc: SSLContextAdapter.loadKeyStore(java.net.URL url, char[] password)
+<A NAME="462"></A></FONT>            <FONT ID="SingleLineComment">// API doc: SSLContextAdapter.setTrust(java.security.KeyStore cacerts)
+<A NAME="463"></A></FONT>            tls.setTrust(tls.loadKeyStore(cacertURL, cacertspasswd));
+<A NAME="464"></A>            
+<A NAME="465"></A>            <FONT ID="SingleLineComment">// Init TLS context adapter
+<A NAME="466"></A></FONT>            tls.init();
+<A NAME="467"></A>            
+<A NAME="468"></A>        } <FONT ID="Catch">catch</FONT> (Exception ex) {
+<A NAME="469"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> ParseException(<FONT ID="StringLiteral">"Could not initalize TLS configuration."</FONT>, <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="470"></A>        }
+<A NAME="471"></A>    }
+<A NAME="472"></A>    
+<A NAME="473"></A>    
+<A NAME="474"></A>    <FONT ID="FormalComment">/**
+<A NAME="475"></A>     * Prepares the Dataset representing the search key in C-FIND. As no values are
+<A NAME="476"></A>     * set, the keys match to every content in the archive. The user has to specify
+<A NAME="477"></A>     * concret values to limit the searchSee PS 3.4 - C.6.2.1.2 Study level.
+<A NAME="478"></A>     * &lt;p&gt;As the result for C-FIND these keys are filled with the values found in the archive.
+<A NAME="479"></A>     * @param cfg the configuration properties for this class.
+<A NAME="480"></A>     * @throws ParseException if a given properties for the keys was not found.
+<A NAME="481"></A>     */</FONT>
+<A NAME="482"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> initKeys(<A HREF="../../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A> cfg) <FONT ID="Throws">throws</FONT> ParseException {
+<A NAME="483"></A>        
+<A NAME="484"></A>        <FONT ID="SingleLineComment">// Remove all keys
+<A NAME="485"></A></FONT>        keys = dof.newDataset();
+<A NAME="486"></A>        
+<A NAME="487"></A>        <FONT ID="SingleLineComment">// Query/Retrieve Level. PS 3.4 - C.6.2 Study Root SOP Class Group
+<A NAME="488"></A></FONT>        keys.putCS(Tags.QueryRetrieveLevel, getQueryRetrieveLevel(STUDY_LEVEL));
+<A NAME="489"></A>        
+<A NAME="490"></A>        <FONT ID="SingleLineComment">// UNIQUE STUDY LEVEL KEY FOR THE STUDY. See PS 3.4 - C.6.2.1.2 Study level
+<A NAME="491"></A></FONT>        keys.putUI(Tags.StudyInstanceUID);
+<A NAME="492"></A>        
+<A NAME="493"></A>        <FONT ID="SingleLineComment">// REQUIRED STUDY LEVEL KEY FOR THE STUDY. See PS 3.4 - C.6.2.1.2 Study level
+<A NAME="494"></A></FONT>        keys.putDA(Tags.StudyDate);
+<A NAME="495"></A>        <FONT ID="SingleLineComment">// Not defined: StudyTime
+<A NAME="496"></A></FONT>        <FONT ID="SingleLineComment">// Not defined: AccessionNumber
+<A NAME="497"></A></FONT>        keys.putPN(Tags.PatientName);
+<A NAME="498"></A>        keys.putLO(Tags.PatientID);
+<A NAME="499"></A>        <FONT ID="SingleLineComment">// Not defined: StudyID
+<A NAME="500"></A></FONT>        
+<A NAME="501"></A>        <FONT ID="SingleLineComment">// OPTIONAL STUDY LEVEL KEY FOR THE STUDY. See PS 3.4 - C.6.2.1.2 Study level
+<A NAME="502"></A></FONT>        keys.putUS(Tags.NumberOfStudyRelatedSeries);
+<A NAME="503"></A>        keys.putUS(Tags.NumberOfStudyRelatedInstances);
+<A NAME="504"></A>        <FONT ID="SingleLineComment">// mutch more defined...
+<A NAME="505"></A></FONT>        
+<A NAME="506"></A>        <FONT ID="SingleLineComment">// Add the keys found in the configuration properties
+<A NAME="507"></A></FONT>        addQueryKeys(cfg);
+<A NAME="508"></A>    }
+<A NAME="509"></A>    
+<A NAME="510"></A>    
+<A NAME="511"></A>    <FONT ID="FormalComment">/**
+<A NAME="512"></A>     * Add the query keys found in the configuration properties to the Dataset
+<A NAME="513"></A>     * "keys" used bei the cFIND method.
+<A NAME="514"></A>     *
+<A NAME="515"></A>     * @param cfg the configuration properties for this class.
+<A NAME="516"></A>     * @throws ParseException if a given properties for the keys was not found.
+<A NAME="517"></A>     */</FONT>
+<A NAME="518"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> addQueryKeys(<A HREF="../../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A> cfg) <FONT ID="Throws">throws</FONT> ParseException {
+<A NAME="519"></A>        <FONT ID="SingleLineComment">// Add/replace keys found in the configuration file. Syntax key.&lt;element name&gt; = &lt;element value&gt;
+<A NAME="520"></A></FONT>        <FONT ID="For">for</FONT> (Enumeration it = cfg.keys(); it.hasMoreElements(); ) {
+<A NAME="521"></A>            String key = (String) it.nextElement();
+<A NAME="522"></A>            <FONT ID="If">if</FONT> (key.startsWith(<FONT ID="StringLiteral">"key."</FONT>)) {
+<A NAME="523"></A>                <FONT ID="Try">try</FONT> {
+<A NAME="524"></A>                    keys.putXX(Tags.forName(key.substring(<FONT ID="IntegerLiteral">4</FONT>)), cfg.getProperty(key));
+<A NAME="525"></A>                } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="526"></A>                    <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> ParseException(<FONT ID="StringLiteral">"Illegal entry in configuration filr: "</FONT> + key + <FONT ID="StringLiteral">"="</FONT> + cfg.getProperty(key), <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="527"></A>                }
+<A NAME="528"></A>            }
+<A NAME="529"></A>        }
+<A NAME="530"></A>    }
+<A NAME="531"></A>    
+<A NAME="532"></A>    
+<A NAME="533"></A>    <FONT ID="FormalComment">/**
+<A NAME="534"></A>     * Sets the Dataset representing the query keys in C-FIND. The user can specify
+<A NAME="535"></A>     * concret values to limit the search.
+<A NAME="536"></A>     * &lt;p&gt;Wildcards '*','?', '-' and '\' are allowed as element-values (see PS 3.4 - C.2.2.2 Attribute Matching).
+<A NAME="537"></A>     * If an key attribute is defined, but has an empty value, it matches every value at the storage side.
+<A NAME="538"></A>     * &lt;p&gt; At a minimum the key "QueryRetrieveLevel" must be set ("STUDY", "SERIES" or "IMAGE").
+<A NAME="539"></A>     * See PS 3.4 - C.6.2 Study Root SOP Class Group
+<A NAME="540"></A>     * &lt;p&gt;As the result for C-FIND these keys are filled with the values found in the archive.
+<A NAME="541"></A>     * @param ds the Dataset containig the search keys.
+<A NAME="542"></A>     */</FONT>
+<A NAME="543"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setQueryKeys(Dataset ds) {
+<A NAME="544"></A>        keys = ds;
+<A NAME="545"></A>    }
+<A NAME="546"></A>    
+<A NAME="547"></A>    
+<A NAME="548"></A>    <FONT ID="FormalComment">/**
+<A NAME="549"></A>     * Sets the Dataset representing the query keys in C-FIND. The user can specify
+<A NAME="550"></A>     * concret values to limit the search.
+<A NAME="551"></A>     * &lt;p&gt;Wildcards '*','?', '-' and '\' are allowed as element-values (see PS 3.4 - C.2.2.2 Attribute Matching).
+<A NAME="552"></A>     * If an key attribute is defined, but has an empty value, it matches every value at the storage side.
+<A NAME="553"></A>     * &lt;p&gt; At a minimum the key "QueryRetrieveLevel" must be set ("STUDY", "SERIES" or "IMAGE").
+<A NAME="554"></A>     * See PS 3.4 - C.6.2 Study Root SOP Class Group
+<A NAME="555"></A>     * &lt;p&gt;As the result for C-FIND these keys are filled with the values found in the archive.
+<A NAME="556"></A>     * @param cfg the configuration properties for this class.
+<A NAME="557"></A>     * @throws ParseException if a given properties for the keys was not found.
+<A NAME="558"></A>     */</FONT>
+<A NAME="559"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setQueryKeys(<A HREF="../../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A> cfg) <FONT ID="Throws">throws</FONT> ParseException {
+<A NAME="560"></A>        
+<A NAME="561"></A>        <FONT ID="SingleLineComment">// Remove all keys
+<A NAME="562"></A></FONT>        keys = dof.newDataset();
+<A NAME="563"></A>        
+<A NAME="564"></A>        <FONT ID="SingleLineComment">// Add the keys found in the configuration properties
+<A NAME="565"></A></FONT>        addQueryKeys(cfg);
+<A NAME="566"></A>    }
+<A NAME="567"></A>    
+<A NAME="568"></A>    
+<A NAME="569"></A>    <FONT ID="FormalComment">/**
+<A NAME="570"></A>     * Starts a active association to a communication partner.
+<A NAME="571"></A>     * See PS 3.8 - 7.1 A-ASSOCIATE SERVICE
+<A NAME="572"></A>     *
+<A NAME="573"></A>     * @return true, if association was successful established.
+<A NAME="574"></A>     * @exception  ConnectException
+<A NAME="575"></A>     * @exception  IOException
+<A NAME="576"></A>     * @exception  GeneralSecurityException
+<A NAME="577"></A>     */</FONT>
+<A NAME="578"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> aASSOCIATE() <FONT ID="Throws">throws</FONT> ConnectException, IOException, GeneralSecurityException {
+<A NAME="579"></A>        
+<A NAME="580"></A>        <FONT ID="SingleLineComment">// No association may be active
+<A NAME="581"></A></FONT>        <FONT ID="If">if</FONT> (assoc != <FONT ID="Null">null</FONT>) {
+<A NAME="582"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> ConnectException(<FONT ID="StringLiteral">"Association already established"</FONT>);
+<A NAME="583"></A>        }
+<A NAME="584"></A>        
+<A NAME="585"></A>        <FONT ID="SingleLineComment">// New Association object for establishing an active association
+<A NAME="586"></A></FONT>        assoc = aFact.newRequestor(newSocket(url.getHost(), url.getPort()));
+<A NAME="587"></A>        
+<A NAME="588"></A>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Fill the Association object with relevant data
+<A NAME="589"></A></FONT>        assoc.setAcTimeout(acTimeout);
+<A NAME="590"></A>        assoc.setDimseTimeout(dimseTimeout);
+<A NAME="591"></A>        assoc.setSoCloseDelay(soCloseDelay);
+<A NAME="592"></A>        assoc.setPackPDVs(packPDVs);
+<A NAME="593"></A>        
+<A NAME="594"></A>        <FONT ID="SingleLineComment">// 1. Create an communication channel to the communication partner defined in the Association object
+<A NAME="595"></A></FONT>        <FONT ID="SingleLineComment">// 2. Send the A-ASSOCIATE-RQ package
+<A NAME="596"></A></FONT>        <FONT ID="SingleLineComment">// 3. Receive the aAssociation acknowlage/reject package from the communication partner as a PDU (Protocol Data Unit)
+<A NAME="597"></A></FONT>        PDU assocAC = assoc.connect(assocRQ);
+<A NAME="598"></A>        
+<A NAME="599"></A>        <FONT ID="If">if</FONT> (!(assocAC <FONT ID="InstanceOf">instanceof</FONT> AAssociateAC)) {
+<A NAME="600"></A>            <FONT ID="SingleLineComment">// Acknowlage is A-ASSOCIATE-RJ
+<A NAME="601"></A></FONT>            <FONT ID="SingleLineComment">// Association rejected
+<A NAME="602"></A></FONT>            assoc = <FONT ID="Null">null</FONT>;
+<A NAME="603"></A>            
+<A NAME="604"></A>            <FONT ID="SingleLineComment">// Return aASSOCIATE faild
+<A NAME="605"></A></FONT>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="606"></A>        }
+<A NAME="607"></A>        <FONT ID="SingleLineComment">// Acknowlage is A-ASSOCIATE_AC
+<A NAME="608"></A></FONT>        <FONT ID="SingleLineComment">// Association accepted
+<A NAME="609"></A></FONT>        
+<A NAME="610"></A>        <FONT ID="SingleLineComment">// Start the accepted association
+<A NAME="611"></A></FONT>        <FONT ID="SingleLineComment">// API doc: AssociationFactory.newActiveAssociation(Association assoc, DcmServiceRegistry services)
+<A NAME="612"></A></FONT>        aassoc = aFact.newActiveAssociation(assoc, <FONT ID="Null">null</FONT>);
+<A NAME="613"></A>        aassoc.start();
+<A NAME="614"></A>        
+<A NAME="615"></A>        <FONT ID="SingleLineComment">// Return successfull opened
+<A NAME="616"></A></FONT>        <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="617"></A>    }
+<A NAME="618"></A>    
+<A NAME="619"></A>    
+<A NAME="620"></A>    <FONT ID="FormalComment">/**
+<A NAME="621"></A>     * Creates a stream socket and connects it to the specified port number on the named host.
+<A NAME="622"></A>     * @param host the IP address.
+<A NAME="623"></A>     * @param port the port number.
+<A NAME="624"></A>     * @return the Socket.
+<A NAME="625"></A>     * @exception  IOException
+<A NAME="626"></A>     * @exception  GeneralSecurityException
+<A NAME="627"></A>     */</FONT>
+<A NAME="628"></A>    <FONT ID="Private">private</FONT> Socket newSocket(String host, <FONT ID="Int">int</FONT> port) <FONT ID="Throws">throws</FONT> IOException, GeneralSecurityException {
+<A NAME="629"></A>        
+<A NAME="630"></A>        <FONT ID="SingleLineComment">// Test, if a secured connection is needed
+<A NAME="631"></A></FONT>        <FONT ID="If">if</FONT> (cipherSuites != <FONT ID="Null">null</FONT>) {
+<A NAME="632"></A>            
+<A NAME="633"></A>            <FONT ID="SingleLineComment">// Creates a socket for secured connection.
+<A NAME="634"></A></FONT>            <FONT ID="SingleLineComment">// The SSLContextAdapter tls uses the javax.net.ssl package for establishing
+<A NAME="635"></A></FONT>            <FONT ID="SingleLineComment">// the connection.
+<A NAME="636"></A></FONT>            <FONT ID="Return">return</FONT> tls.getSocketFactory(cipherSuites).createSocket(host, port);
+<A NAME="637"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="638"></A>            
+<A NAME="639"></A>            <FONT ID="SingleLineComment">// Creates a standard Java socket for unsecured connection.
+<A NAME="640"></A></FONT>            <FONT ID="Return">return</FONT> <FONT ID="New">new</FONT> Socket(host, port);
+<A NAME="641"></A>        }
+<A NAME="642"></A>    }
+<A NAME="643"></A>    
+<A NAME="644"></A>    
+<A NAME="645"></A>    <FONT ID="FormalComment">/**
+<A NAME="646"></A>     * Releases the active association.
+<A NAME="647"></A>     * See PS 3.8 - 7.2 A-RELEASE SERVICE
+<A NAME="648"></A>     *
+<A NAME="649"></A>     * @param waitOnRSP if true, method waits until it receives the responds
+<A NAME="650"></A>     *                  to the release request.
+<A NAME="651"></A>     * @exception  InterruptedException  Description of the Exception
+<A NAME="652"></A>     * @exception  IOException           Description of the Exception
+<A NAME="653"></A>     */</FONT>
+<A NAME="654"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> aRELEASE(<FONT ID="Boolean">boolean</FONT> waitOnRSP) <FONT ID="Throws">throws</FONT> InterruptedException, IOException {
+<A NAME="655"></A>        <FONT ID="If">if</FONT> (assoc != <FONT ID="Null">null</FONT>) {
+<A NAME="656"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="657"></A>                aassoc.release(waitOnRSP);
+<A NAME="658"></A>            } <FONT ID="Finally">finally</FONT> {
+<A NAME="659"></A>                assoc = <FONT ID="Null">null</FONT>;
+<A NAME="660"></A>                aassoc = <FONT ID="Null">null</FONT>;
+<A NAME="661"></A>            }
+<A NAME="662"></A>        }
+<A NAME="663"></A>    }
+<A NAME="664"></A>    
+<A NAME="665"></A>    
+<A NAME="666"></A>    <FONT ID="FormalComment">/**
+<A NAME="667"></A>     * Stores a DICOM object in an archive (Storage SCP).
+<A NAME="668"></A>     * &lt;p&gt;See PS 3.4 - Annex B STORAGE SERVICE CLASS.
+<A NAME="669"></A>     *
+<A NAME="670"></A>     * @param ds the Dataset to store.
+<A NAME="671"></A>     * @throws ConnectException
+<A NAME="672"></A>     * @throws ParseException
+<A NAME="673"></A>     * @throws IOException
+<A NAME="674"></A>     * @throws InterruptedException
+<A NAME="675"></A>     * @throws IllegalStateException
+<A NAME="676"></A>     */</FONT>
+<A NAME="677"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> cSTORE(Dataset ds) <FONT ID="Throws">throws</FONT> InterruptedException, IOException, ConnectException, ParseException {
+<A NAME="678"></A>        String  sopClassUID;
+<A NAME="679"></A>        String  sopInstUID;
+<A NAME="680"></A>        PresContext pc = <FONT ID="Null">null</FONT>;
+<A NAME="681"></A>        
+<A NAME="682"></A>        <FONT ID="SingleLineComment">// An association must be active
+<A NAME="683"></A></FONT>        <FONT ID="If">if</FONT> (aassoc == <FONT ID="Null">null</FONT>) {
+<A NAME="684"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> ConnectException(<FONT ID="StringLiteral">"No Association established"</FONT>);
+<A NAME="685"></A>        }
+<A NAME="686"></A>        
+<A NAME="687"></A>        <FONT ID="SingleLineComment">// SOP Class UID must be given
+<A NAME="688"></A></FONT>        <FONT ID="If">if</FONT> ((sopClassUID = ds.getString(Tags.SOPClassUID)) == <FONT ID="Null">null</FONT>) {
+<A NAME="689"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> ParseException(<FONT ID="StringLiteral">"No SOP Class UID in Dataset"</FONT>, <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="690"></A>        }
+<A NAME="691"></A>        
+<A NAME="692"></A>        <FONT ID="SingleLineComment">// SOP Instance UID must be given
+<A NAME="693"></A></FONT>        <FONT ID="If">if</FONT> ((sopInstUID = ds.getString(Tags.SOPInstanceUID)) == <FONT ID="Null">null</FONT>) {
+<A NAME="694"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> ParseException(<FONT ID="StringLiteral">"No SOP Instance UID in Dataset"</FONT>, <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="695"></A>        }
+<A NAME="696"></A>        
+<A NAME="697"></A>        <FONT ID="SingleLineComment">// Test, if applicable presentation context was found
+<A NAME="698"></A></FONT>        <FONT ID="If">if</FONT> ((pc = aassoc.getAssociation().getAcceptedPresContext(sopClassUID, UIDs.ImplicitVRLittleEndian)) == <FONT ID="Null">null</FONT> &amp;&amp;
+<A NAME="699"></A>            (pc = aassoc.getAssociation().getAcceptedPresContext(sopClassUID, UIDs.ExplicitVRLittleEndian)) == <FONT ID="Null">null</FONT> &amp;&amp;
+<A NAME="700"></A>            (pc = aassoc.getAssociation().getAcceptedPresContext(sopClassUID, UIDs.ExplicitVRBigEndian)) == <FONT ID="Null">null</FONT>) {
+<A NAME="701"></A>            
+<A NAME="702"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> ConnectException(<FONT ID="StringLiteral">"No applicable presentation context found"</FONT>);
+<A NAME="703"></A>        }
+<A NAME="704"></A>        
+<A NAME="705"></A>        <FONT ID="SingleLineComment">// New Cammand Set, see: DICOM Part 7: Message Exchange, 6.3.1 Command Set Structure
+<A NAME="706"></A></FONT>        Command cStoreRQ = oFact.newCommand();
+<A NAME="707"></A>        <FONT ID="SingleLineComment">// API doc: Command.initCStoreRQ(int msgID, String sopClassUID, String sopInstUID, int priority)
+<A NAME="708"></A></FONT>        cStoreRQ.initCStoreRQ(assoc.nextMsgID(), sopClassUID, sopInstUID, priority);
+<A NAME="709"></A>        
+<A NAME="710"></A>        <FONT ID="SingleLineComment">// API doc: AssociationFactorynewDimse(int pcid, Command cmd, Dataset ds)
+<A NAME="711"></A></FONT>        <FONT ID="SingleLineComment">// DIMSE (DICOM Message Service Element) ist ein Nachrichtendienst in DICOM
+<A NAME="712"></A></FONT>        Dimse storeRq = aFact.newDimse(pc.pcid(), cStoreRQ, ds);
+<A NAME="713"></A>        
+<A NAME="714"></A>        <FONT ID="SingleLineComment">// PS 3.7 - 9.3.1 C-STORE PROTOCOL, 9.3.1.2 C-STORE-RSP
+<A NAME="715"></A></FONT>        <FONT ID="SingleLineComment">// Always returns SUCESS result code.
+<A NAME="716"></A></FONT>        <FONT ID="SingleLineComment">// Invoke active association with echo request Dimse
+<A NAME="717"></A></FONT>        FutureRSP future = aassoc.invoke(storeRq);
+<A NAME="718"></A>        
+<A NAME="719"></A>        <FONT ID="SingleLineComment">// Response to the C-ECHO request.
+<A NAME="720"></A></FONT>        <FONT ID="SingleLineComment">// The result cannot be accessed until it has been set.
+<A NAME="721"></A></FONT>        Dimse storeRsp = future.get();
+<A NAME="722"></A>        Command rspCmd = storeRsp.getCommand();
+<A NAME="723"></A>        
+<A NAME="724"></A>        <FONT ID="SingleLineComment">// PS 3.7 - 9.3.5 C-MOVE PROTOCOL, 9.3.5.2 C-ECHO-RSP
+<A NAME="725"></A></FONT>        <FONT ID="Int">int</FONT> status = rspCmd.getStatus();
+<A NAME="726"></A>        <FONT ID="Switch">switch</FONT> (status) {
+<A NAME="727"></A>            <FONT ID="Case">case</FONT> <FONT ID="IntegerLiteral">0x0000</FONT>:
+<A NAME="728"></A>                <FONT ID="SingleLineComment">// Success
+<A NAME="729"></A></FONT>                <FONT ID="Break">break</FONT>;
+<A NAME="730"></A>            <FONT ID="Default">default</FONT>:
+<A NAME="731"></A>                log.error(<FONT ID="StringLiteral">"C-STORE failed: "</FONT> + Integer.toHexString(status));
+<A NAME="732"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="733"></A>        }
+<A NAME="734"></A>        
+<A NAME="735"></A>    }
+<A NAME="736"></A>    
+<A NAME="737"></A>    
+<A NAME="738"></A>    <FONT ID="FormalComment">/**
+<A NAME="739"></A>     * Queries the archive for DICOM objects matching Attribute Keys defined in
+<A NAME="740"></A>     * the loacal field "keys". This field is set by the constructor out of the
+<A NAME="741"></A>     * configuration parameters or by the methods setQueryKeys(Configuration) and setQueryKeys(Dataset).
+<A NAME="742"></A>     * See PS 3.4 - Annex C QUERY/RETRIEVE SERVICE CLASS.
+<A NAME="743"></A>     * &lt;p&gt;The method returns, when the result is received from the communication partner.
+<A NAME="744"></A>     *
+<A NAME="745"></A>     *
+<A NAME="746"></A>     * @return the result of the cFIND as a Vector of Dataset objects each specifying
+<A NAME="747"></A>     *         one matching DICOM object. If no matching objects are found an empty Vector is returned.
+<A NAME="748"></A>     * @throws ConnectException
+<A NAME="749"></A>     * @throws IOException
+<A NAME="750"></A>     */</FONT>
+<A NAME="751"></A>    <FONT ID="Public">public</FONT> Vector cFIND() <FONT ID="Throws">throws</FONT> ConnectException, IOException, InterruptedException {
+<A NAME="752"></A>        PresContext pc;
+<A NAME="753"></A>        List dimseList;
+<A NAME="754"></A>        Vector datasetVector;
+<A NAME="755"></A>        
+<A NAME="756"></A>        <FONT ID="SingleLineComment">// An association must be active
+<A NAME="757"></A></FONT>        <FONT ID="If">if</FONT> (aassoc == <FONT ID="Null">null</FONT>) {
+<A NAME="758"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> ConnectException(<FONT ID="StringLiteral">"No Association established"</FONT>);
+<A NAME="759"></A>        }
+<A NAME="760"></A>        
+<A NAME="761"></A>        <FONT ID="SingleLineComment">// Test, if Presentation Context for C-FIND is supported
+<A NAME="762"></A></FONT>        <FONT ID="SingleLineComment">// API doc: Association.getAcceptedPresContext(String asuid, String tsuid)
+<A NAME="763"></A></FONT>        <FONT ID="If">if</FONT> ((pc = aassoc.getAssociation().getAcceptedPresContext(UIDs.StudyRootQueryRetrieveInformationModelFIND, UIDs.ExplicitVRLittleEndian)) == <FONT ID="Null">null</FONT> &amp;&amp;
+<A NAME="764"></A>            (pc = aassoc.getAssociation().getAcceptedPresContext(UIDs.StudyRootQueryRetrieveInformationModelFIND, UIDs.ImplicitVRLittleEndian)) == <FONT ID="Null">null</FONT>) {
+<A NAME="765"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> ConnectException(<FONT ID="StringLiteral">"Association does not support presentation context for StudyRootQueryRetrieveInformationModelFIND SOP."</FONT>);
+<A NAME="766"></A>        }
+<A NAME="767"></A>        
+<A NAME="768"></A>        <FONT ID="SingleLineComment">// New Cammand Set, see: DICOM Part 7: Message Exchange, 6.3.1 Command Set Structure
+<A NAME="769"></A></FONT>        Command rqCmd = dof.newCommand();
+<A NAME="770"></A>        <FONT ID="SingleLineComment">// API doc: Command.initCFindRQ(int msgID, String sopClassUID, int priority)
+<A NAME="771"></A></FONT>        rqCmd.initCFindRQ(assoc.nextMsgID(), UIDs.StudyRootQueryRetrieveInformationModelFIND, priority);
+<A NAME="772"></A>        <FONT ID="SingleLineComment">// API doc: AssociationFactorynewDimse(int pcid, Command cmd, Dataset ds)
+<A NAME="773"></A></FONT>        <FONT ID="SingleLineComment">// DIMSE (DICOM Message Service Element) ist ein Nachrichtendienst in DICOM
+<A NAME="774"></A></FONT>        Dimse findRq = aFact.newDimse(pc.pcid(), rqCmd, keys);
+<A NAME="775"></A>        
+<A NAME="776"></A>        <FONT ID="If">if</FONT> (DEBUG) {
+<A NAME="777"></A>            StringWriter w = <FONT ID="New">new</FONT> StringWriter();
+<A NAME="778"></A>            w.write(<FONT ID="StringLiteral">"C-FIND RQ Identifier:\n"</FONT>);
+<A NAME="779"></A>            keys.dumpDataset(w, <FONT ID="Null">null</FONT>);
+<A NAME="780"></A>            log.debug(w.toString());
+<A NAME="781"></A>        }
+<A NAME="782"></A>        
+<A NAME="783"></A>        <FONT ID="SingleLineComment">// Invoke active association with find request Dimse
+<A NAME="784"></A></FONT>        FutureRSP future = aassoc.invoke(findRq);
+<A NAME="785"></A>        <FONT ID="SingleLineComment">// Response to the C-FIND request.
+<A NAME="786"></A></FONT>        <FONT ID="SingleLineComment">// The result cannot be accessed until it has been set.
+<A NAME="787"></A></FONT>        Dimse findRsp = future.get();
+<A NAME="788"></A>        
+<A NAME="789"></A>        <FONT ID="SingleLineComment">// Get the list of found objects
+<A NAME="790"></A></FONT>        dimseList = future.listPending();
+<A NAME="791"></A>        
+<A NAME="792"></A>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Extract Dataset from Dimse
+<A NAME="793"></A></FONT>        
+<A NAME="794"></A>        datasetVector = <FONT ID="New">new</FONT> Vector();
+<A NAME="795"></A>        
+<A NAME="796"></A>        <FONT ID="SingleLineComment">// If no List of DIMSE objects was generated or it is empty return an empty Vector
+<A NAME="797"></A></FONT>        <FONT ID="If">if</FONT> (dimseList == <FONT ID="Null">null</FONT> || dimseList.isEmpty()) {
+<A NAME="798"></A>            <FONT ID="Return">return</FONT> datasetVector;
+<A NAME="799"></A>        }
+<A NAME="800"></A>        
+<A NAME="801"></A>        <FONT ID="SingleLineComment">// Process all elements
+<A NAME="802"></A></FONT>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; dimseList.size(); i++) {
+<A NAME="803"></A>            datasetVector.addElement(((Dimse) dimseList.get(i)).getDataset());
+<A NAME="804"></A>        }
+<A NAME="805"></A>        
+<A NAME="806"></A>        <FONT ID="Return">return</FONT> datasetVector;
+<A NAME="807"></A>    }
+<A NAME="808"></A>    
+<A NAME="809"></A>    
+<A NAME="810"></A>    <FONT ID="FormalComment">/**
+<A NAME="811"></A>     * Ask archive to move one DICOM object to the destination (C-MOVE).
+<A NAME="812"></A>     * See PS 3.4 - Annex C QUERY/RETRIEVE SERVICE CLASS.
+<A NAME="813"></A>     * &lt;p&gt;Use the Study Root Query/Retrieve Information Model to communicate with the archive.
+<A NAME="814"></A>     * See PS 3.4 - C.6.2 Study Root SOP Class Group.
+<A NAME="815"></A>     * &lt;p&gt;PS 3.4 - C.4.2.1.4.1 Request Identifier Structure (for C-MOVE):
+<A NAME="816"></A>     * An Identifier in a C-MOVE request shall contain:
+<A NAME="817"></A>     * &lt;p&gt;- the Query/Retrieve Level (0008,0052) which defines the level of the retrieval
+<A NAME="818"></A>     * &lt;p&gt;- Unique Key Attributes which may include Patient ID, Study Instance UIDs, Series Instance UIDs, and the SOP Instance UIDs
+<A NAME="819"></A>     * &lt;p&gt;PS 3.4 - C.4.2.2.1 Baseline Behavior of SCU (of C-MOVE):
+<A NAME="820"></A>     * &lt;p&gt;The SCU shall supply a single value in the Unique Key Attribute for each
+<A NAME="821"></A>     * level above the Query/Retrieve level. For the level of retrieve, the SCU shall
+<A NAME="822"></A>     * supply one unique key if the level of retrieve is above the STUDY level and
+<A NAME="823"></A>     * shall supply one UID, or a list of UIDs if a retrieval of several items is desired
+<A NAME="824"></A>     * and the retrieve level is STUDY, SERIES or IMAGE.
+<A NAME="825"></A>     *
+<A NAME="826"></A>     * @param ds the DICOM object represented as a Dataset.
+<A NAME="827"></A>     * @return a result-code: 0x0000 = SUCCESS sub-operations complete –no failures,
+<A NAME="828"></A>     *                        0xB000 = WARNING sub-operations complete – one or more failures,
+<A NAME="829"></A>     *                        other = errors defined in PS 3.4 - C.4.2.1.5 Status
+<A NAME="830"></A>     * @throws ConnectException
+<A NAME="831"></A>     * @throws InterruptedException
+<A NAME="832"></A>     * @throws IOException
+<A NAME="833"></A>     */</FONT>
+<A NAME="834"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> cMOVE(Dataset ds) <FONT ID="Throws">throws</FONT> ConnectException, InterruptedException, IOException {
+<A NAME="835"></A>        PresContext pc;
+<A NAME="836"></A>        
+<A NAME="837"></A>        <FONT ID="SingleLineComment">// An association must be active
+<A NAME="838"></A></FONT>        <FONT ID="If">if</FONT> (aassoc == <FONT ID="Null">null</FONT>) {
+<A NAME="839"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> ConnectException(<FONT ID="StringLiteral">"No Association established"</FONT>);
+<A NAME="840"></A>        }
+<A NAME="841"></A>        
+<A NAME="842"></A>        <FONT ID="SingleLineComment">// Test, if Presentation Context for C-MOVE is supported
+<A NAME="843"></A></FONT>        <FONT ID="SingleLineComment">// API doc: Association.getAcceptedPresContext(String asuid, String tsuid)
+<A NAME="844"></A></FONT>        <FONT ID="If">if</FONT> ((pc = aassoc.getAssociation().getAcceptedPresContext(UIDs.StudyRootQueryRetrieveInformationModelMOVE, UIDs.ExplicitVRLittleEndian)) == <FONT ID="Null">null</FONT> &amp;&amp;
+<A NAME="845"></A>            (pc = aassoc.getAssociation().getAcceptedPresContext(UIDs.StudyRootQueryRetrieveInformationModelMOVE, UIDs.ImplicitVRLittleEndian)) == <FONT ID="Null">null</FONT>) {
+<A NAME="846"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> ConnectException(<FONT ID="StringLiteral">"Association does not support presentation context for StudyRootQueryRetrieveInformationModelMOVE SOP."</FONT>);
+<A NAME="847"></A>        }
+<A NAME="848"></A>        
+<A NAME="849"></A>        <FONT ID="SingleLineComment">// Get the Study Instance UID of the study to mode
+<A NAME="850"></A></FONT>        String suid = ds.getString(Tags.StudyInstanceUID);
+<A NAME="851"></A>        
+<A NAME="852"></A>        <FONT ID="SingleLineComment">// Prepare info for logging
+<A NAME="853"></A></FONT>        String patName = ds.getString(Tags.PatientName);
+<A NAME="854"></A>        String patID = ds.getString(Tags.PatientID);
+<A NAME="855"></A>        String studyDate = ds.getString(Tags.StudyDate);
+<A NAME="856"></A>        String prompt = <FONT ID="StringLiteral">"Study["</FONT> + suid + <FONT ID="StringLiteral">"] from "</FONT> + studyDate + <FONT ID="StringLiteral">" for Patient["</FONT> + patID + <FONT ID="StringLiteral">"]: "</FONT> + patName;
+<A NAME="857"></A>        
+<A NAME="858"></A>        <FONT ID="SingleLineComment">// log.info("Moving: " + prompt);
+<A NAME="859"></A></FONT>        
+<A NAME="860"></A>        <FONT ID="SingleLineComment">// New Cammand Set, see: DICOM Part 7: Message Exchange, 6.3.1 Command Set Structure
+<A NAME="861"></A></FONT>        Command rqCmd = dof.newCommand();
+<A NAME="862"></A>        <FONT ID="SingleLineComment">// API doc: Command.initCMoveRQ(int msgID, String sopClassUID, int priority, String moveDest)
+<A NAME="863"></A></FONT>        rqCmd.initCMoveRQ(assoc.nextMsgID(), UIDs.StudyRootQueryRetrieveInformationModelMOVE, priority, dest);
+<A NAME="864"></A>        Dataset rqDs = dof.newDataset();
+<A NAME="865"></A>        rqDs.putCS(Tags.QueryRetrieveLevel, getQueryRetrieveLevel(STUDY_LEVEL));
+<A NAME="866"></A>        <FONT ID="SingleLineComment">// Only Unique Key allowed in C-MOVE. PS 3.4 -C.2.2.1 Attribute Types
+<A NAME="867"></A></FONT>        rqDs.putUI(Tags.StudyInstanceUID, suid);
+<A NAME="868"></A>        <FONT ID="SingleLineComment">// API doc: AssociationFactorynewDimse(int pcid, Command cmd, Dataset ds)
+<A NAME="869"></A></FONT>        <FONT ID="SingleLineComment">// DIMSE (DICOM Message Service Element) ist ein Nachrichtendienst in DICOM
+<A NAME="870"></A></FONT>        Dimse moveRq = aFact.newDimse(pc.pcid(), rqCmd, rqDs);
+<A NAME="871"></A>        
+<A NAME="872"></A>        <FONT ID="SingleLineComment">// Invoke active association with move request Dimse
+<A NAME="873"></A></FONT>        FutureRSP future = aassoc.invoke(moveRq);
+<A NAME="874"></A>        <FONT ID="SingleLineComment">// Response to the C-MOVE request.
+<A NAME="875"></A></FONT>        <FONT ID="SingleLineComment">// The result cannot be accessed until it has been set.
+<A NAME="876"></A></FONT>        Dimse moveRsp = future.get();
+<A NAME="877"></A>        Command rspCmd = moveRsp.getCommand();
+<A NAME="878"></A>        
+<A NAME="879"></A>        <FONT ID="SingleLineComment">// PS 3.7 - 9.3.4 C-MOVE PROTOCOL, 9.3.4.2 C-MOVE-RSP
+<A NAME="880"></A></FONT>        <FONT ID="Int">int</FONT> status = rspCmd.getStatus();
+<A NAME="881"></A>        <FONT ID="Switch">switch</FONT> (status) {
+<A NAME="882"></A>            <FONT ID="Case">case</FONT> <FONT ID="IntegerLiteral">0x0000</FONT>:
+<A NAME="883"></A>                <FONT ID="SingleLineComment">// log.info("Moved: " + prompt);
+<A NAME="884"></A></FONT>                <FONT ID="Break">break</FONT>;
+<A NAME="885"></A>            <FONT ID="Case">case</FONT> <FONT ID="IntegerLiteral">0xB000</FONT>:
+<A NAME="886"></A>                log.error(<FONT ID="StringLiteral">"One or more failures during move of "</FONT> + prompt);
+<A NAME="887"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="888"></A>            <FONT ID="Default">default</FONT>:
+<A NAME="889"></A>                log.error(<FONT ID="StringLiteral">"Failed to move "</FONT> + prompt + <FONT ID="StringLiteral">"\n\terror tstatus: "</FONT> + Integer.toHexString(status));
+<A NAME="890"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="891"></A>        }
+<A NAME="892"></A>        <FONT ID="Return">return</FONT> status;
+<A NAME="893"></A>    }
+<A NAME="894"></A>    
+<A NAME="895"></A>    
+<A NAME="896"></A>    <FONT ID="FormalComment">/**
+<A NAME="897"></A>     * Implements the ECHO service. The C-ECHO service is invoked by a DIMSE-service-user
+<A NAME="898"></A>     * to verify end-to-end communications with a peer DIMSE-service-user.
+<A NAME="899"></A>     * See PS 3.7 - 9.1.5 C-ECHO SERVICE
+<A NAME="900"></A>     *
+<A NAME="901"></A>     * @exception ConnectException
+<A NAME="902"></A>     * @exception InterruptedException
+<A NAME="903"></A>     * @exception IOException
+<A NAME="904"></A>     */</FONT>
+<A NAME="905"></A>    <FONT ID="Public">public</FONT> <FONT ID="Long">long</FONT> cECHO() <FONT ID="Throws">throws</FONT> ConnectException, InterruptedException, IOException {
+<A NAME="906"></A>        PresContext pc;
+<A NAME="907"></A>        <FONT ID="Long">long</FONT> t1 = System.currentTimeMillis();
+<A NAME="908"></A>        
+<A NAME="909"></A>        <FONT ID="SingleLineComment">// An association must be active
+<A NAME="910"></A></FONT>        <FONT ID="If">if</FONT> (aassoc == <FONT ID="Null">null</FONT>) {
+<A NAME="911"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> ConnectException(<FONT ID="StringLiteral">"No Association established"</FONT>);
+<A NAME="912"></A>        }
+<A NAME="913"></A>        
+<A NAME="914"></A>        <FONT ID="SingleLineComment">// Test, if Presentation Context for C-ECHO is supported
+<A NAME="915"></A></FONT>        <FONT ID="SingleLineComment">// API doc: Association.getAcceptedPresContext(String asuid, String tsuid)
+<A NAME="916"></A></FONT>        <FONT ID="If">if</FONT> ((pc = aassoc.getAssociation().getAcceptedPresContext(UIDs.Verification, UIDs.ImplicitVRLittleEndian)) == <FONT ID="Null">null</FONT>) {
+<A NAME="917"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> ConnectException(<FONT ID="StringLiteral">"Association does not support presentation context: Verification SOP/ImplicitVRLittleEndian."</FONT>);
+<A NAME="918"></A>        }
+<A NAME="919"></A>        
+<A NAME="920"></A>        <FONT ID="SingleLineComment">// New Cammand Set, see: DICOM Part 7: Message Exchange, 6.3.1 Command Set Structure
+<A NAME="921"></A></FONT>        Command cEchoRQ = oFact.newCommand();
+<A NAME="922"></A>        <FONT ID="SingleLineComment">// API doc: Command.initCEchoRQ(int msgID)
+<A NAME="923"></A></FONT>        cEchoRQ.initCEchoRQ(<FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="924"></A>        
+<A NAME="925"></A>        <FONT ID="SingleLineComment">// API doc: AssociationFactorynewDimse(int pcid, Command cmd)
+<A NAME="926"></A></FONT>        <FONT ID="SingleLineComment">// DIMSE (DICOM Message Service Element) ist ein Nachrichtendienst in DICOM
+<A NAME="927"></A></FONT>        Dimse echoRq = aFact.newDimse(pc.pcid(), cEchoRQ);
+<A NAME="928"></A>        
+<A NAME="929"></A>        <FONT ID="SingleLineComment">// PS 3.7 - 9.3.5 C-ECHO PROTOCOL, 9.3.5.2 C-ECHO-RSP
+<A NAME="930"></A></FONT>        <FONT ID="SingleLineComment">// Always returns SUCESS result code.
+<A NAME="931"></A></FONT>        <FONT ID="SingleLineComment">// Invoke active association with echo request Dimse
+<A NAME="932"></A></FONT>        FutureRSP future = aassoc.invoke(echoRq);
+<A NAME="933"></A>        
+<A NAME="934"></A>        <FONT ID="SingleLineComment">// Response to the C-ECHO request.
+<A NAME="935"></A></FONT>        <FONT ID="SingleLineComment">// The result cannot be accessed until it has been set.
+<A NAME="936"></A></FONT>        Dimse echoRsp = future.get();
+<A NAME="937"></A>        Command rspCmd = echoRsp.getCommand();
+<A NAME="938"></A>        
+<A NAME="939"></A>        <FONT ID="SingleLineComment">// PS 3.7 - 9.3.5 C-MOVE PROTOCOL, 9.3.5.2 C-ECHO-RSP
+<A NAME="940"></A></FONT>        <FONT ID="Int">int</FONT> status = rspCmd.getStatus();
+<A NAME="941"></A>        <FONT ID="Switch">switch</FONT> (status) {
+<A NAME="942"></A>            <FONT ID="Case">case</FONT> <FONT ID="IntegerLiteral">0x0000</FONT>:
+<A NAME="943"></A>                <FONT ID="SingleLineComment">// Success
+<A NAME="944"></A></FONT>                <FONT ID="Break">break</FONT>;
+<A NAME="945"></A>            <FONT ID="Default">default</FONT>:
+<A NAME="946"></A>                log.error(<FONT ID="StringLiteral">"C-ECHO failed: "</FONT> + Integer.toHexString(status));
+<A NAME="947"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="948"></A>        }
+<A NAME="949"></A>        
+<A NAME="950"></A>        <FONT ID="Return">return</FONT> System.currentTimeMillis() - t1;
+<A NAME="951"></A>    }
+<A NAME="952"></A>
+<A NAME="953"></A>    
+<A NAME="954"></A>    <FONT ID="FormalComment">/**
+<A NAME="955"></A>     * Gets the String value used for DICOM element QueryRetrieveLevel (0008,0052).
+<A NAME="956"></A>     * &lt;p&gt;See PS 3.4 - C.6 SOP CLASS DEFINITIONS
+<A NAME="957"></A>     *
+<A NAME="958"></A>     * @param queryRetrieveLevel query/retrieve level as a enumerated value.
+<A NAME="959"></A>     * @return the String value assiciated to enumerated query/retrieve level.
+<A NAME="960"></A>     */</FONT>
+<A NAME="961"></A>    <FONT ID="Static">static</FONT> <FONT ID="Public">public</FONT> String getQueryRetrieveLevel(<FONT ID="Int">int</FONT> queryRetrieveLevel) {
+<A NAME="962"></A>        <FONT ID="Switch">switch</FONT> (queryRetrieveLevel) {
+<A NAME="963"></A>            <FONT ID="Case">case</FONT> PATIENT_LEVEL:
+<A NAME="964"></A>                <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">"PATIENT"</FONT>;
+<A NAME="965"></A>                
+<A NAME="966"></A>            <FONT ID="Case">case</FONT> STUDY_LEVEL:
+<A NAME="967"></A>                <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">"STUDY"</FONT>;
+<A NAME="968"></A>                
+<A NAME="969"></A>            <FONT ID="Case">case</FONT> SERIES_LEVEL:
+<A NAME="970"></A>                <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">"SERIES"</FONT>;
+<A NAME="971"></A>                
+<A NAME="972"></A>            <FONT ID="Case">case</FONT> IMAGE_LEVEL:
+<A NAME="973"></A>                <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">"IMAGE"</FONT>;
+<A NAME="974"></A>                
+<A NAME="975"></A>            <FONT ID="Default">default</FONT>:
+<A NAME="976"></A>                <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">""</FONT>;
+<A NAME="977"></A>        }
+<A NAME="978"></A>    }
+<A NAME="979"></A>}
+<A NAME="980"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">CDimseService</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

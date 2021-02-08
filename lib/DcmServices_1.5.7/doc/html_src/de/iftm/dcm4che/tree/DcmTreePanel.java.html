@@ -1,0 +1,395 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.tree.DcmTreePanel (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DcmTreePanel</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * DcmTreePanel.java
+<A NAME="3"></A> *
+<A NAME="4"></A> * Created on 5. Juni 2006, 16:37
+<A NAME="5"></A> */</FONT>
+<A NAME="6"></A>
+<A NAME="7"></A><FONT ID="Package">package</FONT> <A HREF="../../../../de.iftm.dcm4che.tree.index.html" target="packageFrame">de.iftm.dcm4che.tree</A>;
+<A NAME="8"></A>
+<A NAME="9"></A><FONT ID="Import">import</FONT> java.io.*;
+<A NAME="10"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="11"></A><FONT ID="Import">import</FONT> java.sql.*;
+<A NAME="12"></A><FONT ID="Import">import</FONT> javax.swing.*;
+<A NAME="13"></A><FONT ID="Import">import</FONT> javax.swing.tree.*;
+<A NAME="14"></A><FONT ID="Import">import</FONT> javax.swing.event.*;
+<A NAME="15"></A><FONT ID="Import">import</FONT> de.iftm.dcm4che.tree.DcmObjectDB.DcmObjectRecord;
+<A NAME="16"></A>
+<A NAME="17"></A>
+<A NAME="18"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="19"></A>
+<A NAME="20"></A>
+<A NAME="21"></A><FONT ID="FormalComment">/**
+<A NAME="22"></A> *
+<A NAME="23"></A> * @author  Tom
+<A NAME="24"></A> */</FONT>
+<A NAME="25"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> DcmTreePanel <FONT ID="Extends">extends</FONT> javax.swing.JPanel <FONT ID="Implements">implements</FONT> TreeSelectionListener {
+<A NAME="26"></A>    
+<A NAME="27"></A>    <FONT ID="FormalComment">/** Initialize logger */</FONT>
+<A NAME="28"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> Logger log = Logger.getLogger(<A HREF="../../../../de/iftm/dcm4che/tree/DcmTreePanel.java.html">DcmTreePanel</A>.<FONT ID="Class">class</FONT>);
+<A NAME="29"></A>    
+<A NAME="30"></A>    <FONT ID="Private">private</FONT> JTree dcmTree = <FONT ID="Null">null</FONT>;
+<A NAME="31"></A>    <FONT ID="Private">private</FONT> DefaultTreeModel treeModel = <FONT ID="Null">null</FONT>;
+<A NAME="32"></A>    <FONT ID="Private">private</FONT> DcmObjectRecordNode root = <FONT ID="Null">null</FONT>;
+<A NAME="33"></A>    
+<A NAME="34"></A>    <FONT ID="Private">private</FONT> Vector dcmTreeSelection = <FONT ID="New">new</FONT> Vector();
+<A NAME="35"></A>    
+<A NAME="36"></A>    
+<A NAME="37"></A>    <FONT ID="FormalComment">/** Creates new form DcmTreePanel */</FONT>
+<A NAME="38"></A>    <FONT ID="Public">public</FONT> DcmTreePanel() {
+<A NAME="39"></A>        initComponents();
+<A NAME="40"></A>        postInitComponents();
+<A NAME="41"></A>    }
+<A NAME="42"></A>    
+<A NAME="43"></A>    
+<A NAME="44"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> postInitComponents() {
+<A NAME="45"></A>    }
+<A NAME="46"></A>    
+<A NAME="47"></A>    
+<A NAME="48"></A>    <FONT ID="FormalComment">/**
+<A NAME="49"></A>     * Implementation of the TreeSelectionListener interface for events from component dcmTree.
+<A NAME="50"></A>     */</FONT>
+<A NAME="51"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> valueChanged(TreeSelectionEvent e) {
+<A NAME="52"></A>        TreePath path;
+<A NAME="53"></A>        DcmObjectRecordNode lastNode;
+<A NAME="54"></A>        DcmObjectRecordNode child;
+<A NAME="55"></A>        <FONT ID="Int">int</FONT> type;
+<A NAME="56"></A>        Vector selectedFiles;
+<A NAME="57"></A>        File f;
+<A NAME="58"></A>        DcmObjectRecord dor;
+<A NAME="59"></A>        <FONT ID="Int">int</FONT> numChildren;
+<A NAME="60"></A>        
+<A NAME="61"></A>        path = e.getNewLeadSelectionPath();
+<A NAME="62"></A>        <FONT ID="If">if</FONT> (path == <FONT ID="Null">null</FONT>) {
+<A NAME="63"></A>            <FONT ID="SingleLineComment">// If path was deselected, nothing to do
+<A NAME="64"></A></FONT>            <FONT ID="Return">return</FONT>;
+<A NAME="65"></A>        }
+<A NAME="66"></A>        
+<A NAME="67"></A>        lastNode = (DcmObjectRecordNode) path.getLastPathComponent();
+<A NAME="68"></A>        type = lastNode.getNodeType();
+<A NAME="69"></A>        <FONT ID="If">if</FONT> ((type == DcmObjectRecordNode.ROOT) || (type == DcmObjectRecordNode.PATIENT) || (type == DcmObjectRecordNode.STUDY)) {
+<A NAME="70"></A>            <FONT ID="SingleLineComment">// Nothing to do
+<A NAME="71"></A></FONT>            <FONT ID="Return">return</FONT>;
+<A NAME="72"></A>        }
+<A NAME="73"></A>        
+<A NAME="74"></A>        <FONT ID="SingleLineComment">// We only process selections of SERIES or INSTANCE
+<A NAME="75"></A></FONT>        
+<A NAME="76"></A>        <FONT ID="SingleLineComment">// Vector of type File
+<A NAME="77"></A></FONT>        selectedFiles = <FONT ID="New">new</FONT> Vector();
+<A NAME="78"></A>        
+<A NAME="79"></A>        <FONT ID="If">if</FONT> (type == DcmObjectRecordNode.INSTANCE) {
+<A NAME="80"></A>            
+<A NAME="81"></A>            <FONT ID="SingleLineComment">// Only one INSTANCE selected, add it as only element to list of files
+<A NAME="82"></A></FONT>            dor = lastNode.getDcmObjectRecord();
+<A NAME="83"></A>            f = <FONT ID="New">new</FONT> File(dor.filePath);
+<A NAME="84"></A>            selectedFiles.addElement(f);
+<A NAME="85"></A>            log.info(f.getPath());
+<A NAME="86"></A>            
+<A NAME="87"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="88"></A>            
+<A NAME="89"></A>            <FONT ID="SingleLineComment">// A SERIES selected. Include all child INSTANCES to list of files
+<A NAME="90"></A></FONT>            numChildren = lastNode.getChildCount();
+<A NAME="91"></A>            <FONT ID="If">if</FONT> (numChildren != <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="92"></A>                
+<A NAME="93"></A>                <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; numChildren; i++) {
+<A NAME="94"></A>                    child = (DcmObjectRecordNode) lastNode.getChildAt(i);
+<A NAME="95"></A>                    <FONT ID="If">if</FONT> (child.getNodeType() == DcmObjectRecordNode.INSTANCE) {
+<A NAME="96"></A>                        <FONT ID="SingleLineComment">// Child is INSTANCE. Add it as only element to list of files
+<A NAME="97"></A></FONT>                        dor = child.getDcmObjectRecord();
+<A NAME="98"></A>                        f = <FONT ID="New">new</FONT> File(dor.filePath);
+<A NAME="99"></A>                        selectedFiles.addElement(f);
+<A NAME="100"></A>                        <FONT ID="SingleLineComment">// log.info(f.getPath());
+<A NAME="101"></A></FONT>                    }
+<A NAME="102"></A>                }
+<A NAME="103"></A>                
+<A NAME="104"></A>            }
+<A NAME="105"></A>        }
+<A NAME="106"></A>        
+<A NAME="107"></A>        <FONT ID="SingleLineComment">// Send an event to listeners
+<A NAME="108"></A></FONT>        fireDcmTreeSelectionEvent(<FONT ID="New">new</FONT> <A HREF="../../../../de/iftm/dcm4che/tree/DcmTreeSelectionEvent.java.html">DcmTreeSelectionEvent</A>(<FONT ID="This">this</FONT>, selectedFiles));
+<A NAME="109"></A>    }
+<A NAME="110"></A>    
+<A NAME="111"></A>    
+<A NAME="112"></A>    <FONT ID="FormalComment">/**
+<A NAME="113"></A>     * Add a listener to DcmTreeSelectionEvents.
+<A NAME="114"></A>     * @param l the listener object.
+<A NAME="115"></A>     */</FONT>
+<A NAME="116"></A>    <FONT ID="Public">public</FONT> <FONT ID="Synchronized">synchronized</FONT> <FONT ID="Void">void</FONT> addDcmTreeSelectionEventListener(<A HREF="../../../../de/iftm/dcm4che/tree/DcmTreeSelectionEventListener.java.html">DcmTreeSelectionEventListener</A> l) {
+<A NAME="117"></A>        <FONT ID="SingleLineComment">// add a listener if it is not already registered
+<A NAME="118"></A></FONT>        <FONT ID="If">if</FONT> (!dcmTreeSelection.contains(l)) {
+<A NAME="119"></A>            dcmTreeSelection.addElement(l);
+<A NAME="120"></A>        }
+<A NAME="121"></A>    }
+<A NAME="122"></A>    
+<A NAME="123"></A>    
+<A NAME="124"></A>    <FONT ID="FormalComment">/**
+<A NAME="125"></A>     * Removes a listener to DcmTreeSelectionEvents.
+<A NAME="126"></A>     * @param l the listener object.
+<A NAME="127"></A>     */</FONT>
+<A NAME="128"></A>    <FONT ID="Public">public</FONT> <FONT ID="Synchronized">synchronized</FONT> <FONT ID="Void">void</FONT> removeDcmTreeSelectionEventListener(<A HREF="../../../../de/iftm/dcm4che/tree/DcmTreeSelectionEventListener.java.html">DcmTreeSelectionEventListener</A> l) {
+<A NAME="129"></A>        <FONT ID="SingleLineComment">// remove a listener if it is not already registered
+<A NAME="130"></A></FONT>        <FONT ID="If">if</FONT> (dcmTreeSelection.contains(l)) {
+<A NAME="131"></A>            dcmTreeSelection.removeElement(l);
+<A NAME="132"></A>        }
+<A NAME="133"></A>    }
+<A NAME="134"></A>    
+<A NAME="135"></A>    
+<A NAME="136"></A>    <FONT ID="FormalComment">/**
+<A NAME="137"></A>     * Notify all listener to DcmTreeSelectionEvent.
+<A NAME="138"></A>     * @param evt the event object.
+<A NAME="139"></A>     */</FONT>
+<A NAME="140"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> fireDcmTreeSelectionEvent(<A HREF="../../../../de/iftm/dcm4che/tree/DcmTreeSelectionEvent.java.html">DcmTreeSelectionEvent</A> evt) {
+<A NAME="141"></A>        Vector v = <FONT ID="Null">null</FONT>;
+<A NAME="142"></A>        
+<A NAME="143"></A>        <FONT ID="SingleLineComment">// make a copy of the listener object so that it cannot be
+<A NAME="144"></A></FONT>        <FONT ID="SingleLineComment">// changed while we are firing events
+<A NAME="145"></A></FONT>        <FONT ID="Synchronized">synchronized</FONT>(<FONT ID="This">this</FONT>) {
+<A NAME="146"></A>            v = (Vector) dcmTreeSelection.clone();
+<A NAME="147"></A>        }
+<A NAME="148"></A>        
+<A NAME="149"></A>        <FONT ID="SingleLineComment">// fire the events
+<A NAME="150"></A></FONT>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; v.size(); i++) {
+<A NAME="151"></A>            <A HREF="../../../../de/iftm/dcm4che/tree/DcmTreeSelectionEventListener.java.html">DcmTreeSelectionEventListener</A> client = (<A HREF="../../../../de/iftm/dcm4che/tree/DcmTreeSelectionEventListener.java.html">DcmTreeSelectionEventListener</A>) v.elementAt(i);
+<A NAME="152"></A>            client.handleDcmTreeSelectionEvent(evt);
+<A NAME="153"></A>        }
+<A NAME="154"></A>    }
+<A NAME="155"></A>    
+<A NAME="156"></A>    
+<A NAME="157"></A>    <FONT ID="FormalComment">/** This method is called from within the constructor to
+<A NAME="158"></A>     * initialize the form.
+<A NAME="159"></A>     * WARNING: Do NOT modify this code. The content of this method is
+<A NAME="160"></A>     * always regenerated by the Form Editor.
+<A NAME="161"></A>     */</FONT>
+<A NAME="162"></A>    <FONT ID="SingleLineComment">// &lt;editor-fold defaultstate="collapsed" desc=" Generated Code "&gt;//GEN-BEGIN:initComponents
+<A NAME="163"></A></FONT>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> initComponents() {
+<A NAME="164"></A>        treeScrollPane = <FONT ID="New">new</FONT> javax.swing.JScrollPane();
+<A NAME="165"></A>
+<A NAME="166"></A>        setLayout(<FONT ID="New">new</FONT> java.awt.BorderLayout());
+<A NAME="167"></A>
+<A NAME="168"></A>        setMinimumSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">640</FONT>, <FONT ID="IntegerLiteral">320</FONT>));
+<A NAME="169"></A>        setPreferredSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">640</FONT>, <FONT ID="IntegerLiteral">320</FONT>));
+<A NAME="170"></A>        add(treeScrollPane, java.awt.BorderLayout.CENTER);
+<A NAME="171"></A>
+<A NAME="172"></A>    }<FONT ID="SingleLineComment">// &lt;/editor-fold&gt;//GEN-END:initComponents
+<A NAME="173"></A></FONT>    
+<A NAME="174"></A>    
+<A NAME="175"></A>    <FONT ID="SingleLineComment">// Variables declaration - do not modify//GEN-BEGIN:variables
+<A NAME="176"></A></FONT>    <FONT ID="Private">private</FONT> javax.swing.JScrollPane treeScrollPane;
+<A NAME="177"></A>    <FONT ID="SingleLineComment">// End of variables declaration//GEN-END:variables
+<A NAME="178"></A></FONT>    
+<A NAME="179"></A>    
+<A NAME="180"></A>    <FONT ID="FormalComment">/**
+<A NAME="181"></A>     *
+<A NAME="182"></A>     */</FONT>
+<A NAME="183"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> createTree(String rootName) {
+<A NAME="184"></A>        
+<A NAME="185"></A>        <FONT ID="SingleLineComment">// Create root node
+<A NAME="186"></A></FONT>        root = <FONT ID="New">new</FONT> DcmObjectRecordNode(rootName, DcmObjectRecordNode.ROOT);
+<A NAME="187"></A>        
+<A NAME="188"></A>        <FONT ID="SingleLineComment">// Create tree model using the root node
+<A NAME="189"></A></FONT>        treeModel = <FONT ID="New">new</FONT> DefaultTreeModel(root);
+<A NAME="190"></A>        
+<A NAME="191"></A>        <FONT ID="SingleLineComment">// Vreate the tree
+<A NAME="192"></A></FONT>        dcmTree = <FONT ID="New">new</FONT> JTree(treeModel);
+<A NAME="193"></A>        
+<A NAME="194"></A>        <FONT ID="SingleLineComment">// Add the tree to this panel
+<A NAME="195"></A></FONT>        treeScrollPane.setViewportView(dcmTree);
+<A NAME="196"></A>        add(treeScrollPane, java.awt.BorderLayout.CENTER);
+<A NAME="197"></A>        
+<A NAME="198"></A>        <FONT ID="SingleLineComment">// Add this object to the list of listeners
+<A NAME="199"></A></FONT>        dcmTree.addTreeSelectionListener(<FONT ID="This">this</FONT>);
+<A NAME="200"></A>        
+<A NAME="201"></A>        <FONT ID="SingleLineComment">// Allow only one path to select
+<A NAME="202"></A></FONT>        dcmTree.getSelectionModel().setSelectionMode(TreeSelectionModel.SINGLE_TREE_SELECTION);
+<A NAME="203"></A>        
+<A NAME="204"></A>        <FONT ID="SingleLineComment">// Expand to patient list
+<A NAME="205"></A></FONT>        dcmTree.expandRow(<FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="206"></A>    }
+<A NAME="207"></A>    
+<A NAME="208"></A>    
+<A NAME="209"></A>    <FONT ID="FormalComment">/**
+<A NAME="210"></A>     *
+<A NAME="211"></A>     */</FONT>
+<A NAME="212"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> updateTree(<A HREF="../../../../de/iftm/dcm4che/tree/DcmObjectDB.java.html">DcmObjectDB</A> db) {
+<A NAME="213"></A>        Vector              notProcessedRecords;
+<A NAME="214"></A>        DcmObjectRecord     dor;
+<A NAME="215"></A>        DcmObjectRecordNode parentNode;
+<A NAME="216"></A>        <FONT ID="SingleLineComment">// Query not processed records
+<A NAME="217"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="218"></A>            notProcessedRecords = db.queryNotProcessedItems();
+<A NAME="219"></A>        } <FONT ID="Catch">catch</FONT> (SQLException e) {
+<A NAME="220"></A>            log.error(e.getMessage());
+<A NAME="221"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="222"></A>        }
+<A NAME="223"></A>        
+<A NAME="224"></A>        <FONT ID="SingleLineComment">// Process records
+<A NAME="225"></A></FONT>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; notProcessedRecords.size(); i++) {
+<A NAME="226"></A>            
+<A NAME="227"></A>            dor = (DcmObjectRecord) notProcessedRecords.elementAt(i);
+<A NAME="228"></A>            
+<A NAME="229"></A>            <FONT ID="SingleLineComment">// Create an patient node
+<A NAME="230"></A></FONT>            DcmObjectRecordNode patientNode = <FONT ID="New">new</FONT> DcmObjectRecordNode(dor.toPatientString(), DcmObjectRecordNode.PATIENT);
+<A NAME="231"></A>            parentNode = addNonExistingChild(patientNode, root);
+<A NAME="232"></A>            
+<A NAME="233"></A>            <FONT ID="SingleLineComment">// Create an study node
+<A NAME="234"></A></FONT>            DcmObjectRecordNode studyNode = <FONT ID="New">new</FONT> DcmObjectRecordNode(dor.toStudyString(), DcmObjectRecordNode.STUDY);
+<A NAME="235"></A>            parentNode = addNonExistingChild(studyNode, parentNode);
+<A NAME="236"></A>            
+<A NAME="237"></A>            <FONT ID="SingleLineComment">// Create an series node
+<A NAME="238"></A></FONT>            DcmObjectRecordNode seriesNode = <FONT ID="New">new</FONT> DcmObjectRecordNode(dor.toSeriesString(), DcmObjectRecordNode.SERIES);
+<A NAME="239"></A>            parentNode = addNonExistingChild(seriesNode, parentNode);
+<A NAME="240"></A>            
+<A NAME="241"></A>            <FONT ID="SingleLineComment">// Create an instance node
+<A NAME="242"></A></FONT>            DcmObjectRecordNode instanceNode = <FONT ID="New">new</FONT> DcmObjectRecordNode(dor.toInstanceString(), dor, DcmObjectRecordNode.INSTANCE);
+<A NAME="243"></A>            parentNode = addNonExistingChild(instanceNode, parentNode);
+<A NAME="244"></A>            
+<A NAME="245"></A>            <FONT ID="SingleLineComment">// Mark record as processed
+<A NAME="246"></A></FONT>            <FONT ID="Try">try</FONT> {
+<A NAME="247"></A>                db.markRecordAsProcessed(dor.recordID);
+<A NAME="248"></A>            } <FONT ID="Catch">catch</FONT> (SQLException e) {
+<A NAME="249"></A>                log.error(e.getMessage());
+<A NAME="250"></A>            }
+<A NAME="251"></A>        }
+<A NAME="252"></A>        
+<A NAME="253"></A>        <FONT ID="SingleLineComment">// Expand to patient list
+<A NAME="254"></A></FONT>        dcmTree.expandRow(<FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="255"></A>    }
+<A NAME="256"></A>    
+<A NAME="257"></A>    
+<A NAME="258"></A>    <FONT ID="FormalComment">/**
+<A NAME="259"></A>     * @return newChild or already existing node with same name.
+<A NAME="260"></A>     */</FONT>
+<A NAME="261"></A>    <FONT ID="Private">private</FONT> DcmObjectRecordNode addNonExistingChild(DcmObjectRecordNode newChild, DcmObjectRecordNode parent) {
+<A NAME="262"></A>        DcmObjectRecordNode node;
+<A NAME="263"></A>        String              nodeName;
+<A NAME="264"></A>        <FONT ID="Int">int</FONT>                 comparison;
+<A NAME="265"></A>        
+<A NAME="266"></A>        <FONT ID="SingleLineComment">// If no children, than add to parent
+<A NAME="267"></A></FONT>        <FONT ID="If">if</FONT> (parent.getChildCount() == <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="268"></A>            treeModel.insertNodeInto(newChild, parent,<FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="269"></A>            <FONT ID="Return">return</FONT> newChild;
+<A NAME="270"></A>        }
+<A NAME="271"></A>        
+<A NAME="272"></A>        <FONT ID="SingleLineComment">// Test, if node with same name as  newChild's name already exists
+<A NAME="273"></A></FONT>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; parent.getChildCount(); i++) {
+<A NAME="274"></A>            node = (DcmObjectRecordNode) parent.getChildAt(i);
+<A NAME="275"></A>            
+<A NAME="276"></A>            comparison = node.getName().compareToIgnoreCase(newChild.getName());
+<A NAME="277"></A>            
+<A NAME="278"></A>            <FONT ID="If">if</FONT> (comparison == <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="279"></A>                <FONT ID="SingleLineComment">// Node with same name as newChild's name exists already
+<A NAME="280"></A></FONT>                <FONT ID="SingleLineComment">// Nothing to append
+<A NAME="281"></A></FONT>                <FONT ID="Return">return</FONT> node;
+<A NAME="282"></A>            }
+<A NAME="283"></A>            
+<A NAME="284"></A>            <FONT ID="If">if</FONT> (comparison &gt; <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="285"></A>                <FONT ID="SingleLineComment">// We know, that the children are sorted, because only this
+<A NAME="286"></A></FONT>                <FONT ID="SingleLineComment">// method is used to add children
+<A NAME="287"></A></FONT>                treeModel.insertNodeInto(newChild, parent, i);
+<A NAME="288"></A>                <FONT ID="Return">return</FONT> newChild;
+<A NAME="289"></A>            }
+<A NAME="290"></A>        }
+<A NAME="291"></A>        
+<A NAME="292"></A>        <FONT ID="SingleLineComment">// Node does not exist, append to end
+<A NAME="293"></A></FONT>        treeModel.insertNodeInto(newChild, parent, parent.getChildCount());
+<A NAME="294"></A>        <FONT ID="Return">return</FONT> newChild;
+<A NAME="295"></A>    }
+<A NAME="296"></A>    
+<A NAME="297"></A>    <FONT ID="SingleLineComment">///////////////////////////////////////////////////////////////////////////
+<A NAME="298"></A></FONT>    
+<A NAME="299"></A>    
+<A NAME="300"></A>    <FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> DcmObjectRecordNode <FONT ID="Extends">extends</FONT> DefaultMutableTreeNode {
+<A NAME="301"></A>        
+<A NAME="302"></A>        <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> <FONT ID="Int">int</FONT> ROOT = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="303"></A>        <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> <FONT ID="Int">int</FONT> PATIENT = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="304"></A>        <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> <FONT ID="Int">int</FONT> STUDY = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="305"></A>        <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> <FONT ID="Int">int</FONT> SERIES = <FONT ID="IntegerLiteral">3</FONT>;
+<A NAME="306"></A>        <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> <FONT ID="Int">int</FONT> INSTANCE = <FONT ID="IntegerLiteral">4</FONT>;
+<A NAME="307"></A>        <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> <FONT ID="Int">int</FONT> UNKNOWN = -<FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="308"></A>        
+<A NAME="309"></A>        <FONT ID="Private">private</FONT> DcmObjectRecord dcmObjectRecord = <FONT ID="Null">null</FONT>;
+<A NAME="310"></A>        
+<A NAME="311"></A>        <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> nodeType = UNKNOWN;
+<A NAME="312"></A>        
+<A NAME="313"></A>        
+<A NAME="314"></A>        <FONT ID="FormalComment">/**
+<A NAME="315"></A>         *
+<A NAME="316"></A>         */</FONT>
+<A NAME="317"></A>        <FONT ID="Public">public</FONT> DcmObjectRecordNode(<FONT ID="Int">int</FONT> nodeType) {
+<A NAME="318"></A>            <FONT ID="Super">super</FONT>();
+<A NAME="319"></A>            <FONT ID="This">this</FONT>.nodeType = nodeType;
+<A NAME="320"></A>        }
+<A NAME="321"></A>        
+<A NAME="322"></A>        
+<A NAME="323"></A>        <FONT ID="FormalComment">/**
+<A NAME="324"></A>         *
+<A NAME="325"></A>         */</FONT>
+<A NAME="326"></A>        <FONT ID="Public">public</FONT> DcmObjectRecordNode(String name, <FONT ID="Int">int</FONT> nodeType) {
+<A NAME="327"></A>            <FONT ID="Super">super</FONT>(name);
+<A NAME="328"></A>            <FONT ID="This">this</FONT>.nodeType = nodeType;
+<A NAME="329"></A>        }
+<A NAME="330"></A>        
+<A NAME="331"></A>        
+<A NAME="332"></A>        <FONT ID="FormalComment">/**
+<A NAME="333"></A>         *
+<A NAME="334"></A>         */</FONT>
+<A NAME="335"></A>        <FONT ID="Public">public</FONT> DcmObjectRecordNode(String name, DcmObjectRecord dcmObjectRecord, <FONT ID="Int">int</FONT> nodeType) {
+<A NAME="336"></A>            <FONT ID="Super">super</FONT>(name);
+<A NAME="337"></A>            <FONT ID="This">this</FONT>.dcmObjectRecord = dcmObjectRecord;
+<A NAME="338"></A>            <FONT ID="This">this</FONT>.nodeType = nodeType;
+<A NAME="339"></A>        }
+<A NAME="340"></A>        
+<A NAME="341"></A>        
+<A NAME="342"></A>        <FONT ID="FormalComment">/**
+<A NAME="343"></A>         *
+<A NAME="344"></A>         */</FONT>
+<A NAME="345"></A>        <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getNodeType() {
+<A NAME="346"></A>            <FONT ID="Return">return</FONT> nodeType;
+<A NAME="347"></A>        }
+<A NAME="348"></A>        
+<A NAME="349"></A>        
+<A NAME="350"></A>        <FONT ID="FormalComment">/**
+<A NAME="351"></A>         *
+<A NAME="352"></A>         */</FONT>
+<A NAME="353"></A>        <FONT ID="Public">public</FONT> String getName() {
+<A NAME="354"></A>            <FONT ID="Return">return</FONT> (String) <FONT ID="This">this</FONT>.getUserObject();
+<A NAME="355"></A>        }
+<A NAME="356"></A>        
+<A NAME="357"></A>        
+<A NAME="358"></A>        <FONT ID="FormalComment">/**
+<A NAME="359"></A>         *
+<A NAME="360"></A>         */</FONT>
+<A NAME="361"></A>        <FONT ID="Public">public</FONT> DcmObjectRecord getDcmObjectRecord() {
+<A NAME="362"></A>            <FONT ID="Return">return</FONT> dcmObjectRecord;
+<A NAME="363"></A>        }
+<A NAME="364"></A>    }
+<A NAME="365"></A>    
+<A NAME="366"></A>}
+<A NAME="367"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DcmTreePanel</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

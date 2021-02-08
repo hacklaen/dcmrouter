@@ -1,0 +1,1696 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.plugin.PortableMediaCreatorPlugin (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">PortableMediaCreatorPlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  PortableMediaCreatorPlugin.java
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Copyright (c) 2005 by
+<A NAME="5"></A> *
+<A NAME="6"></A> *  IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="7"></A> *  VISUS Technology Transfer GmbH
+<A NAME="8"></A> *
+<A NAME="9"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="10"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="11"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="12"></A> *  (at your option) any later version.
+<A NAME="13"></A> *
+<A NAME="14"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="15"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="16"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="17"></A> *  Lesser General Public License for more details.
+<A NAME="18"></A> *
+<A NAME="19"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="20"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="21"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="22"></A> *
+<A NAME="23"></A> *
+<A NAME="24"></A> *****************************************************************************/</FONT>
+<A NAME="25"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.plugin.index.html" target="packageFrame">de.iftm.dcm4che.router.plugin</A>;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.property.index.html" target="packageFrame">de.iftm.dcm4che.router.property.*</A>;
+<A NAME="28"></A>
+<A NAME="29"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.util.index.html" target="packageFrame">de.iftm.dcm4che.router.util.*</A>;
+<A NAME="30"></A>
+<A NAME="31"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="32"></A>
+<A NAME="33"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="34"></A>
+<A NAME="35"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.*;
+<A NAME="36"></A>
+<A NAME="37"></A><FONT ID="Import">import</FONT> java.awt.*;
+<A NAME="38"></A><FONT ID="Import">import</FONT> java.io.*;
+<A NAME="39"></A><FONT ID="Import">import</FONT> java.net.*;
+<A NAME="40"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="41"></A>
+<A NAME="42"></A><FONT ID="Import">import</FONT> javax.xml.parsers.*;
+<A NAME="43"></A><FONT ID="Import">import</FONT> javax.xml.transform.*;
+<A NAME="44"></A><FONT ID="Import">import</FONT> javax.xml.transform.dom.*;
+<A NAME="45"></A><FONT ID="Import">import</FONT> javax.xml.transform.stream.*;
+<A NAME="46"></A><FONT ID="Import">import</FONT> org.w3c.dom.*;
+<A NAME="47"></A><FONT ID="Import">import</FONT> org.xml.sax.*;
+<A NAME="48"></A>
+<A NAME="49"></A>
+<A NAME="50"></A><FONT ID="FormalComment">/**
+<A NAME="51"></A> * This plugins creates a IHE (Integrating the Healthcare Enterprise) PDI
+<A NAME="52"></A> * (Portable Data for Imaging) compatible file structure
+<A NAME="53"></A> * (see http://www.rsna.org/IHE/tf/ihe_tf_index.shtml). The plugin acts as
+<A NAME="54"></A> * a Portable Media Creator. It supports the properties which start with the key
+<A NAME="55"></A> * PortableMediaCreatorPlugin. For description of the subkeys (= properties)
+<A NAME="56"></A> * see the user manual. The following shows an example file structure. Text in []
+<A NAME="57"></A> * is example text, which is differnt in other use cases.&lt;br&gt;
+<A NAME="58"></A> * &lt;br&gt;
+<A NAME="59"></A> *  [Mustermann^Hans_19570522]/             : Patient Name '_' Date of Birth&lt;br&gt;
+<A NAME="60"></A> *      INDEX.HTM&lt;br&gt;
+<A NAME="61"></A> *      README.TXT&lt;br&gt;
+<A NAME="62"></A> *      DICOM/&lt;br&gt;
+<A NAME="63"></A> *          [DICOM files in the same sub-directory structur as in IHE_PDI/]&lt;br&gt;
+<A NAME="64"></A> *      IHE_PDI/&lt;br&gt;
+<A NAME="65"></A> *          INDEX.HTM                       : List of studies&lt;br&gt;
+<A NAME="66"></A> *          COMPARE.HTM                     : A framneset with two links to INDEX.HTM&lt;br&gt;
+<A NAME="67"></A> *          [MH570522]/                     : First letter of family name followed by first letter of given name followed by date of birth&lt;br&gt;
+<A NAME="68"></A> *              [043012]/                   : Study date (maximum of 8 characters)&lt;br&gt;
+<A NAME="69"></A> *                  [MR1531]/               : Modality, 2 character followed by study time, 4 character&lt;br&gt;
+<A NAME="70"></A> *                      [4711]/             : Study ID (maximum of 8 characters)&lt;br&gt;
+<A NAME="71"></A> *                          INDEX.HTM       : List of series&lt;br&gt;
+<A NAME="72"></A> *                          [3]/            : Series Number (maximum of 8 characters)&lt;br&gt;
+<A NAME="73"></A> *                              INDEX.HTM   : List of images&lt;br&gt;
+<A NAME="74"></A> *                              [54.jpg]    : JPG image.Name is the Instance Number&lt;br&gt;
+<A NAME="75"></A> * &lt;br&gt;
+<A NAME="76"></A> * All INDEX.HTM files are XHTML conform. They are divided into three sections -
+<A NAME="77"></A> * Title, Info and List - which are separated by a horizontal line. The List section
+<A NAME="78"></A> * has links to the next INDEX.HTM file.
+<A NAME="79"></A> * All information concerning an image is organized in tables. There are up to
+<A NAME="80"></A> * three tables in a file, each with an individaul "id" attribute. Information
+<A NAME="81"></A> * about the patient are in a table with id="patient", inforamtion about the studies
+<A NAME="82"></A> * in id="study", inforamtion about the series in id="series" and the images in a
+<A NAME="83"></A> * table with id="image". All rows in the tables have a unique "id" attribute, derived
+<A NAME="84"></A> * from the PatientID, StudyInstanceUID, SeriesInstanceUID and InstanceUID for the image.
+<A NAME="85"></A> * To allow ascending sorting of the table rows each row has a "title" attribute,
+<A NAME="86"></A> * which contains the sorting key.&lt;br&gt;
+<A NAME="87"></A> * &lt;br&gt;
+<A NAME="88"></A> * This class uses the inner classes HTMLTable, HTMLTableRow and WriteXMLToFileThread.
+<A NAME="89"></A> *
+<A NAME="90"></A> * @author Thomas Hacklaender
+<A NAME="91"></A> * @version 2005.01.17
+<A NAME="92"></A> */</FONT>
+<A NAME="93"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> PortableMediaCreatorPlugin <FONT ID="Extends">extends</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">DicomRouterPlugin</A> {
+<A NAME="94"></A>    <FONT ID="FormalComment">/** The version string */</FONT>
+<A NAME="95"></A>    <FONT ID="Final">final</FONT> String VERSION = <FONT ID="StringLiteral">"2006.11.10"</FONT>;
+<A NAME="96"></A>    
+<A NAME="97"></A>    <FONT ID="FormalComment">/** The logger for this plugin */</FONT>
+<A NAME="98"></A>    Logger log = Logger.getLogger(<A HREF="../../../../../de/iftm/dcm4che/router/plugin/PortableMediaCreatorPlugin.java.html">PortableMediaCreatorPlugin</A>.<FONT ID="Class">class</FONT>);
+<A NAME="99"></A>    
+<A NAME="100"></A>    <FONT ID="FormalComment">/** The properties of this plugin */</FONT>
+<A NAME="101"></A>    Properties props = <FONT ID="Null">null</FONT>;
+<A NAME="102"></A>    
+<A NAME="103"></A>    <FONT ID="FormalComment">/** If true, write files in the subdirectory "[$PatientName_$PatientBirthDate]/&lt;directory&gt;/" */</FONT>
+<A NAME="104"></A>    <FONT ID="Boolean">boolean</FONT> separate_patients = <FONT ID="True">true</FONT>;
+<A NAME="105"></A>    
+<A NAME="106"></A>    <FONT ID="FormalComment">/** Writes DICOM files in the subdirectory "[$PatientName_$PatientBirthDate/]&lt;directory&gt;/&lt;DICOM&gt;/". */</FONT>
+<A NAME="107"></A>    String use_subdirectory_dicom = <FONT ID="StringLiteral">"DICOM"</FONT>;
+<A NAME="108"></A>    
+<A NAME="109"></A>    <FONT ID="FormalComment">/** Writes web files in the subdirectory "[$PatientName_$PatientBirthDate/]&lt;directory&gt;/&lt;IHE_PDI&gt;/". */</FONT>
+<A NAME="110"></A>    String use_subdirectory_web = <FONT ID="StringLiteral">"IHE_PDI"</FONT>;
+<A NAME="111"></A>    
+<A NAME="112"></A>    <FONT ID="FormalComment">/** Array of strings containing the subdirectories extracted from the given Dataset
+<A NAME="113"></A>     * [0]: First letter of family name followed by first letter of given name
+<A NAME="114"></A>     *      followed by date of birth, 6 character. Example: MH570522&lt;br&gt;
+<A NAME="115"></A>     * [1]: Study date, 6 character. Example: 043012&lt;br&gt;
+<A NAME="116"></A>     * [2]: Modality, 2 character followed by study time, 4 character. Example: MR1531&lt;br&gt;
+<A NAME="117"></A>     * [3]: Study ID. Example: 4711&lt;br&gt;
+<A NAME="118"></A>     * [4]: Series number. Example: 3&lt;br&gt;
+<A NAME="119"></A>     * [5]: Instance number. Example: 54
+<A NAME="120"></A>     */</FONT>
+<A NAME="121"></A>    String[] fileIDComponents = <FONT ID="Null">null</FONT>;
+<A NAME="122"></A>    
+<A NAME="123"></A>    <FONT ID="FormalComment">/** If true:
+<A NAME="124"></A>     * Construct the the file ID of the file to save from the following file ID
+<A NAME="125"></A>     * components given by the array in field fileIDComponents.&lt;br&gt;
+<A NAME="126"></A>     * If false:
+<A NAME="127"></A>     * Construct the the filename of the file to save from directory, name and extension.
+<A NAME="128"></A>     */</FONT>
+<A NAME="129"></A>    <FONT ID="Boolean">boolean</FONT> write_dir_tree = <FONT ID="True">true</FONT>;
+<A NAME="130"></A>    
+<A NAME="131"></A>    <FONT ID="FormalComment">/** The ImagIO name of the graphic format to export the Dataset. */</FONT>
+<A NAME="132"></A>    String image_format = <FONT ID="StringLiteral">"jpg"</FONT>;
+<A NAME="133"></A>    
+<A NAME="134"></A>    <FONT ID="FormalComment">/** HTML file "INDEX.HTM" containing the list of studies for the given Dataset */</FONT>
+<A NAME="135"></A>    File listOfStudiesHTMLFile = <FONT ID="Null">null</FONT>;
+<A NAME="136"></A>    
+<A NAME="137"></A>    <FONT ID="FormalComment">/** HTML file "INDEX.HTM" containing the list of series for the given Dataset */</FONT>
+<A NAME="138"></A>    File listOfSeriesHTMLFile = <FONT ID="Null">null</FONT>;
+<A NAME="139"></A>    
+<A NAME="140"></A>    <FONT ID="FormalComment">/** HTML file "INDEX.HTM" containing the list of images for the given Dataset */</FONT>
+<A NAME="141"></A>    File listOfImagesHTMLFile = <FONT ID="Null">null</FONT>;
+<A NAME="142"></A>    
+<A NAME="143"></A>    <FONT ID="FormalComment">/** The JPG file derived from the given Dataset */</FONT>
+<A NAME="144"></A>    File currentJPGFile = <FONT ID="Null">null</FONT>;
+<A NAME="145"></A>    
+<A NAME="146"></A>    <FONT ID="SingleLineComment">// &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Fields derived from properties: &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="147"></A></FONT>    
+<A NAME="148"></A>    <FONT ID="FormalComment">/** True, if the default (build in) start file of the web-contend should be used */</FONT>
+<A NAME="149"></A>    <FONT ID="Boolean">boolean</FONT> defaultIndexFile = <FONT ID="True">true</FONT>;
+<A NAME="150"></A>    
+<A NAME="151"></A>    <FONT ID="FormalComment">/** True, if the default (build in) README.TXT file of the web-contend should be used */</FONT>
+<A NAME="152"></A>    <FONT ID="Boolean">boolean</FONT> defaultReadmeFile = <FONT ID="True">true</FONT>;
+<A NAME="153"></A>    
+<A NAME="154"></A>    <FONT ID="FormalComment">/** True, if a README.TXT file of the web-contend should be used */</FONT>
+<A NAME="155"></A>    <FONT ID="Boolean">boolean</FONT> useReadmeFile = <FONT ID="True">true</FONT>;
+<A NAME="156"></A>    
+<A NAME="157"></A>    <FONT ID="FormalComment">/** True, if the size of the image to export should be the original image size */</FONT>
+<A NAME="158"></A>    <FONT ID="Boolean">boolean</FONT> originalSize = <FONT ID="False">false</FONT>;
+<A NAME="159"></A>    
+<A NAME="160"></A>    <FONT ID="SingleLineComment">// &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  Local fields defined by properties: &gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="161"></A></FONT>    
+<A NAME="162"></A>    <FONT ID="FormalComment">/** Type of image annotation. */</FONT>
+<A NAME="163"></A>    <FONT ID="Int">int</FONT> annotation_type = Annotation.ANNOTATION_FULL;
+<A NAME="164"></A>    
+<A NAME="165"></A>    <FONT ID="FormalComment">/** Directory to export the Dataset into. */</FONT>
+<A NAME="166"></A>    File directory = Util.uriToFile(<FONT ID="StringLiteral">"./"</FONT>);
+<A NAME="167"></A>    
+<A NAME="168"></A>    <FONT ID="FormalComment">/** The color of the font for image annotation. */</FONT>
+<A NAME="169"></A>    Color font_color = Color.orange;
+<A NAME="170"></A>    
+<A NAME="171"></A>    <FONT ID="FormalComment">/** The name of the font for image annotation. */</FONT>
+<A NAME="172"></A>    String font_name = <FONT ID="StringLiteral">"dialog"</FONT>;
+<A NAME="173"></A>    
+<A NAME="174"></A>    <FONT ID="FormalComment">/** The font size for image annotation. */</FONT>
+<A NAME="175"></A>    <FONT ID="Int">int</FONT> font_size = <FONT ID="IntegerLiteral">14</FONT>;
+<A NAME="176"></A>    
+<A NAME="177"></A>    <FONT ID="FormalComment">/** The size of the (square) image to export. */</FONT>
+<A NAME="178"></A>    <FONT ID="Int">int</FONT> image_size = <FONT ID="IntegerLiteral">512</FONT>;
+<A NAME="179"></A>    
+<A NAME="180"></A>    <FONT ID="FormalComment">/** Reference to the start file of the web-contend. */</FONT>
+<A NAME="181"></A>    File index_file = Util.uriToFile(<FONT ID="StringLiteral">"./cfg/html/INDEX.HTM"</FONT>);
+<A NAME="182"></A>    
+<A NAME="183"></A>    <FONT ID="FormalComment">/** The margin for image annotations in pixel. */</FONT>
+<A NAME="184"></A>    <FONT ID="Int">int</FONT> margin_size = <FONT ID="IntegerLiteral">4</FONT>;
+<A NAME="185"></A>    
+<A NAME="186"></A>    <FONT ID="FormalComment">/** Reference to the README.TXT file of the web-contend. */</FONT>
+<A NAME="187"></A>    File readme_file = Util.uriToFile(<FONT ID="StringLiteral">"./cfg/html/README.TXT"</FONT>);
+<A NAME="188"></A>    
+<A NAME="189"></A>    
+<A NAME="190"></A>    <FONT ID="SingleLineComment">// &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+<A NAME="191"></A></FONT>    
+<A NAME="192"></A>    
+<A NAME="193"></A>    <FONT ID="FormalComment">/**
+<A NAME="194"></A>     * Constructor.
+<A NAME="195"></A>     */</FONT>
+<A NAME="196"></A>    <FONT ID="Public">public</FONT> PortableMediaCreatorPlugin() {
+<A NAME="197"></A>        <FONT ID="SingleLineComment">// Nichts zu tun.
+<A NAME="198"></A></FONT>    }
+<A NAME="199"></A>    
+<A NAME="200"></A>    <FONT ID="FormalComment">/**
+<A NAME="201"></A>     * Inits the PortableMediaCreatorPlugin with the specified Properties.
+<A NAME="202"></A>     * @param p  Properties containing the configuration of the plugin.
+<A NAME="203"></A>     */</FONT>
+<A NAME="204"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> init(Properties p) {
+<A NAME="205"></A>        String s;
+<A NAME="206"></A>        File f;
+<A NAME="207"></A>        
+<A NAME="208"></A>        <FONT ID="SingleLineComment">// Properties lokal speichern
+<A NAME="209"></A></FONT>        props = p;
+<A NAME="210"></A>        
+<A NAME="211"></A>        <FONT ID="SingleLineComment">// Bildannotationen
+<A NAME="212"></A></FONT>        s = props.getProperty(<FONT ID="StringLiteral">"annotation-type"</FONT>);
+<A NAME="213"></A>        
+<A NAME="214"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="215"></A>            <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"no"</FONT>)) {
+<A NAME="216"></A>                annotation_type = Annotation.ANNOTATION_OFF;
+<A NAME="217"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"full"</FONT>)) {
+<A NAME="218"></A>                annotation_type = Annotation.ANNOTATION_FULL;
+<A NAME="219"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"minimal"</FONT>)) {
+<A NAME="220"></A>                annotation_type = Annotation.ANNOTATION_MINIMAL;
+<A NAME="221"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"anonymous"</FONT>)) {
+<A NAME="222"></A>                annotation_type = Annotation.ANNOTATION_ANONYMOUS;
+<A NAME="223"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"pseudonym"</FONT>)) {
+<A NAME="224"></A>                annotation_type = Annotation.ANNOTATION_PSEUDONYM;
+<A NAME="225"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="226"></A>                log.warn(<FONT ID="StringLiteral">"Format error in Property \"annotation\". Annotation type set to \"full\""</FONT>);
+<A NAME="227"></A>                annotation_type = Annotation.ANNOTATION_FULL;
+<A NAME="228"></A>            }
+<A NAME="229"></A>        }
+<A NAME="230"></A>        
+<A NAME="231"></A>        <FONT ID="SingleLineComment">// Directory
+<A NAME="232"></A></FONT>        s = props.getProperty(<FONT ID="StringLiteral">"directory"</FONT>);
+<A NAME="233"></A>        
+<A NAME="234"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="235"></A>            <FONT ID="If">if</FONT> ((f = Util.uriToFile(s)) != <FONT ID="Null">null</FONT>) {
+<A NAME="236"></A>                directory = f;
+<A NAME="237"></A>            }
+<A NAME="238"></A>        }
+<A NAME="239"></A>        
+<A NAME="240"></A>        <FONT ID="SingleLineComment">// Zeichensatz Farbe
+<A NAME="241"></A></FONT>        s = props.getProperty(<FONT ID="StringLiteral">"font-color"</FONT>);
+<A NAME="242"></A>        
+<A NAME="243"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="244"></A>            <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"darkGray"</FONT>)) {
+<A NAME="245"></A>                font_color = Color.darkGray;
+<A NAME="246"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"lightGray"</FONT>)) {
+<A NAME="247"></A>                font_color = Color.lightGray;
+<A NAME="248"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"white"</FONT>)) {
+<A NAME="249"></A>                font_color = Color.white;
+<A NAME="250"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"yellow"</FONT>)) {
+<A NAME="251"></A>                font_color = Color.yellow;
+<A NAME="252"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"orange"</FONT>)) {
+<A NAME="253"></A>                font_color = Color.orange;
+<A NAME="254"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"green"</FONT>)) {
+<A NAME="255"></A>                font_color = Color.green;
+<A NAME="256"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="257"></A>                log.warn(
+<A NAME="258"></A>                        <FONT ID="StringLiteral">"Format error in Property \"font_color\". Color size set to Color.orange"</FONT>);
+<A NAME="259"></A>                font_color = Color.orange;
+<A NAME="260"></A>            }
+<A NAME="261"></A>        }
+<A NAME="262"></A>        
+<A NAME="263"></A>        <FONT ID="SingleLineComment">// Zeichensatz Name
+<A NAME="264"></A></FONT>        s = props.getProperty(<FONT ID="StringLiteral">"font-name"</FONT>);
+<A NAME="265"></A>        
+<A NAME="266"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="267"></A>            <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"serif"</FONT>)) {
+<A NAME="268"></A>                font_name = <FONT ID="StringLiteral">"Serif"</FONT>;
+<A NAME="269"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"sansserif"</FONT>)) {
+<A NAME="270"></A>                font_name = <FONT ID="StringLiteral">"SansSerif"</FONT>;
+<A NAME="271"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"monospaced"</FONT>)) {
+<A NAME="272"></A>                font_name = <FONT ID="StringLiteral">"Monospaced"</FONT>;
+<A NAME="273"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"dialog"</FONT>)) {
+<A NAME="274"></A>                font_name = <FONT ID="StringLiteral">"Dialog"</FONT>;
+<A NAME="275"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="276"></A>                log.warn(
+<A NAME="277"></A>                        <FONT ID="StringLiteral">"Format error in Property \"font_name\". Font name set to \"dialog\""</FONT>);
+<A NAME="278"></A>                font_name = <FONT ID="StringLiteral">"Dialog"</FONT>;
+<A NAME="279"></A>            }
+<A NAME="280"></A>        }
+<A NAME="281"></A>        
+<A NAME="282"></A>        <FONT ID="SingleLineComment">// Zeichensatz Groesse
+<A NAME="283"></A></FONT>        s = props.getProperty(<FONT ID="StringLiteral">"font-size"</FONT>);
+<A NAME="284"></A>        
+<A NAME="285"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="286"></A>            <FONT ID="SingleLineComment">// Value ist eine ganze Zahl
+<A NAME="287"></A></FONT>            <FONT ID="Try">try</FONT> {
+<A NAME="288"></A>                font_size = (<FONT ID="New">new</FONT> Integer(s)).intValue();
+<A NAME="289"></A>            } <FONT ID="Catch">catch</FONT> (NumberFormatException e) {
+<A NAME="290"></A>                log.warn(
+<A NAME="291"></A>                        <FONT ID="StringLiteral">"Format error in Property \"font_size\". Font size set to 12"</FONT>);
+<A NAME="292"></A>                font_size = <FONT ID="IntegerLiteral">12</FONT>;
+<A NAME="293"></A>            }
+<A NAME="294"></A>        }
+<A NAME="295"></A>        
+<A NAME="296"></A>        <FONT ID="SingleLineComment">// Bildgroesse entspechend der Property aendern
+<A NAME="297"></A></FONT>        s = props.getProperty(<FONT ID="StringLiteral">"image-size"</FONT>);
+<A NAME="298"></A>        
+<A NAME="299"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="300"></A>            <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"original"</FONT>)) {
+<A NAME="301"></A>                originalSize = <FONT ID="True">true</FONT>;
+<A NAME="302"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="303"></A>                <FONT ID="SingleLineComment">// Value ist eine ganze Zahl
+<A NAME="304"></A></FONT>                originalSize = <FONT ID="False">false</FONT>;
+<A NAME="305"></A>                
+<A NAME="306"></A>                <FONT ID="Try">try</FONT> {
+<A NAME="307"></A>                    image_size = (<FONT ID="New">new</FONT> Integer(s)).intValue();
+<A NAME="308"></A>                } <FONT ID="Catch">catch</FONT> (NumberFormatException e) {
+<A NAME="309"></A>                    log.warn(<FONT ID="StringLiteral">"Format error in Property \"image_size\". Image size set to 512*512"</FONT>);
+<A NAME="310"></A>                    image_size = <FONT ID="IntegerLiteral">512</FONT>;
+<A NAME="311"></A>                }
+<A NAME="312"></A>            }
+<A NAME="313"></A>        }
+<A NAME="314"></A>        
+<A NAME="315"></A>        <FONT ID="SingleLineComment">// INDEX.HTM file fuer den Web-content festlegen
+<A NAME="316"></A></FONT>        s = props.getProperty(<FONT ID="StringLiteral">"index-file"</FONT>);
+<A NAME="317"></A>        
+<A NAME="318"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="319"></A>            <FONT ID="If">if</FONT> (s.length() == <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="320"></A>                defaultIndexFile = <FONT ID="True">true</FONT>;
+<A NAME="321"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="322"></A>                <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"default"</FONT>)) {
+<A NAME="323"></A>                    defaultIndexFile = <FONT ID="True">true</FONT>;
+<A NAME="324"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="325"></A>                    <FONT ID="SingleLineComment">// Value ist eine URI
+<A NAME="326"></A></FONT>                    <FONT ID="If">if</FONT> ((f = Util.uriToFile(s)) != <FONT ID="Null">null</FONT>) {
+<A NAME="327"></A>                        defaultIndexFile = <FONT ID="False">false</FONT>;
+<A NAME="328"></A>                        index_file = f;
+<A NAME="329"></A>                    } <FONT ID="Else">else</FONT> {
+<A NAME="330"></A>                        defaultIndexFile = <FONT ID="True">true</FONT>;
+<A NAME="331"></A>                        log.warn(<FONT ID="StringLiteral">"Format error in Property \"index_file\". Use default INDEX.HTM file"</FONT>);
+<A NAME="332"></A>                    }
+<A NAME="333"></A>                }
+<A NAME="334"></A>            }
+<A NAME="335"></A>        }
+<A NAME="336"></A>        
+<A NAME="337"></A>        <FONT ID="SingleLineComment">// Rahmen Breite
+<A NAME="338"></A></FONT>        s = props.getProperty(<FONT ID="StringLiteral">"margin-size"</FONT>);
+<A NAME="339"></A>        
+<A NAME="340"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="341"></A>            <FONT ID="SingleLineComment">// Value ist eine ganze Zahl
+<A NAME="342"></A></FONT>            <FONT ID="Try">try</FONT> {
+<A NAME="343"></A>                margin_size = (<FONT ID="New">new</FONT> Integer(s)).intValue();
+<A NAME="344"></A>            } <FONT ID="Catch">catch</FONT> (NumberFormatException e) {
+<A NAME="345"></A>                log.warn(
+<A NAME="346"></A>                        <FONT ID="StringLiteral">"Format error in Property \"frame_size\". Margin size set to 4"</FONT>);
+<A NAME="347"></A>                margin_size = <FONT ID="IntegerLiteral">4</FONT>;
+<A NAME="348"></A>            }
+<A NAME="349"></A>        }
+<A NAME="350"></A>        
+<A NAME="351"></A>        <FONT ID="SingleLineComment">// README.TXT file fuer den Web-content festlegen
+<A NAME="352"></A></FONT>        s = props.getProperty(<FONT ID="StringLiteral">"readme-file"</FONT>);
+<A NAME="353"></A>        
+<A NAME="354"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="355"></A>            <FONT ID="If">if</FONT> ((s.length() == <FONT ID="IntegerLiteral">0</FONT>) || (s.equals(<FONT ID="StringLiteral">"no"</FONT>))) {
+<A NAME="356"></A>                useReadmeFile = <FONT ID="False">false</FONT>;
+<A NAME="357"></A>                defaultReadmeFile = <FONT ID="True">true</FONT>;
+<A NAME="358"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="359"></A>                useReadmeFile = <FONT ID="True">true</FONT>;
+<A NAME="360"></A>                <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"default"</FONT>)) {
+<A NAME="361"></A>                    defaultReadmeFile = <FONT ID="True">true</FONT>;
+<A NAME="362"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="363"></A>                    <FONT ID="SingleLineComment">// Value ist eine URI
+<A NAME="364"></A></FONT>                    <FONT ID="If">if</FONT> ((f = Util.uriToFile(s)) != <FONT ID="Null">null</FONT>) {
+<A NAME="365"></A>                        defaultReadmeFile = <FONT ID="False">false</FONT>;
+<A NAME="366"></A>                        readme_file = f;
+<A NAME="367"></A>                    } <FONT ID="Else">else</FONT> {
+<A NAME="368"></A>                        defaultReadmeFile = <FONT ID="True">true</FONT>;
+<A NAME="369"></A>                        log.warn(<FONT ID="StringLiteral">"Format error in Property \"readme_file\". Use default README.TXT file"</FONT>);
+<A NAME="370"></A>                    }
+<A NAME="371"></A>                }
+<A NAME="372"></A>            }
+<A NAME="373"></A>        }
+<A NAME="374"></A>    }
+<A NAME="375"></A>    
+<A NAME="376"></A>    <FONT ID="FormalComment">/**
+<A NAME="377"></A>     * Sets dynamic properties, which depend on the actual Dataset to process.
+<A NAME="378"></A>     *
+<A NAME="379"></A>     * @param ds  The Dataset to process.
+<A NAME="380"></A>     * @return true, if dynamic property could be set.
+<A NAME="381"></A>     */</FONT>
+<A NAME="382"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Boolean">boolean</FONT> setDynamicProperties(Dataset ds) {
+<A NAME="383"></A>        <FONT ID="SingleLineComment">// Nichts zu tun, kein Fehler aufgetreten
+<A NAME="384"></A></FONT>        <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="385"></A>    }
+<A NAME="386"></A>    
+<A NAME="387"></A>    <FONT ID="FormalComment">/**
+<A NAME="388"></A>     * Returns a version string.
+<A NAME="389"></A>     *
+<A NAME="390"></A>     * @return The version string
+<A NAME="391"></A>     */</FONT>
+<A NAME="392"></A>    <FONT ID="Public">public</FONT> String getVersion() {
+<A NAME="393"></A>        <FONT ID="Return">return</FONT> VERSION;
+<A NAME="394"></A>    }
+<A NAME="395"></A>
+<A NAME="396"></A>    
+<A NAME="397"></A>    <FONT ID="FormalComment">/**
+<A NAME="398"></A>     * Closes the Plugin.
+<A NAME="399"></A>     */</FONT>
+<A NAME="400"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> close() {
+<A NAME="401"></A>        <FONT ID="SingleLineComment">// Nichts zu tun.
+<A NAME="402"></A></FONT>    }
+<A NAME="403"></A>    
+<A NAME="404"></A>    <FONT ID="FormalComment">/**
+<A NAME="405"></A>     * Contains the proccesing of this plugin. This implementation handels all
+<A NAME="406"></A>     * exeptions inside the method and sends logging information about the exeption.
+<A NAME="407"></A>     * 
+<A NAME="408"></A>     * 
+<A NAME="409"></A>     * 
+<A NAME="410"></A>     * 
+<A NAME="411"></A>     * @param dataset the Dataset to process.
+<A NAME="412"></A>     * @return CONTINUE if succesfull, REQUEST_ABORT_RECEIVER otherwise
+<A NAME="413"></A>     */</FONT>
+<A NAME="414"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> process(Dataset dataset) {
+<A NAME="415"></A>        <FONT ID="SingleLineComment">// Basisdirectory, die Portable Mediastruktur enthaelt
+<A NAME="416"></A></FONT>        <FONT ID="SingleLineComment">// Abhaengig von der Property "separate_patients" ist das baseDirectory
+<A NAME="417"></A></FONT>        <FONT ID="SingleLineComment">// identisch zu der Property "directory" oder es ist zunaechst ein
+<A NAME="418"></A></FONT>        <FONT ID="SingleLineComment">// Unterverzeichnis fuer jeden Patienten darin erzeugt und baseDirectory
+<A NAME="419"></A></FONT>        <FONT ID="SingleLineComment">// ist das Verzeichnis des Patienten.
+<A NAME="420"></A></FONT>        File    baseDirectory = <FONT ID="Null">null</FONT>;
+<A NAME="421"></A>        
+<A NAME="422"></A>        <FONT ID="SingleLineComment">// Nur dann weitermachen, wenn ein Datset vorhanden ist
+<A NAME="423"></A></FONT>        <FONT ID="If">if</FONT> (dataset == <FONT ID="Null">null</FONT>) {
+<A NAME="424"></A>            log.warn(<FONT ID="StringLiteral">"No Dataset given."</FONT>);
+<A NAME="425"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="426"></A>        }
+<A NAME="427"></A>        
+<A NAME="428"></A>        <FONT ID="SingleLineComment">// Dynamische Properties setzen
+<A NAME="429"></A></FONT>        <FONT ID="If">if</FONT> (!setDynamicProperties(dataset)) {
+<A NAME="430"></A>            log.error(<FONT ID="StringLiteral">"Error in extracing dynamic properties."</FONT>);
+<A NAME="431"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="432"></A>        }
+<A NAME="433"></A>        
+<A NAME="434"></A>        <FONT ID="SingleLineComment">// Das Base Directory festlegen
+<A NAME="435"></A></FONT>        baseDirectory = directory;
+<A NAME="436"></A>        <FONT ID="If">if</FONT> (separate_patients) {
+<A NAME="437"></A>            baseDirectory = Util.addPatientDirectory(baseDirectory, dataset);
+<A NAME="438"></A>        }
+<A NAME="439"></A>        
+<A NAME="440"></A>        <FONT ID="SingleLineComment">// Files und Verzeichnisse für die Portable Media Struktur schreiben
+<A NAME="441"></A></FONT>        buildPortableMediaStructure(baseDirectory, dataset);
+<A NAME="442"></A>        
+<A NAME="443"></A>        <FONT ID="SingleLineComment">// DICOM files mit SaveDicomdirPlugin schreiben
+<A NAME="444"></A></FONT>        <FONT ID="If">if</FONT> (runSaveDicomdirPlugin(dataset) != CONTINUE) {
+<A NAME="445"></A>            log.error(<FONT ID="StringLiteral">"Dataset not written to portable media."</FONT>);
+<A NAME="446"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="447"></A>        }
+<A NAME="448"></A>        
+<A NAME="449"></A>        <FONT ID="SingleLineComment">// JPG Bilder mit ExportImagePlugin schreiben
+<A NAME="450"></A></FONT>        <FONT ID="If">if</FONT> (runExportImagePlugin(dataset) != CONTINUE) {
+<A NAME="451"></A>            log.error(<FONT ID="StringLiteral">"Dataset not written to portable media."</FONT>);
+<A NAME="452"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="453"></A>        }
+<A NAME="454"></A>        <FONT ID="SingleLineComment">// HTML Dateien verlinken
+<A NAME="455"></A></FONT>        linkSeriesListToStudyList(dataset);
+<A NAME="456"></A>        linkImagListToSeriesList(dataset);
+<A NAME="457"></A>        linkImagesToImageList(dataset);
+<A NAME="458"></A>        
+<A NAME="459"></A>        <FONT ID="SingleLineComment">// Plugin ohne Fehler beendet
+<A NAME="460"></A></FONT>        <FONT ID="If">if</FONT> (log.isInfoEnabled()) {
+<A NAME="461"></A>            log.info(<FONT ID="StringLiteral">"Dataset saved to Portable Media CD structure: "</FONT> + baseDirectory.toString());
+<A NAME="462"></A>        }
+<A NAME="463"></A>        
+<A NAME="464"></A>        <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="465"></A>    }
+<A NAME="466"></A>    
+<A NAME="467"></A>    
+<A NAME="468"></A>    <FONT ID="FormalComment">/**
+<A NAME="469"></A>     * Runs the SaveDicomdirPlugin.
+<A NAME="470"></A>     *
+<A NAME="471"></A>     * @param dataset the given Dataset.
+<A NAME="472"></A>     * @return the return value of the SaveDicomdirPlugin.
+<A NAME="473"></A>     */</FONT>
+<A NAME="474"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> runSaveDicomdirPlugin(Dataset dataset) {
+<A NAME="475"></A>        Properties          props= <FONT ID="New">new</FONT> Properties();
+<A NAME="476"></A>        <A HREF="../../../../../de/iftm/dcm4che/router/plugin/SaveDicomdirPlugin.java.html">SaveDicomdirPlugin</A>  saveDicomdirPlugin = <FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/SaveDicomdirPlugin.java.html">SaveDicomdirPlugin</A>();
+<A NAME="477"></A>        
+<A NAME="478"></A>        props.setProperty(<FONT ID="StringLiteral">"directory"</FONT>, directory.toURI().toString());
+<A NAME="479"></A>        props.setProperty(<FONT ID="StringLiteral">"separate-patients"</FONT>, Boolean.toString(separate_patients));
+<A NAME="480"></A>        props.setProperty(<FONT ID="StringLiteral">"use-subdirectory"</FONT>, use_subdirectory_dicom);
+<A NAME="481"></A>        props.setProperty(<FONT ID="StringLiteral">"write-dir-tree"</FONT>, Boolean.toString(write_dir_tree));
+<A NAME="482"></A>        props.setProperty(<FONT ID="StringLiteral">"transfersyntax"</FONT>, <FONT ID="StringLiteral">"ImplicitVRLittleEndian"</FONT>);
+<A NAME="483"></A>        
+<A NAME="484"></A>        saveDicomdirPlugin.init(props);
+<A NAME="485"></A>        <FONT ID="Return">return</FONT> saveDicomdirPlugin.process(dataset);
+<A NAME="486"></A>    }
+<A NAME="487"></A>    
+<A NAME="488"></A>    
+<A NAME="489"></A>    <FONT ID="FormalComment">/**
+<A NAME="490"></A>     * Runs the ExportImagePlugin.
+<A NAME="491"></A>     *
+<A NAME="492"></A>     * @param dataset the given Dataset.
+<A NAME="493"></A>     * @return the return value of the ExportImagePlugin.
+<A NAME="494"></A>     */</FONT>
+<A NAME="495"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> runExportImagePlugin(Dataset dataset) {
+<A NAME="496"></A>        Properties          props= <FONT ID="New">new</FONT> Properties();
+<A NAME="497"></A>        <A HREF="../../../../../de/iftm/dcm4che/router/plugin/ExportImagePlugin.java.html">ExportImagePlugin</A>   exportImagePlugin = <FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/ExportImagePlugin.java.html">ExportImagePlugin</A>();
+<A NAME="498"></A>        
+<A NAME="499"></A>        <FONT ID="Switch">switch</FONT> (annotation_type) {
+<A NAME="500"></A>            <FONT ID="Case">case</FONT> Annotation.ANNOTATION_OFF:
+<A NAME="501"></A>                props.setProperty(<FONT ID="StringLiteral">"annotation-type"</FONT>, <FONT ID="StringLiteral">"off"</FONT>);
+<A NAME="502"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="503"></A>            <FONT ID="Case">case</FONT> Annotation.ANNOTATION_FULL:
+<A NAME="504"></A>                props.setProperty(<FONT ID="StringLiteral">"annotation-type"</FONT>, <FONT ID="StringLiteral">"full"</FONT>);
+<A NAME="505"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="506"></A>            <FONT ID="Case">case</FONT> Annotation.ANNOTATION_MINIMAL:
+<A NAME="507"></A>                props.setProperty(<FONT ID="StringLiteral">"annotation-type"</FONT>, <FONT ID="StringLiteral">"minimal"</FONT>);
+<A NAME="508"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="509"></A>            <FONT ID="Case">case</FONT> Annotation.ANNOTATION_ANONYMOUS:
+<A NAME="510"></A>                props.setProperty(<FONT ID="StringLiteral">"annotation-type"</FONT>, <FONT ID="StringLiteral">"anonymous"</FONT>);
+<A NAME="511"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="512"></A>            <FONT ID="Case">case</FONT> Annotation.ANNOTATION_PSEUDONYM:
+<A NAME="513"></A>                props.setProperty(<FONT ID="StringLiteral">"annotation-type"</FONT>, <FONT ID="StringLiteral">"pseudonym"</FONT>);
+<A NAME="514"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="515"></A>            <FONT ID="Default">default</FONT>:
+<A NAME="516"></A>                log.info(<FONT ID="StringLiteral">"Unknown annotation-type "</FONT> + Integer.toString(annotation_type));
+<A NAME="517"></A>        }
+<A NAME="518"></A>        props.setProperty(<FONT ID="StringLiteral">"directory"</FONT>, directory.toURI().toString());
+<A NAME="519"></A>        props.setProperty(<FONT ID="StringLiteral">"separate-patients"</FONT>, Boolean.toString(separate_patients));
+<A NAME="520"></A>        <FONT ID="If">if</FONT> (font_color.equals(Color.darkGray)) {
+<A NAME="521"></A>            props.setProperty(<FONT ID="StringLiteral">"font-color"</FONT>, <FONT ID="StringLiteral">"darkGray"</FONT>);
+<A NAME="522"></A>        } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (font_color.equals(Color.lightGray)) {
+<A NAME="523"></A>            props.setProperty(<FONT ID="StringLiteral">"font-color"</FONT>, <FONT ID="StringLiteral">"lightGray"</FONT>);
+<A NAME="524"></A>        } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (font_color.equals(Color.white)) {
+<A NAME="525"></A>            props.setProperty(<FONT ID="StringLiteral">"font-color"</FONT>, <FONT ID="StringLiteral">"white"</FONT>);
+<A NAME="526"></A>        } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (font_color.equals(Color.yellow)) {
+<A NAME="527"></A>            props.setProperty(<FONT ID="StringLiteral">"font-color"</FONT>, <FONT ID="StringLiteral">"yellow"</FONT>);
+<A NAME="528"></A>        } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (font_color.equals(Color.orange)) {
+<A NAME="529"></A>            props.setProperty(<FONT ID="StringLiteral">"font-color"</FONT>, <FONT ID="StringLiteral">"orange"</FONT>);
+<A NAME="530"></A>        } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (font_color.equals(Color.green)) {
+<A NAME="531"></A>            props.setProperty(<FONT ID="StringLiteral">"font-color"</FONT>, <FONT ID="StringLiteral">"green"</FONT>);
+<A NAME="532"></A>        }
+<A NAME="533"></A>        props.setProperty(<FONT ID="StringLiteral">"font-name"</FONT>, font_name);
+<A NAME="534"></A>        props.setProperty(<FONT ID="StringLiteral">"font-size"</FONT>, Integer.toString(font_size));
+<A NAME="535"></A>        props.setProperty(<FONT ID="StringLiteral">"image-format"</FONT>, image_format);
+<A NAME="536"></A>        <FONT ID="If">if</FONT> (originalSize) {
+<A NAME="537"></A>            props.setProperty(<FONT ID="StringLiteral">"image-size"</FONT>, <FONT ID="StringLiteral">"original"</FONT>);
+<A NAME="538"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="539"></A>            props.setProperty(<FONT ID="StringLiteral">"image-size"</FONT>, Integer.toString(image_size));
+<A NAME="540"></A>        }
+<A NAME="541"></A>        props.setProperty(<FONT ID="StringLiteral">"margin-size"</FONT>, Integer.toString(margin_size));
+<A NAME="542"></A>        props.setProperty(<FONT ID="StringLiteral">"use-subdirectory"</FONT>, use_subdirectory_web);
+<A NAME="543"></A>        props.setProperty(<FONT ID="StringLiteral">"write-dir-tree"</FONT>, Boolean.toString(write_dir_tree));
+<A NAME="544"></A>        
+<A NAME="545"></A>        exportImagePlugin.init(props);
+<A NAME="546"></A>        <FONT ID="Return">return</FONT> exportImagePlugin.process(dataset);
+<A NAME="547"></A>    }
+<A NAME="548"></A>    
+<A NAME="549"></A>    
+<A NAME="550"></A>    <FONT ID="FormalComment">/**
+<A NAME="551"></A>     * Links the INDEX.HTM file containing the list of series to the INDEX.HTM
+<A NAME="552"></A>     * file containing the list of studies.
+<A NAME="553"></A>     * 
+<A NAME="554"></A>     * 
+<A NAME="555"></A>     * 
+<A NAME="556"></A>     * 
+<A NAME="557"></A>     * @param dataset the Dataset containing the image data.
+<A NAME="558"></A>     * @return CONTINUE if succesfull, REQUEST_ABORT_RECEIVER otherwise
+<A NAME="559"></A>     */</FONT>
+<A NAME="560"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> linkSeriesListToStudyList(Dataset dataset) {
+<A NAME="561"></A>        Document    studiesDoc;
+<A NAME="562"></A>        String      link;
+<A NAME="563"></A>        
+<A NAME="564"></A>        <FONT ID="SingleLineComment">// Leeren HTML file mit der Liste der Studies einlesen
+<A NAME="565"></A></FONT>        studiesDoc = readXMLFromFile(listOfStudiesHTMLFile);
+<A NAME="566"></A>        <FONT ID="If">if</FONT> (studiesDoc == <FONT ID="Null">null</FONT>) {
+<A NAME="567"></A>            log.error(<FONT ID="StringLiteral">"Can't find list of studies HTML file."</FONT>);
+<A NAME="568"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="569"></A>        }
+<A NAME="570"></A>        
+<A NAME="571"></A>        <FONT ID="SingleLineComment">// Tabelle mit der Liste der Patienten fuellen (ist immer nur ein Patient)
+<A NAME="572"></A></FONT>        <FONT ID="If">if</FONT> (fillPatientTable(studiesDoc, dataset, <FONT ID="Null">null</FONT>) != CONTINUE) {
+<A NAME="573"></A>            log.error(<FONT ID="StringLiteral">"Can't fill patient table."</FONT>);
+<A NAME="574"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="575"></A>        }
+<A NAME="576"></A>        
+<A NAME="577"></A>        <FONT ID="SingleLineComment">// Link zur Liste der Series erstellen
+<A NAME="578"></A></FONT>        link = linkToFile(listOfStudiesHTMLFile, listOfSeriesHTMLFile);
+<A NAME="579"></A>        
+<A NAME="580"></A>        <FONT ID="SingleLineComment">// Tabelle mit der Liste der Studies fuellen.
+<A NAME="581"></A></FONT>        <FONT ID="SingleLineComment">// Die SudyID mit dem Link auf die Liste der Series versehen
+<A NAME="582"></A></FONT>        <FONT ID="If">if</FONT> (fillStudyTable(studiesDoc, dataset, link) != CONTINUE) {
+<A NAME="583"></A>            log.error(<FONT ID="StringLiteral">"Can't fill study table."</FONT>);
+<A NAME="584"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="585"></A>        }
+<A NAME="586"></A>        
+<A NAME="587"></A>        <FONT ID="SingleLineComment">// Den INDEX.HTM file der Studies speichern
+<A NAME="588"></A></FONT>        writeXMLToFile(studiesDoc, listOfStudiesHTMLFile);
+<A NAME="589"></A>        
+<A NAME="590"></A>        <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="591"></A>    }
+<A NAME="592"></A>    
+<A NAME="593"></A>    
+<A NAME="594"></A>    <FONT ID="FormalComment">/**
+<A NAME="595"></A>     * Links the INDEX.HTM file containing the list of images to the INDEX.HTM
+<A NAME="596"></A>     * file containing the list of series.
+<A NAME="597"></A>     * 
+<A NAME="598"></A>     * 
+<A NAME="599"></A>     * 
+<A NAME="600"></A>     * 
+<A NAME="601"></A>     * @param dataset the Dataset containing the image data.
+<A NAME="602"></A>     * @return CONTINUE if succesfull, REQUEST_ABORT_RECEIVER otherwise
+<A NAME="603"></A>     */</FONT>
+<A NAME="604"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> linkImagListToSeriesList(Dataset dataset) {
+<A NAME="605"></A>        Document    seriesDoc;
+<A NAME="606"></A>        String      link;
+<A NAME="607"></A>        
+<A NAME="608"></A>        <FONT ID="SingleLineComment">// Leeren HTML file mit der Liste der Series einlesen
+<A NAME="609"></A></FONT>        seriesDoc = readXMLFromFile(listOfSeriesHTMLFile);
+<A NAME="610"></A>        <FONT ID="If">if</FONT> (seriesDoc == <FONT ID="Null">null</FONT>) {
+<A NAME="611"></A>            log.error(<FONT ID="StringLiteral">"Can't find list of studies HTML file."</FONT>);
+<A NAME="612"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="613"></A>        }
+<A NAME="614"></A>        
+<A NAME="615"></A>        <FONT ID="SingleLineComment">// Tabelle mit der Liste der Patienten fuellen (ist immer nur ein Patient)
+<A NAME="616"></A></FONT>        <FONT ID="If">if</FONT> (fillPatientTable(seriesDoc, dataset, <FONT ID="Null">null</FONT>) != CONTINUE) {
+<A NAME="617"></A>            log.error(<FONT ID="StringLiteral">"Can't fill patient table."</FONT>);
+<A NAME="618"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="619"></A>        }
+<A NAME="620"></A>        
+<A NAME="621"></A>        <FONT ID="SingleLineComment">// Tabelle mit der Liste der Studies fuellen
+<A NAME="622"></A></FONT>        <FONT ID="If">if</FONT> (fillStudyTable(seriesDoc, dataset, <FONT ID="Null">null</FONT>) != CONTINUE) {
+<A NAME="623"></A>            log.error(<FONT ID="StringLiteral">"Can't fill study table."</FONT>);
+<A NAME="624"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="625"></A>        }
+<A NAME="626"></A>        
+<A NAME="627"></A>        <FONT ID="SingleLineComment">// Link zur Liste der Images erstellen
+<A NAME="628"></A></FONT>        link = linkToFile(listOfSeriesHTMLFile, listOfImagesHTMLFile);
+<A NAME="629"></A>        
+<A NAME="630"></A>        <FONT ID="SingleLineComment">// Tabelle mit der Liste der Series fuellen.
+<A NAME="631"></A></FONT>        <FONT ID="SingleLineComment">// Die SeriesNumber mit dem Link auf die Liste der Images versehen
+<A NAME="632"></A></FONT>        <FONT ID="If">if</FONT> (fillSeriesTable(seriesDoc, dataset, link) != CONTINUE) {
+<A NAME="633"></A>            log.error(<FONT ID="StringLiteral">"Can't fill series table."</FONT>);
+<A NAME="634"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="635"></A>        }
+<A NAME="636"></A>        
+<A NAME="637"></A>        <FONT ID="SingleLineComment">// Den INDEX.HTM file der Series speichern
+<A NAME="638"></A></FONT>        writeXMLToFile(seriesDoc, listOfSeriesHTMLFile);
+<A NAME="639"></A>        
+<A NAME="640"></A>        <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="641"></A>    }
+<A NAME="642"></A>    
+<A NAME="643"></A>    
+<A NAME="644"></A>    <FONT ID="FormalComment">/**
+<A NAME="645"></A>     * Links the individual JPG images to the INDEX.HTM file containing the list of series.
+<A NAME="646"></A>     * 
+<A NAME="647"></A>     * 
+<A NAME="648"></A>     * 
+<A NAME="649"></A>     * 
+<A NAME="650"></A>     * @param dataset the Dataset containing the image data.
+<A NAME="651"></A>     * @return CONTINUE if succesfull, REQUEST_ABORT_RECEIVER otherwise
+<A NAME="652"></A>     */</FONT>
+<A NAME="653"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> linkImagesToImageList(Dataset dataset) {
+<A NAME="654"></A>        Document    imagesDoc;
+<A NAME="655"></A>        String      link;
+<A NAME="656"></A>        
+<A NAME="657"></A>        <FONT ID="SingleLineComment">// Leeren HTML file mit der Liste der Images einlesen
+<A NAME="658"></A></FONT>        imagesDoc = readXMLFromFile(listOfImagesHTMLFile);
+<A NAME="659"></A>        <FONT ID="If">if</FONT> (imagesDoc == <FONT ID="Null">null</FONT>) {
+<A NAME="660"></A>            log.error(<FONT ID="StringLiteral">"Can't find list of images HTML file."</FONT>);
+<A NAME="661"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="662"></A>        }
+<A NAME="663"></A>        
+<A NAME="664"></A>        <FONT ID="SingleLineComment">// Tabelle mit der Liste der Patienten fuellen (ist immer nur ein Patient)
+<A NAME="665"></A></FONT>        <FONT ID="If">if</FONT> (fillPatientTable(imagesDoc, dataset, <FONT ID="Null">null</FONT>) != CONTINUE) {
+<A NAME="666"></A>            log.error(<FONT ID="StringLiteral">"Can't fill patient table."</FONT>);
+<A NAME="667"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="668"></A>        }
+<A NAME="669"></A>        
+<A NAME="670"></A>        <FONT ID="SingleLineComment">// Tabelle mit der Liste der Studies fuellen
+<A NAME="671"></A></FONT>        <FONT ID="If">if</FONT> (fillStudyTable(imagesDoc, dataset, <FONT ID="Null">null</FONT>) != CONTINUE) {
+<A NAME="672"></A>            log.error(<FONT ID="StringLiteral">"Can't fill study table."</FONT>);
+<A NAME="673"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="674"></A>        }
+<A NAME="675"></A>        
+<A NAME="676"></A>        <FONT ID="SingleLineComment">// Tabelle mit der Liste der Series fuellen
+<A NAME="677"></A></FONT>        <FONT ID="If">if</FONT> (fillSeriesTable(imagesDoc, dataset, <FONT ID="Null">null</FONT>) != CONTINUE) {
+<A NAME="678"></A>            log.error(<FONT ID="StringLiteral">"Can't fill series table."</FONT>);
+<A NAME="679"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="680"></A>        }
+<A NAME="681"></A>        
+<A NAME="682"></A>        <FONT ID="SingleLineComment">// Tabelle mit der Liste der Images fuellen
+<A NAME="683"></A></FONT>        <FONT ID="If">if</FONT> (fillImageTable(imagesDoc, dataset, <FONT ID="Null">null</FONT>) != CONTINUE) {
+<A NAME="684"></A>            log.error(<FONT ID="StringLiteral">"Can't fill image table."</FONT>);
+<A NAME="685"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="686"></A>        }
+<A NAME="687"></A>        
+<A NAME="688"></A>        <FONT ID="SingleLineComment">// Den INDEX.HTM file der Series speichern
+<A NAME="689"></A></FONT>        writeXMLToFile(imagesDoc, listOfImagesHTMLFile);
+<A NAME="690"></A>        
+<A NAME="691"></A>        <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="692"></A>    }
+<A NAME="693"></A>    
+<A NAME="694"></A>    
+<A NAME="695"></A>    <FONT ID="FormalComment">/**
+<A NAME="696"></A>     * Inserts patient-information into the table id="patient". Does nothing, if
+<A NAME="697"></A>     * there is already a table row with the same PatientID.
+<A NAME="698"></A>     * 
+<A NAME="699"></A>     * 
+<A NAME="700"></A>     * 
+<A NAME="701"></A>     * 
+<A NAME="702"></A>     * @param document the Document containing the DOM represenation of the HTML file.
+<A NAME="703"></A>     * @param dataset the Dataset containing the image data.
+<A NAME="704"></A>     * @param link a string containing the link from the actual HTML file to the
+<A NAME="705"></A>     *             HTML file to open, when clicking at the table elemnt in the last
+<A NAME="706"></A>     *             column. null, if no link should be used.
+<A NAME="707"></A>     * @return CONTINUE if succesfull, REQUEST_ABORT_RECEIVER otherwise
+<A NAME="708"></A>     */</FONT>
+<A NAME="709"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> fillPatientTable(Document document, Dataset dataset, String link) {
+<A NAME="710"></A>        HTMLTable   patientTab;
+<A NAME="711"></A>        String[]    patientInfo = <FONT ID="New">new</FONT> String[<FONT ID="IntegerLiteral">3</FONT>];
+<A NAME="712"></A>        <FONT ID="SingleLineComment">// Defaultwert fuer das Sortierkriterium
+<A NAME="713"></A></FONT>        <FONT ID="SingleLineComment">// Der spacs-Character kann nicht verwendet werden, da in XML keine fuehrenden
+<A NAME="714"></A></FONT>        <FONT ID="SingleLineComment">// Whitespaces in Attribut-Values erlaubt sind. '#' ist in der Sortierreihenfolge
+<A NAME="715"></A></FONT>        <FONT ID="SingleLineComment">// ebenfalls von Ziffern und Buchstaben angesiedelt.
+<A NAME="716"></A></FONT>        String      titleToSort = <FONT ID="StringLiteral">"#"</FONT>;
+<A NAME="717"></A>        
+<A NAME="718"></A>        <FONT ID="SingleLineComment">// Tabelle mit id="patient" finden
+<A NAME="719"></A></FONT>        patientTab = <FONT ID="New">new</FONT> HTMLTable(document, <FONT ID="StringLiteral">"patient"</FONT>);
+<A NAME="720"></A>        <FONT ID="If">if</FONT> (patientTab.tableElement == <FONT ID="Null">null</FONT>) {
+<A NAME="721"></A>            log.error(<FONT ID="StringLiteral">"Can't find patient table in HTML file."</FONT>);
+<A NAME="722"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="723"></A>        }
+<A NAME="724"></A>        
+<A NAME="725"></A>        <FONT ID="SingleLineComment">// Patient-Informationen extrahieren
+<A NAME="726"></A></FONT>        String patientID = dataset.getString(Tags.PatientID, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="727"></A>        String patientName = dataset.getString(Tags.PatientName, <FONT ID="StringLiteral">"X^X"</FONT>);
+<A NAME="728"></A>        String patientBirthDate = dataset.getString(Tags.PatientBirthDate, <FONT ID="StringLiteral">"19990101"</FONT>);
+<A NAME="729"></A>        String patientSex = dataset.getString(Tags.PatientSex, <FONT ID="StringLiteral">"O"</FONT>);
+<A NAME="730"></A>        
+<A NAME="731"></A>        <FONT ID="SingleLineComment">// "patient" Tabelle fuellen
+<A NAME="732"></A></FONT>        patientInfo[<FONT ID="IntegerLiteral">0</FONT>] = patientName;
+<A NAME="733"></A>        patientInfo[<FONT ID="IntegerLiteral">1</FONT>] = patientBirthDate;
+<A NAME="734"></A>        patientInfo[<FONT ID="IntegerLiteral">2</FONT>] = patientSex;
+<A NAME="735"></A>        
+<A NAME="736"></A>        <FONT ID="SingleLineComment">// Nur dann in Tabelle einfuegen, wenn noch nicht vorhanden
+<A NAME="737"></A></FONT>        <FONT ID="If">if</FONT> (! patientTab.contains(patientID)) {
+<A NAME="738"></A>            patientTab.append(<FONT ID="New">new</FONT> HTMLTableRow(document, patientInfo, patientID, titleToSort, link));
+<A NAME="739"></A>            <FONT ID="SingleLineComment">// Zeilen sortieren
+<A NAME="740"></A></FONT>            patientTab.sort();
+<A NAME="741"></A>        }
+<A NAME="742"></A>        
+<A NAME="743"></A>        <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="744"></A>    }
+<A NAME="745"></A>    
+<A NAME="746"></A>    
+<A NAME="747"></A>    <FONT ID="FormalComment">/**
+<A NAME="748"></A>     * Inserts study-information into the table id="study". Does nothing, if
+<A NAME="749"></A>     * there is already a table row with the same studyInstanceUID.
+<A NAME="750"></A>     * 
+<A NAME="751"></A>     * 
+<A NAME="752"></A>     * 
+<A NAME="753"></A>     * 
+<A NAME="754"></A>     * @param document the Document containing the DOM represenation of the HTML file.
+<A NAME="755"></A>     * @param dataset the Dataset containing the image data.
+<A NAME="756"></A>     * @param link a string containing the link from the actual HTML file to the
+<A NAME="757"></A>     *             HTML file to open, when clicking at the table elemnt in the last
+<A NAME="758"></A>     *             column. null, if no link should be used.
+<A NAME="759"></A>     * @return CONTINUE if succesfull, REQUEST_ABORT_RECEIVER otherwise
+<A NAME="760"></A>     */</FONT>
+<A NAME="761"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> fillStudyTable(Document document, Dataset dataset, String link) {
+<A NAME="762"></A>        HTMLTable   studyTab;
+<A NAME="763"></A>        String[]    studyInfo = <FONT ID="New">new</FONT> String[<FONT ID="IntegerLiteral">5</FONT>];
+<A NAME="764"></A>        <FONT ID="SingleLineComment">// Defaultwert fuer das Sortierkriterium
+<A NAME="765"></A></FONT>        <FONT ID="SingleLineComment">// Der spacs-Character kann nicht verwendet werden, da in XML keine fuehrenden
+<A NAME="766"></A></FONT>        <FONT ID="SingleLineComment">// Whitespaces in Attribut-Values erlaubt sind. '#' ist in der Sortierreihenfolge
+<A NAME="767"></A></FONT>        <FONT ID="SingleLineComment">// ebenfalls von Ziffern und Buchstaben angesiedelt.
+<A NAME="768"></A></FONT>        String      titleToSort = <FONT ID="StringLiteral">"#"</FONT>;
+<A NAME="769"></A>        
+<A NAME="770"></A>        <FONT ID="SingleLineComment">// Tabelle mit id="study" finden
+<A NAME="771"></A></FONT>        studyTab = <FONT ID="New">new</FONT> HTMLTable(document, <FONT ID="StringLiteral">"study"</FONT>);
+<A NAME="772"></A>        <FONT ID="If">if</FONT> (studyTab.tableElement == <FONT ID="Null">null</FONT>) {
+<A NAME="773"></A>            log.error(<FONT ID="StringLiteral">"Can't find study table in HTML file."</FONT>);
+<A NAME="774"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="775"></A>        }
+<A NAME="776"></A>        
+<A NAME="777"></A>        <FONT ID="SingleLineComment">// Study-Informationen extrahieren
+<A NAME="778"></A></FONT>        String studyInstanceUID = dataset.getString(Tags.StudyInstanceUID, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="779"></A>        String studyDate = dataset.getString(Tags.StudyDate, <FONT ID="StringLiteral">"20050101"</FONT>);
+<A NAME="780"></A>        String studyTime = dataset.getString(Tags.StudyTime, <FONT ID="StringLiteral">"154812"</FONT>);
+<A NAME="781"></A>        String modality = dataset.getString(Tags.Modality, <FONT ID="StringLiteral">"OT"</FONT>);
+<A NAME="782"></A>        String studyDescription = dataset.getString(Tags.StudyDescription, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="783"></A>        String studyID = dataset.getString(Tags.StudyID, <FONT ID="StringLiteral">"1"</FONT>);
+<A NAME="784"></A>        
+<A NAME="785"></A>        <FONT ID="SingleLineComment">// "study" Tabelle fuellen
+<A NAME="786"></A></FONT>        studyInfo[<FONT ID="IntegerLiteral">0</FONT>] = studyDate;
+<A NAME="787"></A>        studyInfo[<FONT ID="IntegerLiteral">1</FONT>] = studyTime.substring(<FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">6</FONT>);
+<A NAME="788"></A>        studyInfo[<FONT ID="IntegerLiteral">2</FONT>] = modality;
+<A NAME="789"></A>        studyInfo[<FONT ID="IntegerLiteral">3</FONT>] = studyDescription;
+<A NAME="790"></A>        studyInfo[<FONT ID="IntegerLiteral">4</FONT>] = studyID;
+<A NAME="791"></A>        
+<A NAME="792"></A>        <FONT ID="SingleLineComment">// Sortier-Schlüssel für die Zeilen der Study-Tabelle
+<A NAME="793"></A></FONT>        titleToSort = studyDate + studyTime.substring(<FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">6</FONT>);
+<A NAME="794"></A>        
+<A NAME="795"></A>        <FONT ID="SingleLineComment">// Nur dann in Tabelle einfuegen, wenn noch nicht vorhanden
+<A NAME="796"></A></FONT>        <FONT ID="If">if</FONT> (! studyTab.contains(studyInstanceUID)) {
+<A NAME="797"></A>            studyTab.append(<FONT ID="New">new</FONT> HTMLTableRow(document, studyInfo, studyInstanceUID, titleToSort, link));
+<A NAME="798"></A>            <FONT ID="SingleLineComment">// Zeilen sortieren
+<A NAME="799"></A></FONT>            studyTab.sort();
+<A NAME="800"></A>        }
+<A NAME="801"></A>        
+<A NAME="802"></A>        <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="803"></A>    }
+<A NAME="804"></A>    
+<A NAME="805"></A>    
+<A NAME="806"></A>    <FONT ID="FormalComment">/**
+<A NAME="807"></A>     * Inserts series-information into the table id="series". Does nothing, if
+<A NAME="808"></A>     * there is already a table row with the same seriesInstanceUID.
+<A NAME="809"></A>     * 
+<A NAME="810"></A>     * 
+<A NAME="811"></A>     * 
+<A NAME="812"></A>     * 
+<A NAME="813"></A>     * @param document the Document containing the DOM represenation of the HTML file.
+<A NAME="814"></A>     * @param dataset the Dataset containing the image data.
+<A NAME="815"></A>     * @param link a string containing the link from the actual HTML file to the
+<A NAME="816"></A>     *             HTML file to open, when clicking at the table elemnt in the last
+<A NAME="817"></A>     *             column. null, if no link should be used.
+<A NAME="818"></A>     * @return CONTINUE if succesfull, REQUEST_ABORT_RECEIVER otherwise
+<A NAME="819"></A>     */</FONT>
+<A NAME="820"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> fillSeriesTable(Document document, Dataset dataset, String link) {
+<A NAME="821"></A>        HTMLTable   seriesTab;
+<A NAME="822"></A>        String[]    seriesInfo = <FONT ID="New">new</FONT> String[<FONT ID="IntegerLiteral">4</FONT>];
+<A NAME="823"></A>        <FONT ID="SingleLineComment">// Defaultwert fuer das Sortierkriterium
+<A NAME="824"></A></FONT>        <FONT ID="SingleLineComment">// Der spacs-Character kann nicht verwendet werden, da in XML keine fuehrenden
+<A NAME="825"></A></FONT>        <FONT ID="SingleLineComment">// Whitespaces in Attribut-Values erlaubt sind. '#' ist in der Sortierreihenfolge
+<A NAME="826"></A></FONT>        <FONT ID="SingleLineComment">// ebenfalls von Ziffern und Buchstaben angesiedelt.
+<A NAME="827"></A></FONT>        String      titleToSort = <FONT ID="StringLiteral">"#"</FONT>;
+<A NAME="828"></A>        
+<A NAME="829"></A>        <FONT ID="SingleLineComment">// Tabelle id="series" finden
+<A NAME="830"></A></FONT>        seriesTab = <FONT ID="New">new</FONT> HTMLTable(document, <FONT ID="StringLiteral">"series"</FONT>);
+<A NAME="831"></A>        <FONT ID="If">if</FONT> (seriesTab.tableElement == <FONT ID="Null">null</FONT>) {
+<A NAME="832"></A>            log.error(<FONT ID="StringLiteral">"Can't find series table in HTML file."</FONT>);
+<A NAME="833"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="834"></A>        }
+<A NAME="835"></A>        
+<A NAME="836"></A>        <FONT ID="SingleLineComment">// Series-Informationen extrahieren
+<A NAME="837"></A></FONT>        String seriesInstanceUID = dataset.getString(Tags.SeriesInstanceUID, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="838"></A>        String seriesDate = dataset.getString(Tags.SeriesDate, <FONT ID="StringLiteral">"20050101"</FONT>);
+<A NAME="839"></A>        String seriesTime = dataset.getString(Tags.SeriesTime, <FONT ID="StringLiteral">"154812"</FONT>);
+<A NAME="840"></A>        String seriesDescription = dataset.getString(Tags.SeriesDescription, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="841"></A>        String seriesNumber = dataset.getString(Tags.SeriesNumber, <FONT ID="StringLiteral">"1"</FONT>);
+<A NAME="842"></A>        
+<A NAME="843"></A>        <FONT ID="SingleLineComment">// "series" Tabelle fuellen
+<A NAME="844"></A></FONT>        seriesInfo[<FONT ID="IntegerLiteral">0</FONT>] = seriesDate;
+<A NAME="845"></A>        seriesInfo[<FONT ID="IntegerLiteral">1</FONT>] = seriesTime.substring(<FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">6</FONT>);
+<A NAME="846"></A>        seriesInfo[<FONT ID="IntegerLiteral">2</FONT>] = seriesDescription;
+<A NAME="847"></A>        seriesInfo[<FONT ID="IntegerLiteral">3</FONT>] = seriesNumber;
+<A NAME="848"></A>        
+<A NAME="849"></A>        <FONT ID="SingleLineComment">// Sortier-Schlüssel für die Zeilen der Series-Tabelle
+<A NAME="850"></A></FONT>        String s = <FONT ID="StringLiteral">"#####"</FONT> + seriesNumber;
+<A NAME="851"></A>        titleToSort = s.substring(s.length() - <FONT ID="IntegerLiteral">5</FONT>);
+<A NAME="852"></A>        
+<A NAME="853"></A>        <FONT ID="SingleLineComment">// Nur dann in Tabelle einfuegen, wenn noch nicht vorhanden
+<A NAME="854"></A></FONT>        <FONT ID="If">if</FONT> (! seriesTab.contains(seriesInstanceUID)) {
+<A NAME="855"></A>            seriesTab.append(<FONT ID="New">new</FONT> HTMLTableRow(document, seriesInfo, seriesInstanceUID, titleToSort, link));
+<A NAME="856"></A>            <FONT ID="SingleLineComment">// Zeilen sortieren
+<A NAME="857"></A></FONT>            seriesTab.sort();
+<A NAME="858"></A>        }
+<A NAME="859"></A>        
+<A NAME="860"></A>        <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="861"></A>    }
+<A NAME="862"></A>    
+<A NAME="863"></A>    
+<A NAME="864"></A>    <FONT ID="FormalComment">/**
+<A NAME="865"></A>     * Inserts image-information into the table id="image". Does nothing, if
+<A NAME="866"></A>     * there is already a table row with the same sopInstanceUID.
+<A NAME="867"></A>     * 
+<A NAME="868"></A>     * 
+<A NAME="869"></A>     * 
+<A NAME="870"></A>     * 
+<A NAME="871"></A>     * @param document the Document containing the DOM represenation of the HTML file.
+<A NAME="872"></A>     * @param dataset the Dataset containing the image data.
+<A NAME="873"></A>     * @param link a string containing the link from the actual HTML file to the
+<A NAME="874"></A>     *             HTML file to open, when clicking at the table elemnt in the last
+<A NAME="875"></A>     *             column. null, if no link should be used.
+<A NAME="876"></A>     * @return CONTINUE if succesfull, REQUEST_ABORT_RECEIVER otherwise
+<A NAME="877"></A>     */</FONT>
+<A NAME="878"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> fillImageTable(Document document, Dataset dataset, String link) {
+<A NAME="879"></A>        HTMLTable       imageTab;
+<A NAME="880"></A>        HTMLTableRow    r;
+<A NAME="881"></A>        <FONT ID="SingleLineComment">// Defaultwert fuer das Sortierkriterium
+<A NAME="882"></A></FONT>        <FONT ID="SingleLineComment">// Der spacs-Character kann nicht verwendet werden, da in XML keine fuehrenden
+<A NAME="883"></A></FONT>        <FONT ID="SingleLineComment">// Whitespaces in Attribut-Values erlaubt sind. '#' ist in der Sortierreihenfolge
+<A NAME="884"></A></FONT>        <FONT ID="SingleLineComment">// ebenfalls von Ziffern und Buchstaben angesiedelt.
+<A NAME="885"></A></FONT>        String          titleToSort = <FONT ID="StringLiteral">"#"</FONT>;
+<A NAME="886"></A>        
+<A NAME="887"></A>        <FONT ID="SingleLineComment">// Tabelle mit id="image" finden
+<A NAME="888"></A></FONT>        imageTab = <FONT ID="New">new</FONT> HTMLTable(document, <FONT ID="StringLiteral">"image"</FONT>);
+<A NAME="889"></A>        <FONT ID="If">if</FONT> (imageTab.tableElement == <FONT ID="Null">null</FONT>) {
+<A NAME="890"></A>            log.error(<FONT ID="StringLiteral">"Can't find image table in HTML file."</FONT>);
+<A NAME="891"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="892"></A>        }
+<A NAME="893"></A>        
+<A NAME="894"></A>        <FONT ID="SingleLineComment">// Image-Informationen extrahieren
+<A NAME="895"></A></FONT>        String sopInstanceUID = dataset.getString(Tags.SOPInstanceUID, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="896"></A>        String instanceNumber = dataset.getString(Tags.InstanceNumber, <FONT ID="StringLiteral">"1"</FONT>);
+<A NAME="897"></A>        
+<A NAME="898"></A>        <FONT ID="SingleLineComment">// Sortier-Schlüssel für die Zeilen der Image-Tabelle
+<A NAME="899"></A></FONT>        String s = <FONT ID="StringLiteral">"#####"</FONT> + instanceNumber;
+<A NAME="900"></A>        titleToSort = s.substring(s.length() - <FONT ID="IntegerLiteral">5</FONT>);
+<A NAME="901"></A>        
+<A NAME="902"></A>        <FONT ID="SingleLineComment">// Nur dann in Tabelle einfuegen, wenn noch nicht vorhanden
+<A NAME="903"></A></FONT>        <FONT ID="If">if</FONT> (! imageTab.contains(sopInstanceUID)) {
+<A NAME="904"></A>            r = <FONT ID="New">new</FONT> HTMLTableRow();
+<A NAME="905"></A>            r.setLinkToJPGImage(document, sopInstanceUID, titleToSort, instanceNumber);
+<A NAME="906"></A>            imageTab.append(r);
+<A NAME="907"></A>            <FONT ID="SingleLineComment">// Zeilen sortieren
+<A NAME="908"></A></FONT>            imageTab.sort();
+<A NAME="909"></A>        }
+<A NAME="910"></A>        
+<A NAME="911"></A>        <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="912"></A>    }
+<A NAME="913"></A>    
+<A NAME="914"></A>    
+<A NAME="915"></A>    <FONT ID="FormalComment">/**
+<A NAME="916"></A>     * Creates all common files and directories for the Portable Media. Setup the
+<A NAME="917"></A>     * fields fileIDComponents, listOfStudiesHTMLFile, listOfSeriesHTMLFile,
+<A NAME="918"></A>     * listOfImagesHTMLFile and currentJPGFile.
+<A NAME="919"></A>     *
+<A NAME="920"></A>     * @param baseDirectory the directory, where the Portable Media should be stored.
+<A NAME="921"></A>     * @param ds the dataset to analyse.
+<A NAME="922"></A>     */</FONT>
+<A NAME="923"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> buildPortableMediaStructure(File baseDirectory, Dataset ds) {
+<A NAME="924"></A>        String      pathString;
+<A NAME="925"></A>        File        f;
+<A NAME="926"></A>        
+<A NAME="927"></A>        <FONT ID="SingleLineComment">// Neues Array erzeugen
+<A NAME="928"></A></FONT>        fileIDComponents = <FONT ID="New">new</FONT> String[<FONT ID="IntegerLiteral">6</FONT>];
+<A NAME="929"></A>        
+<A NAME="930"></A>        <FONT ID="SingleLineComment">// Das base Directory erzeugen
+<A NAME="931"></A></FONT>        <FONT ID="If">if</FONT> (! baseDirectory.exists()) {
+<A NAME="932"></A>            baseDirectory.mkdirs();
+<A NAME="933"></A>        }
+<A NAME="934"></A>        
+<A NAME="935"></A>        <FONT ID="SingleLineComment">// Allgemeine Files und Directories erzeugen/ kopieren
+<A NAME="936"></A></FONT>        f = <FONT ID="New">new</FONT> File(baseDirectory, <FONT ID="StringLiteral">"DICOM"</FONT>);
+<A NAME="937"></A>        <FONT ID="If">if</FONT> (! f.exists()) {
+<A NAME="938"></A>            f.mkdir();
+<A NAME="939"></A>        }
+<A NAME="940"></A>        
+<A NAME="941"></A>        f = <FONT ID="New">new</FONT> File(baseDirectory, <FONT ID="StringLiteral">"IHE_PDI"</FONT>);
+<A NAME="942"></A>        <FONT ID="If">if</FONT> (! f.exists()) {
+<A NAME="943"></A>            f.mkdir();
+<A NAME="944"></A>        }
+<A NAME="945"></A>        
+<A NAME="946"></A>        f = <FONT ID="New">new</FONT> File(baseDirectory, <FONT ID="StringLiteral">"INDEX.HTM"</FONT>);
+<A NAME="947"></A>        <FONT ID="If">if</FONT> (! f.exists()) {
+<A NAME="948"></A>            <FONT ID="SingleLineComment">// Nur wenn File noch nicht existiert
+<A NAME="949"></A></FONT>            <FONT ID="If">if</FONT> (defaultIndexFile) {
+<A NAME="950"></A>                <FONT ID="SingleLineComment">// Default File = Resource verwenden
+<A NAME="951"></A></FONT>                copyFileFromResource(<A HREF="../../../../../de/iftm/dcm4che/router/plugin/PortableMediaCreatorPlugin.java.html">PortableMediaCreatorPlugin</A>.<FONT ID="Class">class</FONT>.getResourceAsStream(<FONT ID="StringLiteral">"resources/INDEX.HTM"</FONT>), f);
+<A NAME="952"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="953"></A>                <FONT ID="SingleLineComment">// In Properties angegebenen File verwenden
+<A NAME="954"></A></FONT>                copyFile(index_file, f);
+<A NAME="955"></A>            }
+<A NAME="956"></A>        }
+<A NAME="957"></A>        
+<A NAME="958"></A>        <FONT ID="If">if</FONT> (useReadmeFile) {
+<A NAME="959"></A>            <FONT ID="SingleLineComment">// Nur wenn ein README.TXT file geschrieben werden soll
+<A NAME="960"></A></FONT>            f = <FONT ID="New">new</FONT> File(baseDirectory, <FONT ID="StringLiteral">"README.TXT"</FONT>);
+<A NAME="961"></A>            <FONT ID="If">if</FONT> (! f.exists()) {
+<A NAME="962"></A>                <FONT ID="SingleLineComment">// Nur wenn File noch nicht existiert
+<A NAME="963"></A></FONT>                <FONT ID="If">if</FONT> (defaultReadmeFile) {
+<A NAME="964"></A>                    <FONT ID="SingleLineComment">// Default File = Resource verwenden
+<A NAME="965"></A></FONT>                    copyFileFromResource(<A HREF="../../../../../de/iftm/dcm4che/router/plugin/PortableMediaCreatorPlugin.java.html">PortableMediaCreatorPlugin</A>.<FONT ID="Class">class</FONT>.getResourceAsStream(<FONT ID="StringLiteral">"resources/README.TXT"</FONT>), f);
+<A NAME="966"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="967"></A>                <FONT ID="SingleLineComment">// In Properties angegebenen File verwenden
+<A NAME="968"></A></FONT>                copyFile(readme_file, f);
+<A NAME="969"></A>                }
+<A NAME="970"></A>            }
+<A NAME="971"></A>        }
+<A NAME="972"></A>        
+<A NAME="973"></A>        f = <FONT ID="New">new</FONT> File(baseDirectory, <FONT ID="StringLiteral">"IHE_PDI/COMPARE.HTM"</FONT>);
+<A NAME="974"></A>        <FONT ID="If">if</FONT> (! f.exists()) {
+<A NAME="975"></A>            copyFileFromResource(<A HREF="../../../../../de/iftm/dcm4che/router/plugin/PortableMediaCreatorPlugin.java.html">PortableMediaCreatorPlugin</A>.<FONT ID="Class">class</FONT>.getResourceAsStream(<FONT ID="StringLiteral">"resources/COMPARE.HTM"</FONT>), f);
+<A NAME="976"></A>        }
+<A NAME="977"></A>        
+<A NAME="978"></A>        <FONT ID="SingleLineComment">// HTML Files mit den Referenzen zur Verfuegung stellen:
+<A NAME="979"></A></FONT>        
+<A NAME="980"></A>        <FONT ID="SingleLineComment">// Komponenten der File IDs erzeugen
+<A NAME="981"></A></FONT>        fileIDComponents = Util.datasetToNameArray(ds);
+<A NAME="982"></A>        
+<A NAME="983"></A>        <FONT ID="SingleLineComment">// Directories erstellen
+<A NAME="984"></A></FONT>        pathString = <FONT ID="StringLiteral">"IHE_PDI"</FONT>;
+<A NAME="985"></A>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; fileIDComponents.length - <FONT ID="IntegerLiteral">1</FONT>; i++) {
+<A NAME="986"></A>            pathString += <FONT ID="StringLiteral">"/"</FONT> + fileIDComponents[i];
+<A NAME="987"></A>        }
+<A NAME="988"></A>        f = <FONT ID="New">new</FONT> File(baseDirectory, pathString);
+<A NAME="989"></A>        <FONT ID="If">if</FONT> (! f.exists()) {
+<A NAME="990"></A>            f.mkdirs();
+<A NAME="991"></A>        }
+<A NAME="992"></A>        
+<A NAME="993"></A>        <FONT ID="SingleLineComment">// "Study" HTML File mit der Liste der Studie
+<A NAME="994"></A></FONT>        listOfStudiesHTMLFile = <FONT ID="New">new</FONT> File(baseDirectory, <FONT ID="StringLiteral">"IHE_PDI/INDEX.HTM"</FONT>);
+<A NAME="995"></A>        <FONT ID="If">if</FONT> (! listOfStudiesHTMLFile.exists()) {
+<A NAME="996"></A>            copyFileFromResource(<A HREF="../../../../../de/iftm/dcm4che/router/plugin/PortableMediaCreatorPlugin.java.html">PortableMediaCreatorPlugin</A>.<FONT ID="Class">class</FONT>.getResourceAsStream(<FONT ID="StringLiteral">"resources/study_index.htm"</FONT>), listOfStudiesHTMLFile);
+<A NAME="997"></A>        }
+<A NAME="998"></A>        
+<A NAME="999"></A>        <FONT ID="SingleLineComment">// "Series" HTML File mit der Liste der Serien
+<A NAME="1000"></A></FONT>        listOfSeriesHTMLFile = <FONT ID="New">new</FONT> File(baseDirectory, <FONT ID="StringLiteral">"IHE_PDI/"</FONT> + fileIDComponents[<FONT ID="IntegerLiteral">0</FONT>] + <FONT ID="StringLiteral">"/"</FONT> + fileIDComponents[<FONT ID="IntegerLiteral">1</FONT>] + <FONT ID="StringLiteral">"/"</FONT> + fileIDComponents[<FONT ID="IntegerLiteral">2</FONT>] + <FONT ID="StringLiteral">"/"</FONT> + fileIDComponents[<FONT ID="IntegerLiteral">3</FONT>] + <FONT ID="StringLiteral">"/INDEX.HTM"</FONT>);
+<A NAME="1001"></A>        <FONT ID="If">if</FONT> (! listOfSeriesHTMLFile.exists()) {
+<A NAME="1002"></A>            copyFileFromResource(<A HREF="../../../../../de/iftm/dcm4che/router/plugin/PortableMediaCreatorPlugin.java.html">PortableMediaCreatorPlugin</A>.<FONT ID="Class">class</FONT>.getResourceAsStream(<FONT ID="StringLiteral">"resources/series_index.htm"</FONT>), listOfSeriesHTMLFile);
+<A NAME="1003"></A>        }
+<A NAME="1004"></A>        
+<A NAME="1005"></A>        <FONT ID="SingleLineComment">// "Images" HTML File mit der Tablle der Bilder
+<A NAME="1006"></A></FONT>        listOfImagesHTMLFile = <FONT ID="New">new</FONT> File(baseDirectory, <FONT ID="StringLiteral">"IHE_PDI/"</FONT> + fileIDComponents[<FONT ID="IntegerLiteral">0</FONT>] + <FONT ID="StringLiteral">"/"</FONT> + fileIDComponents[<FONT ID="IntegerLiteral">1</FONT>] + <FONT ID="StringLiteral">"/"</FONT> + fileIDComponents[<FONT ID="IntegerLiteral">2</FONT>] + <FONT ID="StringLiteral">"/"</FONT> + fileIDComponents[<FONT ID="IntegerLiteral">3</FONT>]  + <FONT ID="StringLiteral">"/"</FONT> + fileIDComponents[<FONT ID="IntegerLiteral">4</FONT>]+ <FONT ID="StringLiteral">"/INDEX.HTM"</FONT>);
+<A NAME="1007"></A>        <FONT ID="If">if</FONT> (! listOfImagesHTMLFile.exists()) {
+<A NAME="1008"></A>            copyFileFromResource(<A HREF="../../../../../de/iftm/dcm4che/router/plugin/PortableMediaCreatorPlugin.java.html">PortableMediaCreatorPlugin</A>.<FONT ID="Class">class</FONT>.getResourceAsStream(<FONT ID="StringLiteral">"resources/image_index.htm"</FONT>), listOfImagesHTMLFile);
+<A NAME="1009"></A>        }
+<A NAME="1010"></A>    }
+<A NAME="1011"></A>    
+<A NAME="1012"></A>    
+<A NAME="1013"></A>    <FONT ID="FormalComment">/**
+<A NAME="1014"></A>     * Calculates the relative link from the base to a destination file.
+<A NAME="1015"></A>     *
+<A NAME="1016"></A>     * @param base the base file.
+<A NAME="1017"></A>     * @param destination the destination file.
+<A NAME="1018"></A>     * @return the relative link as a string.
+<A NAME="1019"></A>     */</FONT>
+<A NAME="1020"></A>    <FONT ID="Protected">protected</FONT> String linkToFile(File base, File destination) {
+<A NAME="1021"></A>        URI baseURI;
+<A NAME="1022"></A>        URI destinationURI;
+<A NAME="1023"></A>        
+<A NAME="1024"></A>        <FONT ID="If">if</FONT> (base.isDirectory()) {
+<A NAME="1025"></A>            baseURI = base.toURI();
+<A NAME="1026"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="1027"></A>            baseURI = base.getParentFile().toURI();
+<A NAME="1028"></A>        }
+<A NAME="1029"></A>        destinationURI = destination.toURI();
+<A NAME="1030"></A>        
+<A NAME="1031"></A>        <FONT ID="Return">return</FONT> baseURI.relativize(destinationURI).toString();
+<A NAME="1032"></A>    }
+<A NAME="1033"></A>    
+<A NAME="1034"></A>    
+<A NAME="1035"></A>    <FONT ID="FormalComment">/**
+<A NAME="1036"></A>     * Read a XML (XHTML) file to a DOM document.
+<A NAME="1037"></A>     *
+<A NAME="1038"></A>     * @param file the file containing the XML representation.
+<A NAME="1039"></A>     * @return the DOM document containing the XML file.
+<A NAME="1040"></A>     */</FONT>
+<A NAME="1041"></A>    <FONT ID="Protected">protected</FONT> Document readXMLFromFile(File file) {
+<A NAME="1042"></A>        Document        document = <FONT ID="Null">null</FONT>;
+<A NAME="1043"></A>        FileInputStream fis = <FONT ID="Null">null</FONT>;
+<A NAME="1044"></A>        
+<A NAME="1045"></A>        <FONT ID="Try">try</FONT>{
+<A NAME="1046"></A>            fis = <FONT ID="New">new</FONT> FileInputStream(file);
+<A NAME="1047"></A>            document = readXMLFromStream(fis);
+<A NAME="1048"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="1049"></A>            log.error(<FONT ID="StringLiteral">"readFromFile::IOException: "</FONT> + e);
+<A NAME="1050"></A>        } <FONT ID="Finally">finally</FONT> {
+<A NAME="1051"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="1052"></A>                fis.close();
+<A NAME="1053"></A>            } <FONT ID="Catch">catch</FONT> (IOException e) {};
+<A NAME="1054"></A>        }
+<A NAME="1055"></A>        
+<A NAME="1056"></A>        <FONT ID="Return">return</FONT> document;
+<A NAME="1057"></A>    }
+<A NAME="1058"></A>    
+<A NAME="1059"></A>    
+<A NAME="1060"></A>    <FONT ID="FormalComment">/**
+<A NAME="1061"></A>     * Read a XML (XHTML) resource file to a DOM document.
+<A NAME="1062"></A>     *
+<A NAME="1063"></A>     * @param in the InputStream of the resource file containing the XML
+<A NAME="1064"></A>     *        representation. Use xxxx.class.getResourceAsStream(String name)
+<A NAME="1065"></A>     *        to access the resource file.
+<A NAME="1066"></A>     * @return the DOM document containing the XML file.
+<A NAME="1067"></A>     */</FONT>
+<A NAME="1068"></A>    <FONT ID="Protected">protected</FONT> Document readXMLFromStream(InputStream in) {
+<A NAME="1069"></A>        <FONT ID="SingleLineComment">// JAVADOC NOTE: An implementation of the DocumentBuilderFactory class
+<A NAME="1070"></A></FONT>        <FONT ID="SingleLineComment">// is NOT guaranteed to be thread safe. It is up to the user application
+<A NAME="1071"></A></FONT>        <FONT ID="SingleLineComment">// to make sure about the use of the DocumentBuilderFactory from more
+<A NAME="1072"></A></FONT>        <FONT ID="SingleLineComment">// than one thread. Alternatively the application can have one instance
+<A NAME="1073"></A></FONT>        <FONT ID="SingleLineComment">// of the DocumentBuilderFactory per thread.
+<A NAME="1074"></A></FONT>        ReadXMLFromStreamThread readThread = <FONT ID="New">new</FONT> ReadXMLFromStreamThread(in);
+<A NAME="1075"></A>        <FONT ID="SingleLineComment">// Startet den Thread
+<A NAME="1076"></A></FONT>        readThread.start();
+<A NAME="1077"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="1078"></A>            <FONT ID="SingleLineComment">// Wartet bis der Thread beendet ist.
+<A NAME="1079"></A></FONT>            readThread.join();
+<A NAME="1080"></A>        } <FONT ID="Catch">catch</FONT> (InterruptedException e) {
+<A NAME="1081"></A>            log.error(<FONT ID="StringLiteral">"writeXMLToFile::InterruptedException: "</FONT> + e);
+<A NAME="1082"></A>        }
+<A NAME="1083"></A>        
+<A NAME="1084"></A>        <FONT ID="Return">return</FONT> readThread.document;
+<A NAME="1085"></A>    }
+<A NAME="1086"></A>    
+<A NAME="1087"></A>    
+<A NAME="1088"></A>    <FONT ID="FormalComment">/**
+<A NAME="1089"></A>     * Write a DOM document to a XML (XHTML) file.
+<A NAME="1090"></A>     *
+<A NAME="1091"></A>     * @param document  the document to write.
+<A NAME="1092"></A>     * @param file the file to write to.
+<A NAME="1093"></A>     */</FONT>
+<A NAME="1094"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> writeXMLToFile(Document document, File file) {
+<A NAME="1095"></A>        <FONT ID="SingleLineComment">// JAVADOC NOTE: An implementation of the TransformerFactory class is
+<A NAME="1096"></A></FONT>        <FONT ID="SingleLineComment">// NOT guaranteed to be thread safe. It is up to the user application
+<A NAME="1097"></A></FONT>        <FONT ID="SingleLineComment">// from more than one thread. Alternatively the application can have one
+<A NAME="1098"></A></FONT>        <FONT ID="SingleLineComment">// instance to make sure about the use of the TransformerFactory of the
+<A NAME="1099"></A></FONT>        <FONT ID="SingleLineComment">// TransformerFactory per thread.
+<A NAME="1100"></A></FONT>        WriteXMLToFileThread writeThread = <FONT ID="New">new</FONT> WriteXMLToFileThread(document, file);
+<A NAME="1101"></A>        <FONT ID="SingleLineComment">// Startet den Thread
+<A NAME="1102"></A></FONT>        writeThread.start();
+<A NAME="1103"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="1104"></A>            <FONT ID="SingleLineComment">// Wartet bis der Thread beendet ist.
+<A NAME="1105"></A></FONT>            writeThread.join();
+<A NAME="1106"></A>        } <FONT ID="Catch">catch</FONT> (InterruptedException e) {
+<A NAME="1107"></A>            log.error(<FONT ID="StringLiteral">"writeXMLToFile::InterruptedException: "</FONT> + e);
+<A NAME="1108"></A>        }
+<A NAME="1109"></A>    }
+<A NAME="1110"></A>    
+<A NAME="1111"></A>    
+<A NAME="1112"></A>    <FONT ID="FormalComment">/**
+<A NAME="1113"></A>     * Copy a file from source to destination. Waits until the operating system
+<A NAME="1114"></A>     * has written the file.
+<A NAME="1115"></A>     *
+<A NAME="1116"></A>     * @param source the source file.
+<A NAME="1117"></A>     * @param destination the destination file.
+<A NAME="1118"></A>     */</FONT>
+<A NAME="1119"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> copyFile(File source, File destination) {
+<A NAME="1120"></A>        FileInputStream     fis  = <FONT ID="Null">null</FONT>;
+<A NAME="1121"></A>        FileOutputStream    fos = <FONT ID="Null">null</FONT>;
+<A NAME="1122"></A>        FileDescriptor      fd = <FONT ID="Null">null</FONT>;
+<A NAME="1123"></A>        
+<A NAME="1124"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="1125"></A>            fis  = <FONT ID="New">new</FONT> FileInputStream(source);
+<A NAME="1126"></A>            fos = <FONT ID="New">new</FONT> FileOutputStream(destination);
+<A NAME="1127"></A>            fd = fos.getFD();
+<A NAME="1128"></A>            
+<A NAME="1129"></A>            <FONT ID="Byte">byte</FONT>[] buf = <FONT ID="New">new</FONT> <FONT ID="Byte">byte</FONT>[<FONT ID="IntegerLiteral">1024</FONT>];
+<A NAME="1130"></A>            <FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="1131"></A>            <FONT ID="While">while</FONT>((i=fis.read(buf))!=-<FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="1132"></A>                fos.write(buf, <FONT ID="IntegerLiteral">0</FONT>, i);
+<A NAME="1133"></A>                
+<A NAME="1134"></A>                <FONT ID="SingleLineComment">// Flush the data from the streams and writers into system buffers.
+<A NAME="1135"></A></FONT>                <FONT ID="SingleLineComment">// The data may or may not be written to disk.
+<A NAME="1136"></A></FONT>                fos.flush();
+<A NAME="1137"></A>                
+<A NAME="1138"></A>                <FONT ID="SingleLineComment">// Block until the system buffers have been written to disk.
+<A NAME="1139"></A></FONT>                <FONT ID="SingleLineComment">// After this method returns, the data is guaranteed to have
+<A NAME="1140"></A></FONT>                <FONT ID="SingleLineComment">// been written to disk.
+<A NAME="1141"></A></FONT>                fd.sync();
+<A NAME="1142"></A>            }
+<A NAME="1143"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="1144"></A>            log.error(<FONT ID="StringLiteral">"copyFile::IOException: "</FONT> + e);
+<A NAME="1145"></A>        } <FONT ID="Finally">finally</FONT> {
+<A NAME="1146"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="1147"></A>                fis.close();
+<A NAME="1148"></A>            } <FONT ID="Catch">catch</FONT> (Exception e) {}
+<A NAME="1149"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="1150"></A>                fos.close();
+<A NAME="1151"></A>            } <FONT ID="Catch">catch</FONT> (Exception e) {}
+<A NAME="1152"></A>        }
+<A NAME="1153"></A>    }
+<A NAME="1154"></A>    
+<A NAME="1155"></A>    
+<A NAME="1156"></A>    <FONT ID="FormalComment">/**
+<A NAME="1157"></A>     * Copy a file from a resource to destination. Waits until the operating system
+<A NAME="1158"></A>     * has written the file. Use xxxx.class.getResourceAsStream(String name)
+<A NAME="1159"></A>     * to access the resource file.
+<A NAME="1160"></A>     *
+<A NAME="1161"></A>     * @param is the stream of the source file.
+<A NAME="1162"></A>     * @param destination the destination file.
+<A NAME="1163"></A>     */</FONT>
+<A NAME="1164"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> copyFileFromResource(InputStream is, File destination) {
+<A NAME="1165"></A>        FileOutputStream    fos = <FONT ID="Null">null</FONT>;
+<A NAME="1166"></A>        FileDescriptor      fd = <FONT ID="Null">null</FONT>;
+<A NAME="1167"></A>        
+<A NAME="1168"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="1169"></A>            fos = <FONT ID="New">new</FONT> FileOutputStream(destination);
+<A NAME="1170"></A>            fd = fos.getFD();
+<A NAME="1171"></A>            
+<A NAME="1172"></A>            <FONT ID="Byte">byte</FONT>[] buf = <FONT ID="New">new</FONT> <FONT ID="Byte">byte</FONT>[<FONT ID="IntegerLiteral">1024</FONT>];
+<A NAME="1173"></A>            <FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="1174"></A>            <FONT ID="While">while</FONT>((i=is.read(buf))!=-<FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="1175"></A>                fos.write(buf, <FONT ID="IntegerLiteral">0</FONT>, i);
+<A NAME="1176"></A>            }
+<A NAME="1177"></A>            
+<A NAME="1178"></A>            <FONT ID="SingleLineComment">// Flush the data from the streams and writers into system buffers.
+<A NAME="1179"></A></FONT>            <FONT ID="SingleLineComment">// The data may or may not be written to disk.
+<A NAME="1180"></A></FONT>            fos.flush();
+<A NAME="1181"></A>            
+<A NAME="1182"></A>            <FONT ID="SingleLineComment">// Block until the system buffers have been written to disk.
+<A NAME="1183"></A></FONT>            <FONT ID="SingleLineComment">// After this method returns, the data is guaranteed to have
+<A NAME="1184"></A></FONT>            <FONT ID="SingleLineComment">// been written to disk.
+<A NAME="1185"></A></FONT>            fd.sync();
+<A NAME="1186"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="1187"></A>            log.error(<FONT ID="StringLiteral">"copyFile::IOException: "</FONT> + e);
+<A NAME="1188"></A>        } <FONT ID="Finally">finally</FONT> {
+<A NAME="1189"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="1190"></A>                fos.close();
+<A NAME="1191"></A>            } <FONT ID="Catch">catch</FONT> (Exception e) {}
+<A NAME="1192"></A>        }
+<A NAME="1193"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="1194"></A>            is.close();
+<A NAME="1195"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {}
+<A NAME="1196"></A>    }
+<A NAME="1197"></A>    
+<A NAME="1198"></A>    
+<A NAME="1199"></A>    <FONT ID="FormalComment">/**
+<A NAME="1200"></A>     * Only for Junit Test to access member class.
+<A NAME="1201"></A>     */</FONT>
+<A NAME="1202"></A>    <FONT ID="Protected">protected</FONT> HTMLTable newInstanceOfHTMLTable(Document document, String idAttrValue) {
+<A NAME="1203"></A>        <FONT ID="Return">return</FONT> <FONT ID="New">new</FONT> HTMLTable(document, idAttrValue);
+<A NAME="1204"></A>    }
+<A NAME="1205"></A>    
+<A NAME="1206"></A>    
+<A NAME="1207"></A>    <FONT ID="FormalComment">/**
+<A NAME="1208"></A>     * Only for Junit Test to access member class.
+<A NAME="1209"></A>     */</FONT>
+<A NAME="1210"></A>    <FONT ID="Protected">protected</FONT> HTMLTableRow newInstanceOfHTMLTableRow(Document document, String[] columnValues, String idAttrValue, String titleAttrValue, String link) {
+<A NAME="1211"></A>        <FONT ID="Return">return</FONT> <FONT ID="New">new</FONT> HTMLTableRow(document, columnValues, idAttrValue, titleAttrValue, link);
+<A NAME="1212"></A>    }
+<A NAME="1213"></A>    
+<A NAME="1214"></A>    
+<A NAME="1215"></A>    <FONT ID="FormalComment">/**
+<A NAME="1216"></A>     * Only for Junit Test to access member class.
+<A NAME="1217"></A>     */</FONT>
+<A NAME="1218"></A>    <FONT ID="Protected">protected</FONT> HTMLTableRow newInstanceOfHTMLTableRow(Document document, Element row) {
+<A NAME="1219"></A>        <FONT ID="Return">return</FONT> <FONT ID="New">new</FONT> HTMLTableRow(document, row);
+<A NAME="1220"></A>    }
+<A NAME="1221"></A>    
+<A NAME="1222"></A>    
+<A NAME="1223"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Member Classes &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="1224"></A></FONT>    
+<A NAME="1225"></A>    
+<A NAME="1226"></A>    <FONT ID="FormalComment">/**
+<A NAME="1227"></A>     * This class implements a thread to read a DOM document from a stream. This
+<A NAME="1228"></A>     * is neccessary because the DocumentBuilderFactory is not thread save (see Javadoc).
+<A NAME="1229"></A>     */</FONT>
+<A NAME="1230"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Class">class</FONT> ReadXMLFromStreamThread <FONT ID="Extends">extends</FONT> Thread {
+<A NAME="1231"></A>        
+<A NAME="1232"></A>        <FONT ID="FormalComment">/** The input stream */</FONT>
+<A NAME="1233"></A>        InputStream in;
+<A NAME="1234"></A>        
+<A NAME="1235"></A>        <FONT ID="FormalComment">/** The read document */</FONT>
+<A NAME="1236"></A>        Document document = <FONT ID="Null">null</FONT>;
+<A NAME="1237"></A>        
+<A NAME="1238"></A>        
+<A NAME="1239"></A>        <FONT ID="FormalComment">/**
+<A NAME="1240"></A>         * The constructor only stores the parameters into local fields for
+<A NAME="1241"></A>         * further processing by the "run" method.
+<A NAME="1242"></A>         * @param in the input stream.
+<A NAME="1243"></A>         */</FONT>
+<A NAME="1244"></A>        <FONT ID="Protected">protected</FONT> ReadXMLFromStreamThread(InputStream in) {
+<A NAME="1245"></A>            <FONT ID="This">this</FONT>.in = in;
+<A NAME="1246"></A>        }
+<A NAME="1247"></A>        
+<A NAME="1248"></A>        <FONT ID="FormalComment">/**
+<A NAME="1249"></A>         * The entry point of the thread.
+<A NAME="1250"></A>         */</FONT>
+<A NAME="1251"></A>        <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> run() {
+<A NAME="1252"></A>            <FONT ID="SingleLineComment">// Create a factory
+<A NAME="1253"></A></FONT>            DocumentBuilderFactory factory = DocumentBuilderFactory.newInstance();
+<A NAME="1254"></A>            
+<A NAME="1255"></A>            <FONT ID="SingleLineComment">// Ignore comments
+<A NAME="1256"></A></FONT>            factory.setIgnoringComments(<FONT ID="False">false</FONT>);
+<A NAME="1257"></A>            <FONT ID="SingleLineComment">// Convert CDATA to Text nodes
+<A NAME="1258"></A></FONT>            factory.setCoalescing(<FONT ID="True">true</FONT>);
+<A NAME="1259"></A>            <FONT ID="SingleLineComment">// No Namespace
+<A NAME="1260"></A></FONT>            factory.setNamespaceAware(<FONT ID="False">false</FONT>);
+<A NAME="1261"></A>            <FONT ID="SingleLineComment">// Don't validate DTD
+<A NAME="1262"></A></FONT>            factory.setValidating(<FONT ID="False">false</FONT>);
+<A NAME="1263"></A>            <FONT ID="Try">try</FONT>{
+<A NAME="1264"></A>                <FONT ID="SingleLineComment">// Create parser
+<A NAME="1265"></A></FONT>                DocumentBuilder parser = factory.newDocumentBuilder();
+<A NAME="1266"></A>                <FONT ID="SingleLineComment">// Parse the file to document
+<A NAME="1267"></A></FONT>                document = parser.parse(in);
+<A NAME="1268"></A>            } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="1269"></A>                log.error(<FONT ID="StringLiteral">"readFromFile::IOException: "</FONT> + e);
+<A NAME="1270"></A>            } <FONT ID="Catch">catch</FONT> (ParserConfigurationException e) {
+<A NAME="1271"></A>                log.error(<FONT ID="StringLiteral">"readFromFile::ParserConfigurationException: "</FONT> + e);
+<A NAME="1272"></A>            } <FONT ID="Catch">catch</FONT> (SAXException e) {
+<A NAME="1273"></A>                log.error(<FONT ID="StringLiteral">"readFromFile::SAXException: "</FONT> + e);
+<A NAME="1274"></A>            }
+<A NAME="1275"></A>        }
+<A NAME="1276"></A>    }
+<A NAME="1277"></A>    
+<A NAME="1278"></A>    <FONT ID="FormalComment">/**
+<A NAME="1279"></A>     * This class implements a thread to write a DOM document to a file. This
+<A NAME="1280"></A>     * is neccessary because the Transformer is not thread save (see Javadoc).
+<A NAME="1281"></A>     */</FONT>
+<A NAME="1282"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Class">class</FONT> WriteXMLToFileThread <FONT ID="Extends">extends</FONT> Thread {
+<A NAME="1283"></A>        
+<A NAME="1284"></A>        <FONT ID="FormalComment">/** The document to write */</FONT>
+<A NAME="1285"></A>        Document    document;
+<A NAME="1286"></A>        
+<A NAME="1287"></A>        <FONT ID="FormalComment">/** The destination file */</FONT>
+<A NAME="1288"></A>        File        file;
+<A NAME="1289"></A>        
+<A NAME="1290"></A>        <FONT ID="FormalComment">/**
+<A NAME="1291"></A>         * The constructor only stores the parameters into local fields for
+<A NAME="1292"></A>         * further processing by the "run" method.
+<A NAME="1293"></A>         * @param document the document to write.
+<A NAME="1294"></A>         * @param file the destination file.
+<A NAME="1295"></A>         */</FONT>
+<A NAME="1296"></A>        <FONT ID="Protected">protected</FONT> WriteXMLToFileThread(Document document, File file) {
+<A NAME="1297"></A>            <FONT ID="This">this</FONT>.document = document;
+<A NAME="1298"></A>            <FONT ID="This">this</FONT>.file = file;
+<A NAME="1299"></A>        }
+<A NAME="1300"></A>        
+<A NAME="1301"></A>        <FONT ID="FormalComment">/**
+<A NAME="1302"></A>         * The entry point of the thread. The thread waits until the operating
+<A NAME="1303"></A>         * system has written the data to the destination file.&lt;br&gt;
+<A NAME="1304"></A>         * &lt;br&gt;
+<A NAME="1305"></A>         * To be strict XHTML konform the file should include the following
+<A NAME="1306"></A>         * document type definition after the &lt;?xml /&gt; line.&lt;br&gt;
+<A NAME="1307"></A>         * &lt;!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"&gt; &lt;br&gt;
+<A NAME="1308"></A>         * The problem is, that the parser tries to download the given DTD. It
+<A NAME="1309"></A>         * waits a time out period until it gives up. This time period delays
+<A NAME="1310"></A>         * the execution of the plugin (4 up to 30 seconds).
+<A NAME="1311"></A>         * Therefore the doctype definion is ommitted in this version.
+<A NAME="1312"></A>         */</FONT>
+<A NAME="1313"></A>        <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> run() {
+<A NAME="1314"></A>            Source              source = <FONT ID="Null">null</FONT>;
+<A NAME="1315"></A>            Result              result = <FONT ID="Null">null</FONT>;
+<A NAME="1316"></A>            FileOutputStream    os = <FONT ID="Null">null</FONT>;
+<A NAME="1317"></A>            FileDescriptor      fd = <FONT ID="Null">null</FONT>;
+<A NAME="1318"></A>            
+<A NAME="1319"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="1320"></A>                <FONT ID="SingleLineComment">// Prepare the DOM document for writing
+<A NAME="1321"></A></FONT>                source = <FONT ID="New">new</FONT> DOMSource(document);
+<A NAME="1322"></A>                <FONT ID="SingleLineComment">//Prepare the output file
+<A NAME="1323"></A></FONT>                os = <FONT ID="New">new</FONT> FileOutputStream(file);
+<A NAME="1324"></A>                fd = os.getFD();
+<A NAME="1325"></A>                result = <FONT ID="New">new</FONT> StreamResult(os);
+<A NAME="1326"></A>                <FONT ID="SingleLineComment">//Write DOM document to file
+<A NAME="1327"></A></FONT>                Transformer xformer = TransformerFactory.newInstance().newTransformer();
+<A NAME="1328"></A>                <FONT ID="SingleLineComment">// Wird method="html" gewaehlt, dann fuegt der Transformer den Tag
+<A NAME="1329"></A></FONT>                <FONT ID="SingleLineComment">// &lt;META http-equiv="Content-Type" content="text/html; charset=UTF-8"&gt;
+<A NAME="1330"></A></FONT>                <FONT ID="SingleLineComment">// zwischen &lt;head&gt; und &lt;/head&gt; ein. Dieser Tag ist nicht XML konform
+<A NAME="1331"></A></FONT>                <FONT ID="SingleLineComment">// (es fehlt &lt;/META&gt; und er ist in Grossbuchstabengeschrieben) und
+<A NAME="1332"></A></FONT>                <FONT ID="SingleLineComment">// fuehrt beim erneuten Einlesen zu einer SAX Exception.
+<A NAME="1333"></A></FONT>                xformer.setOutputProperty(OutputKeys.METHOD, <FONT ID="StringLiteral">"xml"</FONT>);
+<A NAME="1334"></A>                <FONT ID="SingleLineComment">// xformer.setOutputProperty(OutputKeys.DOCTYPE_PUBLIC, "-//W3C//DTD XHTML 1.0 Strict//EN");
+<A NAME="1335"></A></FONT>                <FONT ID="SingleLineComment">// xformer.setOutputProperty(OutputKeys.DOCTYPE_SYSTEM, "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd");
+<A NAME="1336"></A></FONT>                xformer.transform(source, result);
+<A NAME="1337"></A>                
+<A NAME="1338"></A>                <FONT ID="SingleLineComment">// Flush the data from the streams and writers into system buffers.
+<A NAME="1339"></A></FONT>                <FONT ID="SingleLineComment">// The data may or may not be written to disk.
+<A NAME="1340"></A></FONT>                os.flush();
+<A NAME="1341"></A>                
+<A NAME="1342"></A>                <FONT ID="SingleLineComment">// Block until the system buffers have been written to disk.
+<A NAME="1343"></A></FONT>                <FONT ID="SingleLineComment">// After this method returns, the data is guaranteed to have
+<A NAME="1344"></A></FONT>                <FONT ID="SingleLineComment">// been written to disk.
+<A NAME="1345"></A></FONT>                fd.sync();
+<A NAME="1346"></A>            } <FONT ID="Catch">catch</FONT> (SyncFailedException e){
+<A NAME="1347"></A>                log.error(<FONT ID="StringLiteral">"writeXMLToFileThread::SyncFailedException: "</FONT> + e);
+<A NAME="1348"></A>            } <FONT ID="Catch">catch</FONT> (FileNotFoundException e){
+<A NAME="1349"></A>                log.error(<FONT ID="StringLiteral">"writeXMLToFileThread::FileNotFoundException: "</FONT> + e);
+<A NAME="1350"></A>            } <FONT ID="Catch">catch</FONT> (IOException e){
+<A NAME="1351"></A>                log.error(<FONT ID="StringLiteral">"writeXMLToFileThread::IOException: "</FONT> + e);
+<A NAME="1352"></A>            } <FONT ID="Catch">catch</FONT> (TransformerConfigurationException e){
+<A NAME="1353"></A>                log.error(<FONT ID="StringLiteral">"writeXMLToFileThread::TransformerConfigurationException: "</FONT> + e);
+<A NAME="1354"></A>            } <FONT ID="Catch">catch</FONT> (TransformerException e) {
+<A NAME="1355"></A>                log.error(<FONT ID="StringLiteral">"writeXMLToFileThread::TransformerException: "</FONT> + e);
+<A NAME="1356"></A>            } <FONT ID="Finally">finally</FONT> {
+<A NAME="1357"></A>                <FONT ID="Try">try</FONT> {
+<A NAME="1358"></A>                    os.close();
+<A NAME="1359"></A>                } <FONT ID="Catch">catch</FONT> (Exception e) {}
+<A NAME="1360"></A>            }
+<A NAME="1361"></A>        }
+<A NAME="1362"></A>    }
+<A NAME="1363"></A>    
+<A NAME="1364"></A>    
+<A NAME="1365"></A>    <FONT ID="FormalComment">/**
+<A NAME="1366"></A>     * The objects of this class represent a HTML table. The objects support
+<A NAME="1367"></A>     * appending new rows and sorting the rows depending of the row attribute
+<A NAME="1368"></A>     * "title".
+<A NAME="1369"></A>     *
+<A NAME="1370"></A>     * &lt;br&gt;
+<A NAME="1371"></A>     * This class uses the inner class TableRowsComparator.
+<A NAME="1372"></A>     */</FONT>
+<A NAME="1373"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Class">class</FONT> HTMLTable {
+<A NAME="1374"></A>        
+<A NAME="1375"></A>        <FONT ID="FormalComment">/** The DOM table Element. null if no Element is defined.  */</FONT>
+<A NAME="1376"></A>        Element tableElement = <FONT ID="Null">null</FONT>;
+<A NAME="1377"></A>        
+<A NAME="1378"></A>        <FONT ID="FormalComment">/** Vector of HTMLTableRow objects building the tableElement. */</FONT>
+<A NAME="1379"></A>        <FONT ID="Protected">protected</FONT> Vector tableRows = <FONT ID="Null">null</FONT>;
+<A NAME="1380"></A>        
+<A NAME="1381"></A>        
+<A NAME="1382"></A>        <FONT ID="FormalComment">/**
+<A NAME="1383"></A>         * Select a table of a document with a given value of the attribute "iD"
+<A NAME="1384"></A>         * as the base of this object.
+<A NAME="1385"></A>         *
+<A NAME="1386"></A>         * @param document the DOM Document containing the table.
+<A NAME="1387"></A>         * @param idAttrValue the value of the "id" attribute used to select one
+<A NAME="1388"></A>         *        table in the documen.
+<A NAME="1389"></A>         */</FONT>
+<A NAME="1390"></A>        <FONT ID="Protected">protected</FONT> HTMLTable(Document document, String idAttrValue) {
+<A NAME="1391"></A>            NodeList    tableNodes = <FONT ID="Null">null</FONT>;
+<A NAME="1392"></A>            NodeList    trNodes = <FONT ID="Null">null</FONT>;
+<A NAME="1393"></A>            Element     elm;
+<A NAME="1394"></A>            String      attrValue;
+<A NAME="1395"></A>            Attr        attr;
+<A NAME="1396"></A>            
+<A NAME="1397"></A>            <FONT ID="SingleLineComment">// Beide Parameter muessen definiert sein
+<A NAME="1398"></A></FONT>            <FONT ID="If">if</FONT> ((document == <FONT ID="Null">null</FONT>) || (idAttrValue == <FONT ID="Null">null</FONT>)) <FONT ID="Return">return</FONT>;
+<A NAME="1399"></A>            
+<A NAME="1400"></A>            <FONT ID="SingleLineComment">// "table" Elemente finden
+<A NAME="1401"></A></FONT>            tableNodes = document.getElementsByTagName(<FONT ID="StringLiteral">"table"</FONT>);
+<A NAME="1402"></A>            
+<A NAME="1403"></A>            <FONT ID="SingleLineComment">// Return, wenn keine "table" Elemente gefunden
+<A NAME="1404"></A></FONT>            <FONT ID="If">if</FONT> (tableNodes == <FONT ID="Null">null</FONT>) <FONT ID="Return">return</FONT>;
+<A NAME="1405"></A>            
+<A NAME="1406"></A>            <FONT ID="SingleLineComment">// Alle Tabellen durchgehen
+<A NAME="1407"></A></FONT>            <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; tableNodes.getLength(); i++) {
+<A NAME="1408"></A>                elm = (Element) tableNodes.item(i);
+<A NAME="1409"></A>                attr = elm.getAttributeNode(<FONT ID="StringLiteral">"id"</FONT>);
+<A NAME="1410"></A>                <FONT ID="If">if</FONT> (attr != <FONT ID="Null">null</FONT>){
+<A NAME="1411"></A>                    <FONT ID="SingleLineComment">// Tabelle hat Attribut "id"
+<A NAME="1412"></A></FONT>                    <FONT ID="If">if</FONT> (attr.getValue().equals(idAttrValue)) {
+<A NAME="1413"></A>                        <FONT ID="SingleLineComment">// Tabelle hat den gwuenschten Wert für das Attribut "id"
+<A NAME="1414"></A></FONT>                        tableElement = elm;
+<A NAME="1415"></A>                    }
+<A NAME="1416"></A>                }
+<A NAME="1417"></A>            }
+<A NAME="1418"></A>            
+<A NAME="1419"></A>            <FONT ID="SingleLineComment">// Return, wenn keine Tabelle mit korrektem Attribut "id" gefunden
+<A NAME="1420"></A></FONT>            <FONT ID="If">if</FONT> (tableElement == <FONT ID="Null">null</FONT>) <FONT ID="Return">return</FONT>;
+<A NAME="1421"></A>            
+<A NAME="1422"></A>            <FONT ID="SingleLineComment">// Vector fuer Zeilen anlegen
+<A NAME="1423"></A></FONT>            tableRows = <FONT ID="New">new</FONT> Vector();
+<A NAME="1424"></A>            
+<A NAME="1425"></A>            <FONT ID="SingleLineComment">// "tr" Elemente finden
+<A NAME="1426"></A></FONT>            trNodes = tableElement.getElementsByTagName(<FONT ID="StringLiteral">"tr"</FONT>);
+<A NAME="1427"></A>            
+<A NAME="1428"></A>            <FONT ID="SingleLineComment">// Return, wenn keine "tr" Elemente gefunden
+<A NAME="1429"></A></FONT>            <FONT ID="If">if</FONT> (trNodes == <FONT ID="Null">null</FONT>) <FONT ID="Return">return</FONT>;
+<A NAME="1430"></A>            
+<A NAME="1431"></A>            <FONT ID="SingleLineComment">// Return, wenn 0 "tr" Elemente gefunden
+<A NAME="1432"></A></FONT>            <FONT ID="If">if</FONT> (trNodes.getLength() == <FONT ID="IntegerLiteral">0</FONT>) <FONT ID="Return">return</FONT>;
+<A NAME="1433"></A>            
+<A NAME="1434"></A>            <FONT ID="SingleLineComment">// Fuer jedes "tr" Element ein HTMLTableRow Objekt erzeugen
+<A NAME="1435"></A></FONT>            <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; trNodes.getLength(); i++) {
+<A NAME="1436"></A>                tableRows.add(<FONT ID="New">new</FONT> HTMLTableRow(document, (Element) trNodes.item(i)));
+<A NAME="1437"></A>            }
+<A NAME="1438"></A>        }
+<A NAME="1439"></A>        
+<A NAME="1440"></A>        
+<A NAME="1441"></A>        <FONT ID="FormalComment">/**
+<A NAME="1442"></A>         * Checks, if the table represented by this object contains a row with
+<A NAME="1443"></A>         * a given value of the attribute "id".
+<A NAME="1444"></A>         *
+<A NAME="1445"></A>         * return true, if the table contains the row.
+<A NAME="1446"></A>         */</FONT>
+<A NAME="1447"></A>        <FONT ID="Protected">protected</FONT> <FONT ID="Boolean">boolean</FONT> contains(String value) {
+<A NAME="1448"></A>            <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; tableRows.size(); i++) {
+<A NAME="1449"></A>                <FONT ID="If">if</FONT> (((HTMLTableRow) tableRows.get(i)).idAttrValue.equals(value)) {
+<A NAME="1450"></A>                    <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="1451"></A>                }
+<A NAME="1452"></A>            }
+<A NAME="1453"></A>            
+<A NAME="1454"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="1455"></A>        }
+<A NAME="1456"></A>        
+<A NAME="1457"></A>        
+<A NAME="1458"></A>        <FONT ID="FormalComment">/**
+<A NAME="1459"></A>         * Appends a HTMLTableRow element to the end of the Vector containing all
+<A NAME="1460"></A>         * rows of the table represented by this object.
+<A NAME="1461"></A>         *
+<A NAME="1462"></A>         * @param tableRow the HTMLTableRow to append.
+<A NAME="1463"></A>         */</FONT>
+<A NAME="1464"></A>        <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> append(HTMLTableRow tableRow) {
+<A NAME="1465"></A>            <FONT ID="SingleLineComment">// Neue Zeile zum Vector hinzufuegen
+<A NAME="1466"></A></FONT>            tableRows.add(tableRow);
+<A NAME="1467"></A>            update();
+<A NAME="1468"></A>        }
+<A NAME="1469"></A>        
+<A NAME="1470"></A>        
+<A NAME="1471"></A>        <FONT ID="FormalComment">/**
+<A NAME="1472"></A>         * Sorts the Vector containing all rows of the table according to the
+<A NAME="1473"></A>         * value of the "title" attribute.
+<A NAME="1474"></A>         */</FONT>
+<A NAME="1475"></A>        <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> sort() {
+<A NAME="1476"></A>            Collections.sort(tableRows, <FONT ID="New">new</FONT> TableRowsComparator());
+<A NAME="1477"></A>            update();
+<A NAME="1478"></A>        }
+<A NAME="1479"></A>        
+<A NAME="1480"></A>        
+<A NAME="1481"></A>        <FONT ID="FormalComment">/**
+<A NAME="1482"></A>         * Rebuilds the DOM table element from the Vector containg the HTMLTableRow
+<A NAME="1483"></A>         * objects.
+<A NAME="1484"></A>         */</FONT>
+<A NAME="1485"></A>        <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> update() {
+<A NAME="1486"></A>            <FONT ID="SingleLineComment">// Alle Zeilen aus Tabelle löschen
+<A NAME="1487"></A></FONT>            <FONT ID="While">while</FONT> (tableElement.hasChildNodes()) {
+<A NAME="1488"></A>                tableElement.removeChild(tableElement.getLastChild());
+<A NAME="1489"></A>            }
+<A NAME="1490"></A>            
+<A NAME="1491"></A>            <FONT ID="SingleLineComment">// Neue Zeilen aus Vector eintragen
+<A NAME="1492"></A></FONT>            <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; tableRows.size(); i++) {
+<A NAME="1493"></A>                tableElement.appendChild(((HTMLTableRow) tableRows.get(i)).trElement);
+<A NAME="1494"></A>            }
+<A NAME="1495"></A>        }
+<A NAME="1496"></A>        
+<A NAME="1497"></A>        
+<A NAME="1498"></A>        <FONT ID="FormalComment">/**
+<A NAME="1499"></A>         * This class contains the sorting algorithm for the method sort.
+<A NAME="1500"></A>         */</FONT>
+<A NAME="1501"></A>        <FONT ID="Protected">protected</FONT> <FONT ID="Class">class</FONT> TableRowsComparator <FONT ID="Implements">implements</FONT> Comparator {
+<A NAME="1502"></A>            
+<A NAME="1503"></A>            <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> compare(Object o1, Object o2) {
+<A NAME="1504"></A>                String s1 = ((HTMLTableRow) o1).titleAttrValue;
+<A NAME="1505"></A>                String s2 = ((HTMLTableRow) o2).titleAttrValue;
+<A NAME="1506"></A>                
+<A NAME="1507"></A>                <FONT ID="Return">return</FONT> s1.compareTo(s2);
+<A NAME="1508"></A>            }
+<A NAME="1509"></A>        }
+<A NAME="1510"></A>    }
+<A NAME="1511"></A>    
+<A NAME="1512"></A>    
+<A NAME="1513"></A>    <FONT ID="FormalComment">/**
+<A NAME="1514"></A>     * This class implements an object containing a DOM table row element. It
+<A NAME="1515"></A>     * also has fields for the values of the attributes "id" and "title".
+<A NAME="1516"></A>     * The "title" attribute is used for soring the table rows. The "id" values
+<A NAME="1517"></A>     * is used as a distinct identification of the rows.
+<A NAME="1518"></A>     */</FONT>
+<A NAME="1519"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Class">class</FONT> HTMLTableRow {
+<A NAME="1520"></A>        
+<A NAME="1521"></A>        <FONT ID="FormalComment">/** The DOM table row Element. null if no Element is defined. */</FONT>
+<A NAME="1522"></A>        Element trElement = <FONT ID="Null">null</FONT>;
+<A NAME="1523"></A>        
+<A NAME="1524"></A>        <FONT ID="FormalComment">/** Value of the "id" attribute */</FONT>
+<A NAME="1525"></A>        String idAttrValue = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="1526"></A>        
+<A NAME="1527"></A>        <FONT ID="FormalComment">/** Value of the "title" attribute */</FONT>
+<A NAME="1528"></A>        String titleAttrValue = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="1529"></A>        
+<A NAME="1530"></A>        
+<A NAME="1531"></A>        <FONT ID="FormalComment">/**
+<A NAME="1532"></A>         * Use the default values for the fields.
+<A NAME="1533"></A>         */</FONT>
+<A NAME="1534"></A>        <FONT ID="Protected">protected</FONT> HTMLTableRow() {
+<A NAME="1535"></A>            <FONT ID="SingleLineComment">// Defaultwerte der fields
+<A NAME="1536"></A></FONT>        }
+<A NAME="1537"></A>        
+<A NAME="1538"></A>        
+<A NAME="1539"></A>        <FONT ID="FormalComment">/**
+<A NAME="1540"></A>         * Construct a new object from the given parameters.
+<A NAME="1541"></A>         *
+<A NAME="1542"></A>         * @param document the DOM Document containing the table to which the rows
+<A NAME="1543"></A>         *                 belong.
+<A NAME="1544"></A>         * @param columnValues the array of strings containing the contents of the
+<A NAME="1545"></A>         *                     columns of the row.
+<A NAME="1546"></A>         * @param idAttrValue the value of the "id" attribute.
+<A NAME="1547"></A>         * @param titleAttrValue the value of the "title" attribute.
+<A NAME="1548"></A>         * @param link an optional link to a HTML file, which should be associated
+<A NAME="1549"></A>         *             to the value of the last column. null, if no link should be
+<A NAME="1550"></A>         *             associated.
+<A NAME="1551"></A>         */</FONT>
+<A NAME="1552"></A>        <FONT ID="Protected">protected</FONT> HTMLTableRow(Document document, String[] columnValues, String idAttrValue, String titleAttrValue, String link) {
+<A NAME="1553"></A>            Element tdElement;
+<A NAME="1554"></A>            Element aElement;
+<A NAME="1555"></A>            Text    textNode;
+<A NAME="1556"></A>            
+<A NAME="1557"></A>            <FONT ID="SingleLineComment">// Lokale Variablen besetzen
+<A NAME="1558"></A></FONT>            <FONT ID="If">if</FONT> (idAttrValue != <FONT ID="Null">null</FONT>) {
+<A NAME="1559"></A>                <FONT ID="This">this</FONT>.idAttrValue = idAttrValue;
+<A NAME="1560"></A>            }
+<A NAME="1561"></A>            <FONT ID="If">if</FONT> (titleAttrValue != <FONT ID="Null">null</FONT>) {
+<A NAME="1562"></A>                <FONT ID="This">this</FONT>.titleAttrValue = titleAttrValue;
+<A NAME="1563"></A>            }
+<A NAME="1564"></A>            
+<A NAME="1565"></A>            <FONT ID="SingleLineComment">// tr Knoten erzeugen
+<A NAME="1566"></A></FONT>            trElement = document.createElement(<FONT ID="StringLiteral">"tr"</FONT>);
+<A NAME="1567"></A>            trElement.setAttribute(<FONT ID="StringLiteral">"id"</FONT>, <FONT ID="This">this</FONT>.idAttrValue);
+<A NAME="1568"></A>            trElement.setAttribute(<FONT ID="StringLiteral">"title"</FONT>, <FONT ID="This">this</FONT>.titleAttrValue);
+<A NAME="1569"></A>            
+<A NAME="1570"></A>            <FONT ID="SingleLineComment">// Keine Spalten
+<A NAME="1571"></A></FONT>            <FONT ID="If">if</FONT> (columnValues == <FONT ID="Null">null</FONT>) <FONT ID="Return">return</FONT>;
+<A NAME="1572"></A>            <FONT ID="If">if</FONT> (columnValues.length == <FONT ID="IntegerLiteral">0</FONT>) <FONT ID="Return">return</FONT>;
+<A NAME="1573"></A>            
+<A NAME="1574"></A>            <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; columnValues.length; i++) {
+<A NAME="1575"></A>                tdElement = document.createElement(<FONT ID="StringLiteral">"td"</FONT>);
+<A NAME="1576"></A>                textNode = document.createTextNode(columnValues[i]);
+<A NAME="1577"></A>                <FONT ID="If">if</FONT> ((link != <FONT ID="Null">null</FONT>) &amp; (i == columnValues.length - <FONT ID="IntegerLiteral">1</FONT>)) {
+<A NAME="1578"></A>                    <FONT ID="SingleLineComment">// link Knoten erzeugen
+<A NAME="1579"></A></FONT>                    aElement = document.createElement(<FONT ID="StringLiteral">"a"</FONT>);
+<A NAME="1580"></A>                    aElement.setAttribute(<FONT ID="StringLiteral">"href"</FONT>, link);
+<A NAME="1581"></A>                    aElement.appendChild(textNode);
+<A NAME="1582"></A>                    tdElement.appendChild(aElement);
+<A NAME="1583"></A>                    trElement.appendChild(tdElement);
+<A NAME="1584"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="1585"></A>                    tdElement.appendChild(textNode);
+<A NAME="1586"></A>                    trElement.appendChild(tdElement);
+<A NAME="1587"></A>                }
+<A NAME="1588"></A>            }
+<A NAME="1589"></A>        }
+<A NAME="1590"></A>        
+<A NAME="1591"></A>        
+<A NAME="1592"></A>        <FONT ID="FormalComment">/**
+<A NAME="1593"></A>         * Construct a new object from the given parameters.
+<A NAME="1594"></A>         *
+<A NAME="1595"></A>         * @param document the DOM Document containing the table to which the rows
+<A NAME="1596"></A>         *                 belong.
+<A NAME="1597"></A>         * @param trElement the table row element of the document, which should be
+<A NAME="1598"></A>         *                  used as the base of this object.
+<A NAME="1599"></A>         */</FONT>
+<A NAME="1600"></A>        <FONT ID="Protected">protected</FONT> HTMLTableRow(Document document, Element trElement) {
+<A NAME="1601"></A>            NodeList    tdNodes = <FONT ID="Null">null</FONT>;
+<A NAME="1602"></A>            String      value;
+<A NAME="1603"></A>            
+<A NAME="1604"></A>            <FONT ID="If">if</FONT> (trElement == <FONT ID="Null">null</FONT>) <FONT ID="Return">return</FONT>;
+<A NAME="1605"></A>            
+<A NAME="1606"></A>            <FONT ID="SingleLineComment">// Das Element lokal speichern
+<A NAME="1607"></A></FONT>            <FONT ID="This">this</FONT>.trElement = trElement;
+<A NAME="1608"></A>            
+<A NAME="1609"></A>            <FONT ID="SingleLineComment">// Value des "id" Attributes holen
+<A NAME="1610"></A></FONT>            value = trElement.getAttribute(<FONT ID="StringLiteral">"id"</FONT>);
+<A NAME="1611"></A>            <FONT ID="If">if</FONT> (value != <FONT ID="Null">null</FONT>) {
+<A NAME="1612"></A>                idAttrValue = trElement.getAttribute(<FONT ID="StringLiteral">"id"</FONT>);
+<A NAME="1613"></A>            }
+<A NAME="1614"></A>            
+<A NAME="1615"></A>            <FONT ID="SingleLineComment">// Value des "title" Attributes holen
+<A NAME="1616"></A></FONT>            value = trElement.getAttribute(<FONT ID="StringLiteral">"title"</FONT>);
+<A NAME="1617"></A>            <FONT ID="If">if</FONT> (value != <FONT ID="Null">null</FONT>) {
+<A NAME="1618"></A>                titleAttrValue = trElement.getAttribute(<FONT ID="StringLiteral">"title"</FONT>);
+<A NAME="1619"></A>            }
+<A NAME="1620"></A>        }
+<A NAME="1621"></A>        
+<A NAME="1622"></A>        
+<A NAME="1623"></A>        <FONT ID="FormalComment">/**
+<A NAME="1624"></A>         * Construct a new object from the given parameters.
+<A NAME="1625"></A>         *
+<A NAME="1626"></A>         * @param document the DOM Document containing the table to which the rows
+<A NAME="1627"></A>         *                 belong.
+<A NAME="1628"></A>         * @param idAttrValue the value of the "id" attribute.
+<A NAME="1629"></A>         * @param titleAttrValue the value of the "title" attribute.
+<A NAME="1630"></A>         * @param instanceNumber the InstanceNumber of the image. It is the also
+<A NAME="1631"></A>         *                       the name of the JPG file (without the extension
+<A NAME="1632"></A>         *                       ".jpg" and the contents of the second column in the row.
+<A NAME="1633"></A>         */</FONT>
+<A NAME="1634"></A>        <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> setLinkToJPGImage(Document document, String idAttrValue, String titleAttrValue, String instanceNumber) {
+<A NAME="1635"></A>            Element tdElementLink;
+<A NAME="1636"></A>            Element tdElementName;
+<A NAME="1637"></A>            Element imgElement;
+<A NAME="1638"></A>            Text    textNode;
+<A NAME="1639"></A>            
+<A NAME="1640"></A>            <FONT ID="SingleLineComment">// Lokale Variablen besetzen
+<A NAME="1641"></A></FONT>            <FONT ID="If">if</FONT> (idAttrValue != <FONT ID="Null">null</FONT>) {
+<A NAME="1642"></A>                <FONT ID="This">this</FONT>.idAttrValue = idAttrValue;
+<A NAME="1643"></A>            }
+<A NAME="1644"></A>            <FONT ID="If">if</FONT> (titleAttrValue != <FONT ID="Null">null</FONT>) {
+<A NAME="1645"></A>                <FONT ID="This">this</FONT>.titleAttrValue = titleAttrValue;
+<A NAME="1646"></A>            }
+<A NAME="1647"></A>            
+<A NAME="1648"></A>            trElement = document.createElement(<FONT ID="StringLiteral">"tr"</FONT>);
+<A NAME="1649"></A>            trElement.setAttribute(<FONT ID="StringLiteral">"id"</FONT>, <FONT ID="This">this</FONT>.idAttrValue);
+<A NAME="1650"></A>            trElement.setAttribute(<FONT ID="StringLiteral">"title"</FONT>, <FONT ID="This">this</FONT>.titleAttrValue);
+<A NAME="1651"></A>            
+<A NAME="1652"></A>            tdElementLink = document.createElement(<FONT ID="StringLiteral">"td"</FONT>);
+<A NAME="1653"></A>            imgElement = document.createElement(<FONT ID="StringLiteral">"img"</FONT>);
+<A NAME="1654"></A>            imgElement.setAttribute(<FONT ID="StringLiteral">"src"</FONT>, instanceNumber + <FONT ID="StringLiteral">"."</FONT> + image_format);
+<A NAME="1655"></A>            tdElementLink.appendChild(imgElement);
+<A NAME="1656"></A>            
+<A NAME="1657"></A>            tdElementName = document.createElement(<FONT ID="StringLiteral">"td"</FONT>);
+<A NAME="1658"></A>            textNode = document.createTextNode(instanceNumber);
+<A NAME="1659"></A>            tdElementName.appendChild(textNode);
+<A NAME="1660"></A>            
+<A NAME="1661"></A>            trElement.appendChild(tdElementLink);
+<A NAME="1662"></A>            trElement.appendChild(tdElementName);
+<A NAME="1663"></A>        }
+<A NAME="1664"></A>        
+<A NAME="1665"></A>    }
+<A NAME="1666"></A>    
+<A NAME="1667"></A>}
+<A NAME="1668"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">PortableMediaCreatorPlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

@@ -1,0 +1,282 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>org.dcm4cheri.util.LF_ThreadPool (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">LF_ThreadPool</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/* ***** BEGIN LICENSE BLOCK *****
+<A NAME="2"></A> * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+<A NAME="3"></A> *
+<A NAME="4"></A> * The contents of this file are subject to the Mozilla Public License Version
+<A NAME="5"></A> * 1.1 (the "License"); you may not use this file except in compliance with
+<A NAME="6"></A> * the License. You may obtain a copy of the License at
+<A NAME="7"></A> * http://www.mozilla.org/MPL/
+<A NAME="8"></A> *
+<A NAME="9"></A> * Software distributed under the License is distributed on an "AS IS" basis,
+<A NAME="10"></A> * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+<A NAME="11"></A> * for the specific language governing rights and limitations under the
+<A NAME="12"></A> * License.
+<A NAME="13"></A> *
+<A NAME="14"></A> * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+<A NAME="15"></A> * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+<A NAME="16"></A> *
+<A NAME="17"></A> * The Initial Developer of the Original Code is
+<A NAME="18"></A> * TIANI Medgraph AG.
+<A NAME="19"></A> * Portions created by the Initial Developer are Copyright (C) 2002-2005
+<A NAME="20"></A> * the Initial Developer. All Rights Reserved.
+<A NAME="21"></A> *
+<A NAME="22"></A> * Contributor(s):
+<A NAME="23"></A> * Gunter Zeilinger &lt;gunter.zeilinger@tiani.com&gt;
+<A NAME="24"></A> *
+<A NAME="25"></A> * Alternatively, the contents of this file may be used under the terms of
+<A NAME="26"></A> * either the GNU General Public License Version 2 or later (the "GPL"), or
+<A NAME="27"></A> * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+<A NAME="28"></A> * in which case the provisions of the GPL or the LGPL are applicable instead
+<A NAME="29"></A> * of those above. If you wish to allow use of your version of this file only
+<A NAME="30"></A> * under the terms of either the GPL or the LGPL, and not to allow others to
+<A NAME="31"></A> * use your version of this file under the terms of the MPL, indicate your
+<A NAME="32"></A> * decision by deleting the provisions above and replace them with the notice
+<A NAME="33"></A> * and other provisions required by the GPL or the LGPL. If you do not delete
+<A NAME="34"></A> * the provisions above, a recipient may use your version of this file under
+<A NAME="35"></A> * the terms of any one of the MPL, the GPL or the LGPL.
+<A NAME="36"></A> *
+<A NAME="37"></A> * ***** END LICENSE BLOCK ***** */</FONT>
+<A NAME="38"></A>
+<A NAME="39"></A><FONT ID="Package">package</FONT> <A HREF="../../../org.dcm4cheri.util.index.html" target="packageFrame">org.dcm4cheri.util</A>;
+<A NAME="40"></A>
+<A NAME="41"></A><FONT ID="Import">import</FONT> org.apache.log4j.Logger;
+<A NAME="42"></A>
+<A NAME="43"></A><FONT ID="FormalComment">/**
+<A NAME="44"></A> * Leader/Follower Thread Pool 
+<A NAME="45"></A> *
+<A NAME="46"></A> * @see &lt;related&gt;
+<A NAME="47"></A> * @author  &lt;a href="mailto:gunter@tiani.com"&gt;gunter zeilinger&lt;/a&gt;
+<A NAME="48"></A> * @version $Revision: 1.8 $
+<A NAME="49"></A> *   
+<A NAME="50"></A> * &lt;p&gt;&lt;b&gt;Revisions:&lt;/b&gt;
+<A NAME="51"></A> *
+<A NAME="52"></A> * &lt;p&gt;&lt;b&gt;20020519 gunter zeilinger:&lt;/b&gt;
+<A NAME="53"></A> * &lt;ul&gt;
+<A NAME="54"></A> * &lt;li&gt; initial import 
+<A NAME="55"></A> * &lt;/ul&gt;
+<A NAME="56"></A> */</FONT>
+<A NAME="57"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> LF_ThreadPool
+<A NAME="58"></A>{
+<A NAME="59"></A>   <FONT ID="SingleLineComment">// Constants -----------------------------------------------------
+<A NAME="60"></A></FONT>   <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger log =
+<A NAME="61"></A>         Logger.getLogger(<A HREF="../../../org/dcm4cheri/util/LF_ThreadPool.java.html">LF_ThreadPool</A>.<FONT ID="Class">class</FONT>);
+<A NAME="62"></A>   
+<A NAME="63"></A>   <FONT ID="SingleLineComment">// Attributes ----------------------------------------------------
+<A NAME="64"></A></FONT>   <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> Handler handler;
+<A NAME="65"></A>   <FONT ID="Private">private</FONT> <FONT ID="Boolean">boolean</FONT> shutdown = <FONT ID="False">false</FONT>;
+<A NAME="66"></A>   <FONT ID="Private">private</FONT> Thread leader = <FONT ID="Null">null</FONT>;
+<A NAME="67"></A>   <FONT ID="Private">private</FONT> Object mutex = <FONT ID="New">new</FONT> Object();
+<A NAME="68"></A>   <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> waiting = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="69"></A>   <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> running = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="70"></A>   <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> maxRunning = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="71"></A>   <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> maxWaiting = -<FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="72"></A>   <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> instNo = ++instCount;
+<A NAME="73"></A>   <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> threadNo = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="74"></A>   <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> String name;
+<A NAME="75"></A>   
+<A NAME="76"></A>   <FONT ID="SingleLineComment">// Static --------------------------------------------------------
+<A NAME="77"></A></FONT>   <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Int">int</FONT> instCount = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="78"></A>   
+<A NAME="79"></A>   <FONT ID="SingleLineComment">// Constructors --------------------------------------------------
+<A NAME="80"></A></FONT>   <FONT ID="Public">public</FONT> LF_ThreadPool(Handler handler, String name) {
+<A NAME="81"></A>      <FONT ID="If">if</FONT> (handler == <FONT ID="Null">null</FONT>)
+<A NAME="82"></A>         <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> NullPointerException();
+<A NAME="83"></A>      
+<A NAME="84"></A>      <FONT ID="This">this</FONT>.handler = handler;
+<A NAME="85"></A>      <FONT ID="This">this</FONT>.name = name;
+<A NAME="86"></A>   }
+<A NAME="87"></A>   
+<A NAME="88"></A>   <FONT ID="SingleLineComment">// Public --------------------------------------------------------
+<A NAME="89"></A></FONT>   <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> waiting()
+<A NAME="90"></A>   {
+<A NAME="91"></A>      <FONT ID="Return">return</FONT> waiting;
+<A NAME="92"></A>   }
+<A NAME="93"></A>   
+<A NAME="94"></A>   <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> running()
+<A NAME="95"></A>   {
+<A NAME="96"></A>      <FONT ID="Return">return</FONT> running;
+<A NAME="97"></A>   }
+<A NAME="98"></A>   
+<A NAME="99"></A>   <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> isShutdown()
+<A NAME="100"></A>   {
+<A NAME="101"></A>      <FONT ID="Return">return</FONT> shutdown;
+<A NAME="102"></A>   }
+<A NAME="103"></A>   
+<A NAME="104"></A>   <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getMaxRunning()
+<A NAME="105"></A>   {
+<A NAME="106"></A>      <FONT ID="Return">return</FONT> maxRunning;
+<A NAME="107"></A>   }
+<A NAME="108"></A>   
+<A NAME="109"></A>   <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setMaxRunning(<FONT ID="Int">int</FONT> maxRunning)
+<A NAME="110"></A>   {
+<A NAME="111"></A>      <FONT ID="If">if</FONT> (maxRunning &lt; <FONT ID="IntegerLiteral">0</FONT>)
+<A NAME="112"></A>         <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> IllegalArgumentException(<FONT ID="StringLiteral">"maxRunning: "</FONT> + maxRunning);
+<A NAME="113"></A>            
+<A NAME="114"></A>      <FONT ID="This">this</FONT>.maxRunning = maxRunning;
+<A NAME="115"></A>   }
+<A NAME="116"></A>   
+<A NAME="117"></A>   <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getMaxWaiting()
+<A NAME="118"></A>   {
+<A NAME="119"></A>      <FONT ID="Return">return</FONT> maxWaiting;
+<A NAME="120"></A>   }
+<A NAME="121"></A>   
+<A NAME="122"></A>   <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setMaxWaiting(<FONT ID="Int">int</FONT> maxWaiting)
+<A NAME="123"></A>   {
+<A NAME="124"></A>      <FONT ID="If">if</FONT> (maxWaiting &lt; -<FONT ID="IntegerLiteral">1</FONT>)
+<A NAME="125"></A>         <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> IllegalArgumentException(<FONT ID="StringLiteral">"maxWaiting: "</FONT> + maxWaiting);
+<A NAME="126"></A>            
+<A NAME="127"></A>      <FONT ID="This">this</FONT>.maxWaiting = maxWaiting;
+<A NAME="128"></A>   }
+<A NAME="129"></A>   
+<A NAME="130"></A>   <FONT ID="Public">public</FONT> String toString()
+<A NAME="131"></A>   {
+<A NAME="132"></A>      <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">"LF_ThreadPool-"</FONT> + instNo + <FONT ID="StringLiteral">"[leader:"</FONT>
+<A NAME="133"></A>            + (leader == <FONT ID="Null">null</FONT> ? <FONT ID="StringLiteral">"null"</FONT> : leader.getName())
+<A NAME="134"></A>            + <FONT ID="StringLiteral">", waiting:"</FONT> + waiting
+<A NAME="135"></A>            + <FONT ID="StringLiteral">", running: "</FONT> + running + <FONT ID="StringLiteral">"("</FONT> + maxRunning
+<A NAME="136"></A>            + <FONT ID="StringLiteral">"), shutdown: "</FONT> + shutdown + <FONT ID="StringLiteral">"]"</FONT>;
+<A NAME="137"></A>   }
+<A NAME="138"></A>   
+<A NAME="139"></A>   <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> join()
+<A NAME="140"></A>   {
+<A NAME="141"></A>      log.debug(<FONT ID="StringLiteral">"Thread: "</FONT> + Thread.currentThread().getName() + <FONT ID="StringLiteral">" JOIN ThreadPool "</FONT> + name);
+<A NAME="142"></A>      <FONT ID="Try">try</FONT> {
+<A NAME="143"></A>        <FONT ID="While">while</FONT> (!shutdown &amp;&amp; (running == <FONT ID="IntegerLiteral">0</FONT> || maxWaiting == -<FONT ID="IntegerLiteral">1</FONT> || waiting &lt; maxWaiting)
+<A NAME="144"></A>                &amp;&amp; (maxRunning == <FONT ID="IntegerLiteral">0</FONT> || (waiting + running) &lt; maxRunning))
+<A NAME="145"></A>        {
+<A NAME="146"></A>           <FONT ID="Synchronized">synchronized</FONT> (mutex)
+<A NAME="147"></A>           {
+<A NAME="148"></A>              <FONT ID="While">while</FONT> (leader != <FONT ID="Null">null</FONT>)
+<A NAME="149"></A>              {
+<A NAME="150"></A>                 <FONT ID="If">if</FONT> (log.isDebugEnabled())
+<A NAME="151"></A>                    log.debug(<FONT ID="StringLiteral">""</FONT> + <FONT ID="This">this</FONT> + <FONT ID="StringLiteral">" - "</FONT>
+<A NAME="152"></A>                       + Thread.currentThread().getName() + <FONT ID="StringLiteral">" enter wait()"</FONT>);
+<A NAME="153"></A>                 ++waiting;
+<A NAME="154"></A>                 <FONT ID="Try">try</FONT> { mutex.wait(); }
+<A NAME="155"></A>                 <FONT ID="Catch">catch</FONT> (InterruptedException ie)
+<A NAME="156"></A>                 {
+<A NAME="157"></A>                    ie.printStackTrace();
+<A NAME="158"></A>                 }
+<A NAME="159"></A>                 <FONT ID="Finally">finally</FONT> { --waiting; }
+<A NAME="160"></A>                 <FONT ID="If">if</FONT> (log.isDebugEnabled())
+<A NAME="161"></A>                    log.debug(<FONT ID="StringLiteral">""</FONT> + <FONT ID="This">this</FONT> + <FONT ID="StringLiteral">" - "</FONT>
+<A NAME="162"></A>                       + Thread.currentThread().getName() + <FONT ID="StringLiteral">" awaked"</FONT>);
+<A NAME="163"></A>              }
+<A NAME="164"></A>              <FONT ID="If">if</FONT> (shutdown)
+<A NAME="165"></A>                 <FONT ID="Return">return</FONT>;
+<A NAME="166"></A>  
+<A NAME="167"></A>              leader = Thread.currentThread();
+<A NAME="168"></A>              <FONT ID="If">if</FONT> (log.isDebugEnabled())
+<A NAME="169"></A>                 log.debug(<FONT ID="StringLiteral">""</FONT> + <FONT ID="This">this</FONT> + <FONT ID="StringLiteral">" - New Leader"</FONT>); 
+<A NAME="170"></A>           }
+<A NAME="171"></A>           ++running;
+<A NAME="172"></A>           <FONT ID="Try">try</FONT> {  
+<A NAME="173"></A>              <FONT ID="Do">do</FONT> {
+<A NAME="174"></A>                 handler.run(<FONT ID="This">this</FONT>);
+<A NAME="175"></A>              } <FONT ID="While">while</FONT> (!shutdown &amp;&amp; leader == Thread.currentThread());
+<A NAME="176"></A>           } <FONT ID="Catch">catch</FONT> (Throwable th) {
+<A NAME="177"></A>              log.warn(<FONT ID="StringLiteral">"Exception thrown in "</FONT> + Thread.currentThread().getName(), th);
+<A NAME="178"></A>              shutdown();
+<A NAME="179"></A>           } <FONT ID="Finally">finally</FONT> { --running; }
+<A NAME="180"></A>        }
+<A NAME="181"></A>      } <FONT ID="Finally">finally</FONT> {
+<A NAME="182"></A>          log.debug(<FONT ID="StringLiteral">"Thread: "</FONT> + Thread.currentThread().getName() + <FONT ID="StringLiteral">" LEFT ThreadPool "</FONT> + name);
+<A NAME="183"></A>      }
+<A NAME="184"></A>   }
+<A NAME="185"></A>   
+<A NAME="186"></A>   <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> promoteNewLeader()
+<A NAME="187"></A>   {
+<A NAME="188"></A>      <FONT ID="If">if</FONT> (shutdown)
+<A NAME="189"></A>         <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="190"></A>      
+<A NAME="191"></A>      <FONT ID="SingleLineComment">// only the current leader can promote the next leader
+<A NAME="192"></A></FONT>      <FONT ID="If">if</FONT> (leader != Thread.currentThread())
+<A NAME="193"></A>         <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> IllegalStateException();
+<A NAME="194"></A>      
+<A NAME="195"></A>      leader = <FONT ID="Null">null</FONT>;
+<A NAME="196"></A>      
+<A NAME="197"></A>      <FONT ID="SingleLineComment">// notify (one) waiting thread in join()
+<A NAME="198"></A></FONT>      <FONT ID="Synchronized">synchronized</FONT> (mutex) {
+<A NAME="199"></A>         <FONT ID="If">if</FONT> (waiting &gt; <FONT ID="IntegerLiteral">0</FONT>)
+<A NAME="200"></A>         {
+<A NAME="201"></A>            <FONT ID="If">if</FONT> (log.isDebugEnabled())
+<A NAME="202"></A>               log.debug(<FONT ID="StringLiteral">""</FONT> + <FONT ID="This">this</FONT> + <FONT ID="StringLiteral">" - promote new leader by notify"</FONT>); 
+<A NAME="203"></A>            mutex.notify();
+<A NAME="204"></A>            <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="205"></A>         }
+<A NAME="206"></A>      }
+<A NAME="207"></A>            
+<A NAME="208"></A>      <FONT ID="SingleLineComment">// if there is no waiting thread,
+<A NAME="209"></A></FONT>      <FONT ID="SingleLineComment">// and the maximum number of running threads is not yet reached,
+<A NAME="210"></A></FONT>      <FONT ID="If">if</FONT> (maxRunning != <FONT ID="IntegerLiteral">0</FONT> &amp;&amp; running &gt;= maxRunning) {
+<A NAME="211"></A>         <FONT ID="If">if</FONT> (log.isDebugEnabled())
+<A NAME="212"></A>            log.debug(<FONT ID="StringLiteral">""</FONT> + <FONT ID="This">this</FONT> + <FONT ID="StringLiteral">" - Max number of threads reached"</FONT>); 
+<A NAME="213"></A>         <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="214"></A>      }
+<A NAME="215"></A>      
+<A NAME="216"></A>      <FONT ID="SingleLineComment">// start a new one
+<A NAME="217"></A></FONT>      <FONT ID="If">if</FONT> (log.isDebugEnabled())
+<A NAME="218"></A>         log.debug(<FONT ID="StringLiteral">""</FONT> + <FONT ID="This">this</FONT> + <FONT ID="StringLiteral">" - promote new leader by add new Thread"</FONT>);
+<A NAME="219"></A>      addThread(
+<A NAME="220"></A>         <FONT ID="New">new</FONT> Runnable() {
+<A NAME="221"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> run() { join(); }
+<A NAME="222"></A>         }
+<A NAME="223"></A>      );
+<A NAME="224"></A>      
+<A NAME="225"></A>      <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="226"></A>   }
+<A NAME="227"></A>   
+<A NAME="228"></A>   <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> shutdown() {
+<A NAME="229"></A>      <FONT ID="If">if</FONT> (log.isDebugEnabled())
+<A NAME="230"></A>         log.debug(<FONT ID="StringLiteral">""</FONT> + <FONT ID="This">this</FONT> + <FONT ID="StringLiteral">" - shutdown"</FONT>); 
+<A NAME="231"></A>      shutdown = <FONT ID="True">true</FONT>;
+<A NAME="232"></A>      leader = <FONT ID="Null">null</FONT>;
+<A NAME="233"></A>      <FONT ID="Synchronized">synchronized</FONT> (mutex)
+<A NAME="234"></A>      {
+<A NAME="235"></A>         mutex.notifyAll();
+<A NAME="236"></A>      }
+<A NAME="237"></A>   }
+<A NAME="238"></A>         
+<A NAME="239"></A>   <FONT ID="SingleLineComment">// Package protected ---------------------------------------------
+<A NAME="240"></A></FONT>   
+<A NAME="241"></A>   <FONT ID="SingleLineComment">// Protected -----------------------------------------------------
+<A NAME="242"></A></FONT>   <FONT ID="SingleLineComment">// may be overloaded to take new thread from convential thread pool
+<A NAME="243"></A></FONT>   <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> addThread(Runnable r) {
+<A NAME="244"></A>       <FONT ID="New">new</FONT> Thread(r, name + <FONT ID="StringLiteral">"-"</FONT> + (++threadNo)).start();
+<A NAME="245"></A>   }
+<A NAME="246"></A>   
+<A NAME="247"></A>   <FONT ID="SingleLineComment">// Private -------------------------------------------------------
+<A NAME="248"></A></FONT>   
+<A NAME="249"></A>   <FONT ID="SingleLineComment">// Inner classes -------------------------------------------------
+<A NAME="250"></A></FONT>   <FONT ID="Public">public</FONT> <FONT ID="Interface">interface</FONT> Handler {
+<A NAME="251"></A>      <FONT ID="Void">void</FONT> run(<A HREF="../../../org/dcm4cheri/util/LF_ThreadPool.java.html">LF_ThreadPool</A> pool);
+<A NAME="252"></A>   }
+<A NAME="253"></A>}
+<A NAME="254"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">LF_ThreadPool</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

@@ -1,0 +1,320 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.util.CommandLineOpt (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">CommandLineOpt</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  CommandLineOpt.java
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Copyright (c) 2003 by
+<A NAME="5"></A> *
+<A NAME="6"></A> *  IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="7"></A> *  VISUS Technology Transfer GmbH
+<A NAME="8"></A> *
+<A NAME="9"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="10"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="11"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="12"></A> *  (at your option) any later version.
+<A NAME="13"></A> *
+<A NAME="14"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="15"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="16"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="17"></A> *  Lesser General Public License for more details.
+<A NAME="18"></A> *
+<A NAME="19"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="20"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="21"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="22"></A> *
+<A NAME="23"></A> *
+<A NAME="24"></A> *****************************************************************************/</FONT>
+<A NAME="25"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.util.index.html" target="packageFrame">de.iftm.dcm4che.router.util</A>;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.property.index.html" target="packageFrame">de.iftm.dcm4che.router.property.*</A>;
+<A NAME="28"></A>
+<A NAME="29"></A><FONT ID="Import">import</FONT> org.apache.log4j.Logger;
+<A NAME="30"></A>
+<A NAME="31"></A><FONT ID="Import">import</FONT> gnu.getopt.Getopt;
+<A NAME="32"></A><FONT ID="Import">import</FONT> gnu.getopt.LongOpt;
+<A NAME="33"></A>
+<A NAME="34"></A><FONT ID="Import">import</FONT> java.io.File;
+<A NAME="35"></A>
+<A NAME="36"></A><FONT ID="Import">import</FONT> java.util.Locale;
+<A NAME="37"></A><FONT ID="Import">import</FONT> java.util.ResourceBundle;
+<A NAME="38"></A>
+<A NAME="39"></A>
+<A NAME="40"></A><FONT ID="FormalComment">/**
+<A NAME="41"></A> * This class manages the commandolineparsing.
+<A NAME="42"></A> *
+<A NAME="43"></A> * 2004.02.17 hacklaender: 
+<A NAME="44"></A> * Name of default configuration file changed from framework.properties to 
+<A NAME="45"></A> * router.properties.&lt;br&gt;
+<A NAME="46"></A> *
+<A NAME="47"></A> * @version 2004.02.17
+<A NAME="48"></A> */</FONT>
+<A NAME="49"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> CommandLineOpt {
+<A NAME="50"></A>    <FONT ID="FormalComment">/**
+<A NAME="51"></A>     * Zugriff auf alle benötigten Sprachresourcen
+<A NAME="52"></A>     */</FONT>
+<A NAME="53"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> ResourceBundle message = ResourceBundle.getBundle (<FONT ID="StringLiteral">"de/iftm/dcm4che/router/util/resources/CommandLineOpt"</FONT>, Locale.getDefault ());
+<A NAME="54"></A>
+<A NAME="55"></A>    <FONT ID="FormalComment">/**
+<A NAME="56"></A>     * The LongOpt[] contains instances of LongOpt, they allowed to use longoptions
+<A NAME="57"></A>     * in the commandoline
+<A NAME="58"></A>     */</FONT>
+<A NAME="59"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> LongOpt[] LO_OPT = <FONT ID="New">new</FONT> LongOpt[] {
+<A NAME="60"></A>        <FONT ID="New">new</FONT> LongOpt(<FONT ID="StringLiteral">"config"</FONT>, LongOpt.REQUIRED_ARGUMENT, <FONT ID="Null">null</FONT>, <FONT ID="CharacerLiteral">'c'</FONT>),
+<A NAME="61"></A>        <FONT ID="New">new</FONT> LongOpt(<FONT ID="StringLiteral">"help"</FONT>, LongOpt.NO_ARGUMENT, <FONT ID="Null">null</FONT>, <FONT ID="CharacerLiteral">'h'</FONT>),
+<A NAME="62"></A>        <FONT ID="New">new</FONT> LongOpt(<FONT ID="StringLiteral">"logger"</FONT>, LongOpt.REQUIRED_ARGUMENT, <FONT ID="Null">null</FONT>, <FONT ID="CharacerLiteral">'l'</FONT>)
+<A NAME="63"></A>    };
+<A NAME="64"></A>
+<A NAME="65"></A>    <FONT ID="FormalComment">/** DOCUMENT ME! */</FONT>
+<A NAME="66"></A>    Getopt getOpt;
+<A NAME="67"></A>
+<A NAME="68"></A>    <FONT ID="FormalComment">/**
+<A NAME="69"></A>     * Name of the property file
+<A NAME="70"></A>     */</FONT>
+<A NAME="71"></A>    String configName = <FONT ID="StringLiteral">"router.properties"</FONT>;
+<A NAME="72"></A>
+<A NAME="73"></A>    <FONT ID="FormalComment">/**
+<A NAME="74"></A>     * Defaulte URI of the property file
+<A NAME="75"></A>     */</FONT>
+<A NAME="76"></A>    String configURI = <FONT ID="StringLiteral">"./cfg/"</FONT> + configName;
+<A NAME="77"></A>
+<A NAME="78"></A>    <FONT ID="FormalComment">/**
+<A NAME="79"></A>     * Defaulte Name of the logger file
+<A NAME="80"></A>     */</FONT>
+<A NAME="81"></A>    String loggerName = <FONT ID="StringLiteral">"log4j.properties"</FONT>;
+<A NAME="82"></A>
+<A NAME="83"></A>    <FONT ID="FormalComment">/**
+<A NAME="84"></A>     * Defaulte URI of the logger file
+<A NAME="85"></A>     */</FONT>
+<A NAME="86"></A>    String loggerURI = <FONT ID="StringLiteral">"./cfg/"</FONT> + loggerName;
+<A NAME="87"></A>
+<A NAME="88"></A>    <FONT ID="FormalComment">/**
+<A NAME="89"></A>     * Defaulte path of the file/directory to process
+<A NAME="90"></A>     */</FONT>
+<A NAME="91"></A>    String fileURI = <FONT ID="Null">null</FONT>;
+<A NAME="92"></A>
+<A NAME="93"></A>    <FONT ID="FormalComment">/**
+<A NAME="94"></A>     *
+<A NAME="95"></A>     */</FONT>
+<A NAME="96"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Boolean">boolean</FONT> configFileAvailable = <FONT ID="True">true</FONT>;
+<A NAME="97"></A>
+<A NAME="98"></A>    <FONT ID="FormalComment">/** DOCUMENT ME! */</FONT>
+<A NAME="99"></A>    Logger log = Logger.getLogger (<A HREF="../../../../../de/iftm/dcm4che/router/util/CommandLineOpt.java.html">CommandLineOpt</A>.<FONT ID="Class">class</FONT>);
+<A NAME="100"></A>
+<A NAME="101"></A>    <FONT ID="FormalComment">/** DOCUMENT ME! */</FONT>
+<A NAME="102"></A>    <FONT ID="Boolean">boolean</FONT> readyToRun = <FONT ID="False">false</FONT>;
+<A NAME="103"></A>
+<A NAME="104"></A>    <FONT ID="FormalComment">/**
+<A NAME="105"></A>     * Creates a new instance of CommandLineOpt
+<A NAME="106"></A>     * @param argv
+<A NAME="107"></A>     */</FONT>
+<A NAME="108"></A>    <FONT ID="Public">public</FONT> CommandLineOpt (String[] argv) {
+<A NAME="109"></A>        <FONT ID="If">if</FONT> (argv == <FONT ID="Null">null</FONT>) {
+<A NAME="110"></A>            readyToRun = <FONT ID="This">this</FONT>.checkDefaultPropertyFile ();
+<A NAME="111"></A>
+<A NAME="112"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="113"></A>        }
+<A NAME="114"></A>
+<A NAME="115"></A>        <FONT ID="If">if</FONT> (argv.length == <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="116"></A>            readyToRun = <FONT ID="This">this</FONT>.checkDefaultPropertyFile ();
+<A NAME="117"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="118"></A>            getOpt = <FONT ID="New">new</FONT> Getopt(<FONT ID="StringLiteral">"dcmrouter"</FONT>, argv, <FONT ID="StringLiteral">"c:hl:"</FONT>, LO_OPT);
+<A NAME="119"></A>            getArgument (argv);
+<A NAME="120"></A>        }
+<A NAME="121"></A>    }
+<A NAME="122"></A>
+<A NAME="123"></A>    <FONT ID="FormalComment">/**
+<A NAME="124"></A>     * Selects the right action for the typed argument
+<A NAME="125"></A>     */</FONT>
+<A NAME="126"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> getArgument (String[] argv) {
+<A NAME="127"></A>        <FONT ID="Int">int</FONT> i;
+<A NAME="128"></A>
+<A NAME="129"></A>        <FONT ID="While">while</FONT> ((i = getOpt.getopt ()) != -<FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="130"></A>            <FONT ID="Switch">switch</FONT> (i) {
+<A NAME="131"></A>            <FONT ID="Case">case</FONT> <FONT ID="CharacerLiteral">'c'</FONT>:
+<A NAME="132"></A>                System.out.println (<FONT ID="StringLiteral">"Configuration is load from : "</FONT> + getOpt.getOptarg ());
+<A NAME="133"></A>                setPropertyURI (getOpt.getOptarg ());
+<A NAME="134"></A>                readyToRun = <FONT ID="True">true</FONT>;
+<A NAME="135"></A>
+<A NAME="136"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="137"></A>
+<A NAME="138"></A>            <FONT ID="Case">case</FONT> <FONT ID="CharacerLiteral">'h'</FONT>:
+<A NAME="139"></A>                System.out.println (CommandLineOpt.message.getString (<FONT ID="StringLiteral">"default"</FONT>));
+<A NAME="140"></A>                System.out.println (CommandLineOpt.message.getString (<FONT ID="StringLiteral">"help"</FONT>));
+<A NAME="141"></A>                readyToRun = <FONT ID="False">false</FONT>;
+<A NAME="142"></A>
+<A NAME="143"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="144"></A>
+<A NAME="145"></A>            <FONT ID="Case">case</FONT> <FONT ID="CharacerLiteral">'l'</FONT>:
+<A NAME="146"></A>                System.out.println (<FONT ID="StringLiteral">"Loggerconfiguration will be loaded from : "</FONT> + getOpt.getOptarg ());
+<A NAME="147"></A>                setLoggerURI (getOpt.getOptarg ());
+<A NAME="148"></A>                readyToRun = <FONT ID="True">true</FONT>;
+<A NAME="149"></A>
+<A NAME="150"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="151"></A>
+<A NAME="152"></A>            <FONT ID="Default">default</FONT>:
+<A NAME="153"></A>                System.err.println (CommandLineOpt.message.getString (<FONT ID="StringLiteral">"try"</FONT>));
+<A NAME="154"></A>                readyToRun = <FONT ID="False">false</FONT>;
+<A NAME="155"></A>
+<A NAME="156"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="157"></A>            }
+<A NAME="158"></A>        }
+<A NAME="159"></A>
+<A NAME="160"></A>        <FONT ID="SingleLineComment">// i ist der Index in argv, der nicht mehr zu den Parametern/Argumenten gehoert
+<A NAME="161"></A></FONT>        i = getOpt.getOptind ();
+<A NAME="162"></A>
+<A NAME="163"></A>        <FONT ID="SingleLineComment">// Nach der Aufrufsyntax entspricht dies der URI des Files/Directorys
+<A NAME="164"></A></FONT>        <FONT ID="If">if</FONT> (i &gt;= argv.length) {
+<A NAME="165"></A>            <FONT ID="SingleLineComment">// Keine URI angegeben. Das Programm wird dann die Angabe aus der Property Datei verwenden
+<A NAME="166"></A></FONT>            <FONT ID="Return">return</FONT>;
+<A NAME="167"></A>        }
+<A NAME="168"></A>
+<A NAME="169"></A>        <FONT ID="SingleLineComment">// File URI setzen
+<A NAME="170"></A></FONT>        setFileURI (argv[i]);
+<A NAME="171"></A>    }
+<A NAME="172"></A>
+<A NAME="173"></A>
+<A NAME="174"></A>    <FONT ID="FormalComment">/**
+<A NAME="175"></A>     * Setter for field configURI.
+<A NAME="176"></A>     * @param uri Path of the configurationfile
+<A NAME="177"></A>     */</FONT>
+<A NAME="178"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setPropertyURI (String uri) {
+<A NAME="179"></A>        <FONT ID="This">this</FONT>.configURI = uri;
+<A NAME="180"></A>    }
+<A NAME="181"></A>
+<A NAME="182"></A>
+<A NAME="183"></A>    <FONT ID="FormalComment">/**
+<A NAME="184"></A>     * Getter for field configURI
+<A NAME="185"></A>     * @return Value of configURI
+<A NAME="186"></A>     */</FONT>
+<A NAME="187"></A>    <FONT ID="Public">public</FONT> String getPropertyURI () {
+<A NAME="188"></A>        <FONT ID="Return">return</FONT> configURI;
+<A NAME="189"></A>    }
+<A NAME="190"></A>
+<A NAME="191"></A>
+<A NAME="192"></A>    <FONT ID="FormalComment">/**
+<A NAME="193"></A>     * Setter for field loggerURI.
+<A NAME="194"></A>     * @param uri Path of the configurationfile
+<A NAME="195"></A>     */</FONT>
+<A NAME="196"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> setLoggerURI (String uri) {
+<A NAME="197"></A>        <FONT ID="This">this</FONT>.loggerURI = uri;
+<A NAME="198"></A>    }
+<A NAME="199"></A>
+<A NAME="200"></A>
+<A NAME="201"></A>    <FONT ID="FormalComment">/**
+<A NAME="202"></A>     * Getter for field loggerURI
+<A NAME="203"></A>     * @return Value of loggerURI
+<A NAME="204"></A>     */</FONT>
+<A NAME="205"></A>    <FONT ID="Public">public</FONT> String getLoggerURI () {
+<A NAME="206"></A>        <FONT ID="Return">return</FONT> loggerURI;
+<A NAME="207"></A>    }
+<A NAME="208"></A>
+<A NAME="209"></A>
+<A NAME="210"></A>    <FONT ID="FormalComment">/**
+<A NAME="211"></A>     * Setter for field fileURI.
+<A NAME="212"></A>     * @param uri Path of the configurationfile
+<A NAME="213"></A>     */</FONT>
+<A NAME="214"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setFileURI (String uri) {
+<A NAME="215"></A>        <FONT ID="This">this</FONT>.fileURI = uri;
+<A NAME="216"></A>    }
+<A NAME="217"></A>
+<A NAME="218"></A>
+<A NAME="219"></A>    <FONT ID="FormalComment">/**
+<A NAME="220"></A>     * Getter for field fileURI
+<A NAME="221"></A>     * @return Value of fileURI
+<A NAME="222"></A>     */</FONT>
+<A NAME="223"></A>    <FONT ID="Public">public</FONT> String getFileURI () {
+<A NAME="224"></A>        <FONT ID="Return">return</FONT> fileURI;
+<A NAME="225"></A>    }
+<A NAME="226"></A>
+<A NAME="227"></A>
+<A NAME="228"></A>    <FONT ID="FormalComment">/**
+<A NAME="229"></A>     * Getter for the status of boolean field readyToRun
+<A NAME="230"></A>     * @return Value of readyToRun
+<A NAME="231"></A>     */</FONT>
+<A NAME="232"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> isRunnable () {
+<A NAME="233"></A>        <FONT ID="Return">return</FONT> readyToRun;
+<A NAME="234"></A>    }
+<A NAME="235"></A>
+<A NAME="236"></A>
+<A NAME="237"></A>    <FONT ID="FormalComment">/**
+<A NAME="238"></A>     * Checks wether the config file exists in the ./cfg dir
+<A NAME="239"></A>     * or directly in ./
+<A NAME="240"></A>     */</FONT>
+<A NAME="241"></A>    <FONT ID="Private">private</FONT> <FONT ID="Boolean">boolean</FONT> checkDefaultPropertyFile () {
+<A NAME="242"></A>        File file = Util.uriToFile (configURI);
+<A NAME="243"></A>
+<A NAME="244"></A>        <FONT ID="If">if</FONT> (file.exists ()) {
+<A NAME="245"></A>            <FONT ID="This">this</FONT>.configFileAvailable = <FONT ID="True">true</FONT>;
+<A NAME="246"></A>
+<A NAME="247"></A>            <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="248"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="249"></A>            <FONT ID="SingleLineComment">// checks if file exists at the directory the main method is started from 
+<A NAME="250"></A></FONT>            file = <FONT ID="New">new</FONT> File(configName);
+<A NAME="251"></A>
+<A NAME="252"></A>            <FONT ID="If">if</FONT> (file.exists ()) {
+<A NAME="253"></A>                <FONT ID="SingleLineComment">// new path to the configURI
+<A NAME="254"></A></FONT>                <FONT ID="This">this</FONT>.setPropertyURI (<FONT ID="StringLiteral">"./"</FONT> + configName);
+<A NAME="255"></A>                <FONT ID="This">this</FONT>.configFileAvailable = <FONT ID="True">true</FONT>;
+<A NAME="256"></A>
+<A NAME="257"></A>                <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="258"></A>            }
+<A NAME="259"></A>            <FONT ID="This">this</FONT>.configFileAvailable = <FONT ID="False">false</FONT>;
+<A NAME="260"></A>
+<A NAME="261"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="262"></A>        }
+<A NAME="263"></A>    }
+<A NAME="264"></A>
+<A NAME="265"></A>
+<A NAME="266"></A>    <FONT ID="FormalComment">/**
+<A NAME="267"></A>     * Checks wether a propertyfile for the Log4j-Logger exists in
+<A NAME="268"></A>     * the home- or cfg-directory. If not "false" will be returned,
+<A NAME="269"></A>     * else "true"
+<A NAME="270"></A>     */</FONT>
+<A NAME="271"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> checkLoggerProp () {
+<A NAME="272"></A>        File file = Util.uriToFile (<FONT ID="This">this</FONT>.loggerURI);
+<A NAME="273"></A>
+<A NAME="274"></A>        <FONT ID="If">if</FONT> (file.exists ()) {
+<A NAME="275"></A>            <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="276"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="277"></A>            <FONT ID="SingleLineComment">// checks if file exists at the directory the main method is started from 
+<A NAME="278"></A></FONT>            file = <FONT ID="New">new</FONT> File(loggerName);
+<A NAME="279"></A>            <FONT ID="If">if</FONT> (file.exists ()) {
+<A NAME="280"></A>                <FONT ID="SingleLineComment">// new path to the configURI
+<A NAME="281"></A></FONT>                <FONT ID="This">this</FONT>.setLoggerURI (<FONT ID="StringLiteral">"./"</FONT> + loggerName);
+<A NAME="282"></A>
+<A NAME="283"></A>                <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="284"></A>            }
+<A NAME="285"></A>
+<A NAME="286"></A>            <FONT ID="SingleLineComment">//after checking both directories for log.prop, the basicKonfigurator
+<A NAME="287"></A></FONT>            <FONT ID="SingleLineComment">//will be setted.
+<A NAME="288"></A></FONT>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="289"></A>        }
+<A NAME="290"></A>    }
+<A NAME="291"></A>}
+<A NAME="292"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">CommandLineOpt</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

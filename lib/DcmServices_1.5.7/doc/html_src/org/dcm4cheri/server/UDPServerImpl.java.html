@@ -1,0 +1,222 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>org.dcm4cheri.server.UDPServerImpl (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">UDPServerImpl</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/* ***** BEGIN LICENSE BLOCK *****
+<A NAME="2"></A> * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+<A NAME="3"></A> *
+<A NAME="4"></A> * The contents of this file are subject to the Mozilla Public License Version
+<A NAME="5"></A> * 1.1 (the "License"); you may not use this file except in compliance with
+<A NAME="6"></A> * the License. You may obtain a copy of the License at
+<A NAME="7"></A> * http://www.mozilla.org/MPL/
+<A NAME="8"></A> *
+<A NAME="9"></A> * Software distributed under the License is distributed on an "AS IS" basis,
+<A NAME="10"></A> * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+<A NAME="11"></A> * for the specific language governing rights and limitations under the
+<A NAME="12"></A> * License.
+<A NAME="13"></A> *
+<A NAME="14"></A> * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+<A NAME="15"></A> * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+<A NAME="16"></A> *
+<A NAME="17"></A> * The Initial Developer of the Original Code is
+<A NAME="18"></A> * TIANI Medgraph AG.
+<A NAME="19"></A> * Portions created by the Initial Developer are Copyright (C) 2002-2005
+<A NAME="20"></A> * the Initial Developer. All Rights Reserved.
+<A NAME="21"></A> *
+<A NAME="22"></A> * Contributor(s):
+<A NAME="23"></A> * Gunter Zeilinger &lt;gunter.zeilinger@tiani.com&gt;
+<A NAME="24"></A> *
+<A NAME="25"></A> * Alternatively, the contents of this file may be used under the terms of
+<A NAME="26"></A> * either the GNU General Public License Version 2 or later (the "GPL"), or
+<A NAME="27"></A> * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+<A NAME="28"></A> * in which case the provisions of the GPL or the LGPL are applicable instead
+<A NAME="29"></A> * of those above. If you wish to allow use of your version of this file only
+<A NAME="30"></A> * under the terms of either the GPL or the LGPL, and not to allow others to
+<A NAME="31"></A> * use your version of this file under the terms of the MPL, indicate your
+<A NAME="32"></A> * decision by deleting the provisions above and replace them with the notice
+<A NAME="33"></A> * and other provisions required by the GPL or the LGPL. If you do not delete
+<A NAME="34"></A> * the provisions above, a recipient may use your version of this file under
+<A NAME="35"></A> * the terms of any one of the MPL, the GPL or the LGPL.
+<A NAME="36"></A> *
+<A NAME="37"></A> * ***** END LICENSE BLOCK ***** */</FONT>
+<A NAME="38"></A>
+<A NAME="39"></A><FONT ID="Package">package</FONT> <A HREF="../../../org.dcm4cheri.server.index.html" target="packageFrame">org.dcm4cheri.server</A>;
+<A NAME="40"></A>
+<A NAME="41"></A><FONT ID="Import">import</FONT> <A HREF="../../../org/dcm4che/server/UDPServer.java.html">org.dcm4che.server.UDPServer</A>;
+<A NAME="42"></A><FONT ID="Import">import</FONT> <A HREF="../../../org/dcm4cheri/util/LF_ThreadPool.java.html">org.dcm4cheri.util.LF_ThreadPool</A>;
+<A NAME="43"></A><FONT ID="Import">import</FONT> org.apache.log4j.Logger;
+<A NAME="44"></A>
+<A NAME="45"></A><FONT ID="Import">import</FONT> java.io.IOException;
+<A NAME="46"></A><FONT ID="Import">import</FONT> java.net.InetAddress;
+<A NAME="47"></A><FONT ID="Import">import</FONT> java.net.DatagramSocket;
+<A NAME="48"></A><FONT ID="Import">import</FONT> java.net.DatagramPacket;
+<A NAME="49"></A><FONT ID="Import">import</FONT> java.net.SocketException;
+<A NAME="50"></A>
+<A NAME="51"></A><FONT ID="FormalComment">/**
+<A NAME="52"></A> * &lt;description&gt;
+<A NAME="53"></A> *
+<A NAME="54"></A> * @see &lt;related&gt;
+<A NAME="55"></A> * @author  &lt;a href="mailto:{email}"&gt;{full name}&lt;/a&gt;.
+<A NAME="56"></A> * @author  &lt;a href="mailto:gunter@tiani.com"&gt;Gunter Zeilinger&lt;/a&gt;
+<A NAME="57"></A> * @version $Revision: 1.7 $ $Date: 2005/10/05 16:26:16 $
+<A NAME="58"></A> */</FONT>
+<A NAME="59"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> UDPServerImpl <FONT ID="Implements">implements</FONT> LF_ThreadPool.Handler, <A HREF="../../../org/dcm4che/server/UDPServer.java.html">UDPServer</A>
+<A NAME="60"></A>{
+<A NAME="61"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Int">int</FONT> instCount = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="62"></A>    <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> String name = <FONT ID="StringLiteral">"UDPServer-"</FONT> + ++instCount;
+<A NAME="63"></A>    <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> Handler handler;
+<A NAME="64"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger log = Logger.getLogger(<A HREF="../../../org/dcm4cheri/server/UDPServerImpl.java.html">UDPServerImpl</A>.<FONT ID="Class">class</FONT>);
+<A NAME="65"></A>    <FONT ID="Private">private</FONT> <A HREF="../../../org/dcm4cheri/util/LF_ThreadPool.java.html">LF_ThreadPool</A> threadPool = <FONT ID="New">new</FONT> <A HREF="../../../org/dcm4cheri/util/LF_ThreadPool.java.html">LF_ThreadPool</A>(<FONT ID="This">this</FONT>, name);
+<A NAME="66"></A>    <FONT ID="Private">private</FONT> DatagramSocket ss;
+<A NAME="67"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> port;
+<A NAME="68"></A>
+<A NAME="69"></A>    <FONT ID="Public">public</FONT> UDPServerImpl(Handler handler)
+<A NAME="70"></A>    {
+<A NAME="71"></A>  <FONT ID="If">if</FONT> (handler==<FONT ID="Null">null</FONT>)
+<A NAME="72"></A>      <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> NullPointerException();
+<A NAME="73"></A>  <FONT ID="This">this</FONT>.handler = handler;
+<A NAME="74"></A>    }
+<A NAME="75"></A>
+<A NAME="76"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setMaxClients(<FONT ID="Int">int</FONT> max)
+<A NAME="77"></A>    {
+<A NAME="78"></A>  threadPool.setMaxRunning(max);
+<A NAME="79"></A>    }
+<A NAME="80"></A>
+<A NAME="81"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getMaxClients()
+<A NAME="82"></A>    {
+<A NAME="83"></A>  <FONT ID="Return">return</FONT> threadPool.getMaxRunning();
+<A NAME="84"></A>    }
+<A NAME="85"></A>
+<A NAME="86"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getNumClients()
+<A NAME="87"></A>    {
+<A NAME="88"></A>  <FONT ID="Return">return</FONT> threadPool.running()-<FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="89"></A>    }
+<A NAME="90"></A>
+<A NAME="91"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setMaxIdleThreads(<FONT ID="Int">int</FONT> max)
+<A NAME="92"></A>    {
+<A NAME="93"></A>  threadPool.setMaxWaiting(max);
+<A NAME="94"></A>    }
+<A NAME="95"></A>
+<A NAME="96"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getMaxIdleThreads()
+<A NAME="97"></A>    {
+<A NAME="98"></A>  <FONT ID="Return">return</FONT> threadPool.getMaxWaiting();
+<A NAME="99"></A>    }
+<A NAME="100"></A>
+<A NAME="101"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getNumIdleThreads()
+<A NAME="102"></A>    {
+<A NAME="103"></A>  <FONT ID="Return">return</FONT> threadPool.waiting();
+<A NAME="104"></A>    }
+<A NAME="105"></A>    <FONT ID="FormalComment">/**
+<A NAME="106"></A>     * @deprecated use {@link #setPort}, {@link #start()} 
+<A NAME="107"></A>     */</FONT>
+<A NAME="108"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> start(<FONT ID="Int">int</FONT> port)
+<A NAME="109"></A>  <FONT ID="Throws">throws</FONT> SocketException, IOException
+<A NAME="110"></A>    {
+<A NAME="111"></A>  setPort(port);
+<A NAME="112"></A>  start();
+<A NAME="113"></A>    }
+<A NAME="114"></A>
+<A NAME="115"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> start()
+<A NAME="116"></A>  <FONT ID="Throws">throws</FONT> SocketException, IOException
+<A NAME="117"></A>    {
+<A NAME="118"></A>  checkNotRunning();
+<A NAME="119"></A>  <FONT ID="If">if</FONT> (log.isInfoEnabled())
+<A NAME="120"></A>      log.info(<FONT ID="StringLiteral">"Start Server listening at port "</FONT> + port);
+<A NAME="121"></A>  InetAddress iaddr = InetAddress.getByAddress(<FONT ID="New">new</FONT> <FONT ID="Byte">byte</FONT>[] {<FONT ID="IntegerLiteral">0</FONT>,<FONT ID="IntegerLiteral">0</FONT>,<FONT ID="IntegerLiteral">0</FONT>,<FONT ID="IntegerLiteral">0</FONT>});
+<A NAME="122"></A>  ss = <FONT ID="New">new</FONT> DatagramSocket(port,iaddr);
+<A NAME="123"></A>  ss.setSoTimeout(<FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="124"></A>  <FONT ID="New">new</FONT> Thread(<FONT ID="New">new</FONT> Runnable() {
+<A NAME="125"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> run() {
+<A NAME="126"></A>        threadPool.join();
+<A NAME="127"></A>    }
+<A NAME="128"></A>      }, name).start();
+<A NAME="129"></A>    }
+<A NAME="130"></A>
+<A NAME="131"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> stop()
+<A NAME="132"></A>    {
+<A NAME="133"></A>  <FONT ID="If">if</FONT> (ss == <FONT ID="Null">null</FONT>)
+<A NAME="134"></A>      <FONT ID="Return">return</FONT>;
+<A NAME="135"></A>  InetAddress iaddr = ss.getInetAddress();
+<A NAME="136"></A>  <FONT ID="Int">int</FONT> port = ss.getLocalPort();
+<A NAME="137"></A>  <FONT ID="If">if</FONT> (log.isInfoEnabled())
+<A NAME="138"></A>      log.info(<FONT ID="StringLiteral">"Stop Server listening at port "</FONT> + port);
+<A NAME="139"></A>  ss.close();
+<A NAME="140"></A>  ss = <FONT ID="Null">null</FONT>;
+<A NAME="141"></A>  threadPool.shutdown();
+<A NAME="142"></A>  <A HREF="../../../org/dcm4cheri/util/LF_ThreadPool.java.html">LF_ThreadPool</A> tp = <FONT ID="New">new</FONT> <A HREF="../../../org/dcm4cheri/util/LF_ThreadPool.java.html">LF_ThreadPool</A>(<FONT ID="This">this</FONT>, name);
+<A NAME="143"></A>  tp.setMaxRunning( threadPool.getMaxRunning());
+<A NAME="144"></A>  tp.setMaxWaiting( threadPool.getMaxWaiting());
+<A NAME="145"></A>  threadPool = tp;
+<A NAME="146"></A>    }
+<A NAME="147"></A>
+<A NAME="148"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> run(<A HREF="../../../org/dcm4cheri/util/LF_ThreadPool.java.html">LF_ThreadPool</A> pool)
+<A NAME="149"></A>    {
+<A NAME="150"></A>  <FONT ID="If">if</FONT> (ss == <FONT ID="Null">null</FONT>)
+<A NAME="151"></A>      <FONT ID="Return">return</FONT>;
+<A NAME="152"></A>  <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> BufSize = <FONT ID="IntegerLiteral">32768</FONT>;
+<A NAME="153"></A>  <FONT ID="Byte">byte</FONT>[] buff = <FONT ID="New">new</FONT> <FONT ID="Byte">byte</FONT>[BufSize];
+<A NAME="154"></A>  DatagramPacket dp = <FONT ID="New">new</FONT> DatagramPacket(buff,buff.length);
+<A NAME="155"></A>  <FONT ID="Try">try</FONT> {
+<A NAME="156"></A>      ss.receive(dp);
+<A NAME="157"></A>      <FONT ID="If">if</FONT> (log.isInfoEnabled())
+<A NAME="158"></A>    log.info(<FONT ID="StringLiteral">"handling request on "</FONT> + ss);
+<A NAME="159"></A>      pool.promoteNewLeader();
+<A NAME="160"></A>      handler.handle(dp);
+<A NAME="161"></A>  }
+<A NAME="162"></A>  <FONT ID="Catch">catch</FONT>(IOException ioe) {
+<A NAME="163"></A>      log.error(ioe);
+<A NAME="164"></A>  }
+<A NAME="165"></A>  <FONT ID="If">if</FONT> (log.isInfoEnabled())
+<A NAME="166"></A>      log.info(<FONT ID="StringLiteral">"finished - "</FONT> + ss);
+<A NAME="167"></A>    }
+<A NAME="168"></A>
+<A NAME="169"></A>    <FONT ID="FormalComment">/** Getter for property port.
+<A NAME="170"></A>     * @return Value of property port.
+<A NAME="171"></A>     *
+<A NAME="172"></A>     */</FONT>
+<A NAME="173"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getPort()
+<A NAME="174"></A>    {
+<A NAME="175"></A>  <FONT ID="Return">return</FONT> port;
+<A NAME="176"></A>    }
+<A NAME="177"></A>
+<A NAME="178"></A>    <FONT ID="FormalComment">/** Setter for property port.
+<A NAME="179"></A>     * @param port New value of property port.
+<A NAME="180"></A>     *
+<A NAME="181"></A>     */</FONT>
+<A NAME="182"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setPort(<FONT ID="Int">int</FONT> port)
+<A NAME="183"></A>    {
+<A NAME="184"></A>  <FONT ID="This">this</FONT>.port = port;
+<A NAME="185"></A>    }
+<A NAME="186"></A>
+<A NAME="187"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> checkNotRunning() {
+<A NAME="188"></A>        <FONT ID="If">if</FONT> (ss != <FONT ID="Null">null</FONT>) {
+<A NAME="189"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> IllegalStateException(<FONT ID="StringLiteral">"Already Running - "</FONT> + threadPool);
+<A NAME="190"></A>        }
+<A NAME="191"></A>    }
+<A NAME="192"></A>}
+<A NAME="193"></A>
+<A NAME="194"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">UDPServerImpl</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

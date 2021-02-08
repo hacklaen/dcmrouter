@@ -1,0 +1,304 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>org.dcm4cheri.server.PollDirSrvImpl (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">PollDirSrvImpl</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/* ***** BEGIN LICENSE BLOCK *****
+<A NAME="2"></A> * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+<A NAME="3"></A> *
+<A NAME="4"></A> * The contents of this file are subject to the Mozilla Public License Version
+<A NAME="5"></A> * 1.1 (the "License"); you may not use this file except in compliance with
+<A NAME="6"></A> * the License. You may obtain a copy of the License at
+<A NAME="7"></A> * http://www.mozilla.org/MPL/
+<A NAME="8"></A> *
+<A NAME="9"></A> * Software distributed under the License is distributed on an "AS IS" basis,
+<A NAME="10"></A> * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+<A NAME="11"></A> * for the specific language governing rights and limitations under the
+<A NAME="12"></A> * License.
+<A NAME="13"></A> *
+<A NAME="14"></A> * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+<A NAME="15"></A> * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+<A NAME="16"></A> *
+<A NAME="17"></A> * The Initial Developer of the Original Code is
+<A NAME="18"></A> * TIANI Medgraph AG.
+<A NAME="19"></A> * Portions created by the Initial Developer are Copyright (C) 2002-2005
+<A NAME="20"></A> * the Initial Developer. All Rights Reserved.
+<A NAME="21"></A> *
+<A NAME="22"></A> * Contributor(s):
+<A NAME="23"></A> * Gunter Zeilinger &lt;gunter.zeilinger@tiani.com&gt;
+<A NAME="24"></A> *
+<A NAME="25"></A> * Alternatively, the contents of this file may be used under the terms of
+<A NAME="26"></A> * either the GNU General Public License Version 2 or later (the "GPL"), or
+<A NAME="27"></A> * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+<A NAME="28"></A> * in which case the provisions of the GPL or the LGPL are applicable instead
+<A NAME="29"></A> * of those above. If you wish to allow use of your version of this file only
+<A NAME="30"></A> * under the terms of either the GPL or the LGPL, and not to allow others to
+<A NAME="31"></A> * use your version of this file under the terms of the MPL, indicate your
+<A NAME="32"></A> * decision by deleting the provisions above and replace them with the notice
+<A NAME="33"></A> * and other provisions required by the GPL or the LGPL. If you do not delete
+<A NAME="34"></A> * the provisions above, a recipient may use your version of this file under
+<A NAME="35"></A> * the terms of any one of the MPL, the GPL or the LGPL.
+<A NAME="36"></A> *
+<A NAME="37"></A> * ***** END LICENSE BLOCK ***** */</FONT>
+<A NAME="38"></A>
+<A NAME="39"></A><FONT ID="Package">package</FONT> <A HREF="../../../org.dcm4cheri.server.index.html" target="packageFrame">org.dcm4cheri.server</A>;
+<A NAME="40"></A>
+<A NAME="41"></A><FONT ID="Import">import</FONT> <A HREF="../../../org/dcm4che/server/PollDirSrv.java.html">org.dcm4che.server.PollDirSrv</A>;
+<A NAME="42"></A>
+<A NAME="43"></A><FONT ID="Import">import</FONT> java.io.File;
+<A NAME="44"></A><FONT ID="Import">import</FONT> java.io.FileFilter;
+<A NAME="45"></A><FONT ID="Import">import</FONT> java.util.Arrays;
+<A NAME="46"></A><FONT ID="Import">import</FONT> java.util.Comparator;
+<A NAME="47"></A><FONT ID="Import">import</FONT> java.util.Timer;
+<A NAME="48"></A><FONT ID="Import">import</FONT> java.util.TimerTask;
+<A NAME="49"></A>
+<A NAME="50"></A><FONT ID="Import">import</FONT> org.apache.log4j.Logger;
+<A NAME="51"></A><FONT ID="Import">import</FONT> org.apache.log4j.NDC;
+<A NAME="52"></A>
+<A NAME="53"></A><FONT ID="FormalComment">/**
+<A NAME="54"></A> * &lt;description&gt; 
+<A NAME="55"></A> *
+<A NAME="56"></A> * @see &lt;related&gt;
+<A NAME="57"></A> * @author  &lt;a href="mailto:gunter@tiani.com"&gt;gunter zeilinger&lt;/a&gt;
+<A NAME="58"></A> * @version $Revision: 1.3 $ $Date: 2005/10/05 16:26:16 $
+<A NAME="59"></A> *   
+<A NAME="60"></A> * &lt;p&gt;&lt;b&gt;Revisions:&lt;/b&gt;
+<A NAME="61"></A> *
+<A NAME="62"></A> * &lt;p&gt;&lt;b&gt;yyyymmdd author:&lt;/b&gt;
+<A NAME="63"></A> * &lt;ul&gt;
+<A NAME="64"></A> * &lt;li&gt; explicit fix description (no line numbers but methods) go 
+<A NAME="65"></A> *            beyond the cvs commit message
+<A NAME="66"></A> * &lt;/ul&gt;
+<A NAME="67"></A> */</FONT>
+<A NAME="68"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> PollDirSrvImpl <FONT ID="Implements">implements</FONT> <A HREF="../../../org/dcm4che/server/PollDirSrv.java.html">PollDirSrv</A>
+<A NAME="69"></A>{
+<A NAME="70"></A>   <FONT ID="SingleLineComment">// Constants -----------------------------------------------------
+<A NAME="71"></A></FONT>   
+<A NAME="72"></A>   <FONT ID="SingleLineComment">// Attributes ----------------------------------------------------
+<A NAME="73"></A></FONT>   <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger log = Logger.getLogger(<FONT ID="StringLiteral">"dcm4che.server.PollDirSrv"</FONT>);
+<A NAME="74"></A>   <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Int">int</FONT> instCount = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="75"></A>   <FONT ID="Private">private</FONT> String name = <FONT ID="StringLiteral">"PollDirSrv-"</FONT> + ++instCount;
+<A NAME="76"></A>
+<A NAME="77"></A>   <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> Handler handler;
+<A NAME="78"></A>   <FONT ID="Private">private</FONT> Timer timer = <FONT ID="Null">null</FONT>;
+<A NAME="79"></A>   <FONT ID="Private">private</FONT> Comparator sortCrit = <FONT ID="Null">null</FONT>;
+<A NAME="80"></A>   <FONT ID="Private">private</FONT> File pollDir = <FONT ID="Null">null</FONT>;;
+<A NAME="81"></A>   <FONT ID="Private">private</FONT> File doneDir = <FONT ID="Null">null</FONT>;
+<A NAME="82"></A>   <FONT ID="Private">private</FONT> <FONT ID="Long">long</FONT> pollPeriod;
+<A NAME="83"></A>   <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> counter = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="84"></A>   <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> doneCount = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="85"></A>   <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> failCount = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="86"></A>   <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> openCount = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="87"></A>   <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> failOpenCount = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="88"></A>   <FONT ID="Private">private</FONT> <FONT ID="Long">long</FONT> deltaLastModified = <FONT ID="IntegerLiteral">1000</FONT>;
+<A NAME="89"></A>   <FONT ID="Private">private</FONT> <FONT ID="Long">long</FONT> openRetryPeriod = <FONT ID="IntegerLiteral">60000</FONT>;
+<A NAME="90"></A>   
+<A NAME="91"></A>   <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> FileFilter filter = <FONT ID="New">new</FONT> FileFilter() {      
+<A NAME="92"></A>      <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> accept(File pathname) {
+<A NAME="93"></A>         String name = pathname.getName();
+<A NAME="94"></A>         <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> pos = <FONT ID="IntegerLiteral">0</FONT>; name.charAt(pos) == <FONT ID="CharacerLiteral">'#'</FONT>; ++pos) {
+<A NAME="95"></A>            <FONT ID="If">if</FONT> (((counter &gt;&gt; pos) &amp; <FONT ID="IntegerLiteral">1</FONT> )!= <FONT ID="IntegerLiteral">0</FONT>)
+<A NAME="96"></A>               <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="97"></A>         }
+<A NAME="98"></A>         <FONT ID="Return">return</FONT> pathname.lastModified() + deltaLastModified
+<A NAME="99"></A>               &lt; System.currentTimeMillis();            
+<A NAME="100"></A>      }
+<A NAME="101"></A>   };
+<A NAME="102"></A>      
+<A NAME="103"></A>   <FONT ID="SingleLineComment">// Static --------------------------------------------------------
+<A NAME="104"></A></FONT>   
+<A NAME="105"></A>   <FONT ID="SingleLineComment">// Constructors --------------------------------------------------
+<A NAME="106"></A></FONT>   <FONT ID="Public">public</FONT> PollDirSrvImpl(Handler handler) {
+<A NAME="107"></A>      <FONT ID="If">if</FONT> (handler == <FONT ID="Null">null</FONT>)
+<A NAME="108"></A>         <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> NullPointerException();
+<A NAME="109"></A>      
+<A NAME="110"></A>      <FONT ID="This">this</FONT>.handler = handler;
+<A NAME="111"></A>   }
+<A NAME="112"></A>   
+<A NAME="113"></A>   <FONT ID="SingleLineComment">// Public --------------------------------------------------------
+<A NAME="114"></A></FONT>   <FONT ID="Public">public</FONT> String toString() {      
+<A NAME="115"></A>      <FONT ID="Return">return</FONT> timer == <FONT ID="Null">null</FONT> ? name + <FONT ID="StringLiteral">"[not running]"</FONT>
+<A NAME="116"></A>         : name + <FONT ID="StringLiteral">"[poll "</FONT> + pollDir + <FONT ID="StringLiteral">" all "</FONT> + (pollPeriod/<FONT ID="FloatPointLiteral">1000f</FONT>) + <FONT ID="StringLiteral">" s]"</FONT>;
+<A NAME="117"></A>   }
+<A NAME="118"></A>      
+<A NAME="119"></A>   <FONT ID="SingleLineComment">// PollDirSrv implementation ----------------------------------------
+<A NAME="120"></A></FONT>   <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setSortCrit(Comparator sortCrit) {
+<A NAME="121"></A>      <FONT ID="This">this</FONT>.sortCrit = sortCrit;
+<A NAME="122"></A>   }
+<A NAME="123"></A>   
+<A NAME="124"></A>   <FONT ID="Public">public</FONT> File getDoneDir() {
+<A NAME="125"></A>      <FONT ID="Return">return</FONT> doneDir;
+<A NAME="126"></A>   }
+<A NAME="127"></A>   
+<A NAME="128"></A>   <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setDoneDir(File doneDir) {
+<A NAME="129"></A>      <FONT ID="This">this</FONT>.doneDir = doneDir;
+<A NAME="130"></A>   }
+<A NAME="131"></A>   
+<A NAME="132"></A>   <FONT ID="Public">public</FONT> <FONT ID="Long">long</FONT> getOpenRetryPeriod() {
+<A NAME="133"></A>      <FONT ID="Return">return</FONT> openRetryPeriod;
+<A NAME="134"></A>   }
+<A NAME="135"></A>   
+<A NAME="136"></A>   <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setOpenRetryPeriod(<FONT ID="Long">long</FONT> openRetryPeriod) {
+<A NAME="137"></A>      <FONT ID="This">this</FONT>.openRetryPeriod = openRetryPeriod;
+<A NAME="138"></A>   }
+<A NAME="139"></A>   
+<A NAME="140"></A>   <FONT ID="Public">public</FONT> <FONT ID="Long">long</FONT> getDeltaLastModified() {
+<A NAME="141"></A>      <FONT ID="Return">return</FONT> deltaLastModified;
+<A NAME="142"></A>   }
+<A NAME="143"></A>   
+<A NAME="144"></A>   <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setDeltaLastModified(<FONT ID="Long">long</FONT> deltaLastModified) {
+<A NAME="145"></A>      <FONT ID="This">this</FONT>.deltaLastModified = deltaLastModified;
+<A NAME="146"></A>   }
+<A NAME="147"></A>
+<A NAME="148"></A>   <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> getDoneCount() {
+<A NAME="149"></A>      <FONT ID="Return">return</FONT> doneCount;
+<A NAME="150"></A>   }
+<A NAME="151"></A>   
+<A NAME="152"></A>   <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> getFailCount() {
+<A NAME="153"></A>      <FONT ID="Return">return</FONT> failCount;
+<A NAME="154"></A>   }
+<A NAME="155"></A>   
+<A NAME="156"></A>   <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> getOpenCount() {
+<A NAME="157"></A>      <FONT ID="Return">return</FONT> openCount;
+<A NAME="158"></A>   }
+<A NAME="159"></A>   
+<A NAME="160"></A>   <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> getFailOpenCount() {
+<A NAME="161"></A>      <FONT ID="Return">return</FONT> failOpenCount;
+<A NAME="162"></A>   }
+<A NAME="163"></A>   
+<A NAME="164"></A>   <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> resetCounter() {
+<A NAME="165"></A>      counter = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="166"></A>      doneCount = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="167"></A>      failCount = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="168"></A>      openCount = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="169"></A>      failOpenCount = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="170"></A>   }
+<A NAME="171"></A>   
+<A NAME="172"></A>   <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> start(File pollDir, <FONT ID="Long">long</FONT> pollPeriod) {
+<A NAME="173"></A>      <FONT ID="If">if</FONT> (!pollDir.isDirectory()) 
+<A NAME="174"></A>         <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> IllegalArgumentException(<FONT ID="StringLiteral">"pollDir: "</FONT> + pollDir);      
+<A NAME="175"></A>      <FONT ID="If">if</FONT> (pollPeriod &lt; <FONT ID="IntegerLiteral">0</FONT>)
+<A NAME="176"></A>         <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> IllegalArgumentException(<FONT ID="StringLiteral">"pollPeriod: "</FONT> + pollPeriod);
+<A NAME="177"></A>      <FONT ID="If">if</FONT> (timer != <FONT ID="Null">null</FONT>)
+<A NAME="178"></A>         <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> IllegalStateException(<FONT ID="StringLiteral">"Already running"</FONT>);
+<A NAME="179"></A>            
+<A NAME="180"></A>      <FONT ID="This">this</FONT>.pollDir = pollDir;
+<A NAME="181"></A>      <FONT ID="This">this</FONT>.pollPeriod = pollPeriod;
+<A NAME="182"></A>      <FONT ID="This">this</FONT>.timer = <FONT ID="New">new</FONT> Timer(<FONT ID="False">false</FONT>);     
+<A NAME="183"></A>      log.info(<FONT ID="StringLiteral">"Start "</FONT> + <FONT ID="This">this</FONT>);
+<A NAME="184"></A>      timer.schedule(<FONT ID="New">new</FONT> TimerTask() {
+<A NAME="185"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> run() { execute(); }
+<A NAME="186"></A>         }, <FONT ID="IntegerLiteral">0</FONT>, pollPeriod);
+<A NAME="187"></A>   }
+<A NAME="188"></A>
+<A NAME="189"></A>   <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> stop() {
+<A NAME="190"></A>      <FONT ID="If">if</FONT> (timer == <FONT ID="Null">null</FONT>)
+<A NAME="191"></A>         <FONT ID="Return">return</FONT>;
+<A NAME="192"></A>      log.info(<FONT ID="StringLiteral">"Stop "</FONT> + <FONT ID="This">this</FONT>);
+<A NAME="193"></A>      timer.cancel();
+<A NAME="194"></A>      timer = <FONT ID="Null">null</FONT>;
+<A NAME="195"></A>   }
+<A NAME="196"></A>      
+<A NAME="197"></A>   <FONT ID="SingleLineComment">// Y overrides ---------------------------------------------------
+<A NAME="198"></A></FONT>   
+<A NAME="199"></A>   <FONT ID="SingleLineComment">// Package protected ---------------------------------------------
+<A NAME="200"></A></FONT>   
+<A NAME="201"></A>   <FONT ID="SingleLineComment">// Protected -----------------------------------------------------
+<A NAME="202"></A></FONT>   
+<A NAME="203"></A>   <FONT ID="SingleLineComment">// Private -------------------------------------------------------
+<A NAME="204"></A></FONT>   <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> execute() {
+<A NAME="205"></A>      NDC.push(name);
+<A NAME="206"></A>      <FONT ID="If">if</FONT> (log.isDebugEnabled())
+<A NAME="207"></A>         log.debug(<FONT ID="StringLiteral">"poll "</FONT> + pollDir);
+<A NAME="208"></A>      
+<A NAME="209"></A>      File[] files = pollDir.listFiles(filter);
+<A NAME="210"></A>      <FONT ID="If">if</FONT> (files.length &gt; <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="211"></A>         <FONT ID="For">for</FONT>(;;) {
+<A NAME="212"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="213"></A>               log.debug(<FONT ID="StringLiteral">"open session"</FONT>);
+<A NAME="214"></A>               handler.openSession();
+<A NAME="215"></A>                ++openCount;
+<A NAME="216"></A>               <FONT ID="Break">break</FONT>;
+<A NAME="217"></A>            } <FONT ID="Catch">catch</FONT> (Exception e) {            
+<A NAME="218"></A>               ++failOpenCount;
+<A NAME="219"></A>               log.error(<FONT ID="StringLiteral">"open session failed:"</FONT>, e);
+<A NAME="220"></A>               <FONT ID="Try">try</FONT> {
+<A NAME="221"></A>                  Thread.sleep(openRetryPeriod);
+<A NAME="222"></A>               } <FONT ID="Catch">catch</FONT> (InterruptedException ie) {
+<A NAME="223"></A>                  log.warn(ie);
+<A NAME="224"></A>               }
+<A NAME="225"></A>            }
+<A NAME="226"></A>         }
+<A NAME="227"></A>         <FONT ID="Do">do</FONT> {
+<A NAME="228"></A>            <FONT ID="If">if</FONT> (sortCrit != <FONT ID="Null">null</FONT>) {
+<A NAME="229"></A>               Arrays.sort(files, sortCrit);                        
+<A NAME="230"></A>            }
+<A NAME="231"></A>            <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; files.length; ++i) {
+<A NAME="232"></A>               <FONT ID="Try">try</FONT> {
+<A NAME="233"></A>                  log.info(<FONT ID="StringLiteral">"process "</FONT> + files[i]);
+<A NAME="234"></A>                  <FONT ID="If">if</FONT> (handler.process(files[i])) {
+<A NAME="235"></A>                     ++doneCount;
+<A NAME="236"></A>                     success(files[i]);
+<A NAME="237"></A>                  }
+<A NAME="238"></A>               } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="239"></A>                  ++failCount;
+<A NAME="240"></A>                  log.error(<FONT ID="StringLiteral">"process "</FONT> + files[i] + <FONT ID="StringLiteral">" failed!"</FONT>, e);
+<A NAME="241"></A>                  failed(files[i]);
+<A NAME="242"></A>               }
+<A NAME="243"></A>            }
+<A NAME="244"></A>            files = pollDir.listFiles(filter);
+<A NAME="245"></A>         } <FONT ID="While">while</FONT> (files.length &gt; <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="246"></A>         handler.closeSession();
+<A NAME="247"></A>      }
+<A NAME="248"></A>      ++counter;
+<A NAME="249"></A>      NDC.pop();
+<A NAME="250"></A>   }
+<A NAME="251"></A>   
+<A NAME="252"></A>   <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> success(File file) {
+<A NAME="253"></A>      <FONT ID="If">if</FONT> (doneDir != <FONT ID="Null">null</FONT>) {
+<A NAME="254"></A>         moveFile(file, <FONT ID="New">new</FONT> File(doneDir, file.getName()));
+<A NAME="255"></A>      } <FONT ID="Else">else</FONT> {
+<A NAME="256"></A>         <FONT ID="If">if</FONT> (!file.delete()) {
+<A NAME="257"></A>            log.error(<FONT ID="StringLiteral">"could not delete "</FONT> + file);
+<A NAME="258"></A>         }
+<A NAME="259"></A>      }
+<A NAME="260"></A>   }
+<A NAME="261"></A>      
+<A NAME="262"></A>   <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> failed(File file) {
+<A NAME="263"></A>      moveFile(file, <FONT ID="New">new</FONT> File(file.getParentFile(), <FONT ID="StringLiteral">"#"</FONT> + file.getName()));
+<A NAME="264"></A>   }
+<A NAME="265"></A>   
+<A NAME="266"></A>   <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> moveFile(File from, File to) {
+<A NAME="267"></A>      <FONT ID="If">if</FONT> (from.renameTo(to)) {
+<A NAME="268"></A>         <FONT ID="If">if</FONT> (log.isDebugEnabled())
+<A NAME="269"></A>            log.debug(<FONT ID="StringLiteral">"rename "</FONT> + from + <FONT ID="StringLiteral">" to "</FONT> + to);
+<A NAME="270"></A>      } <FONT ID="Else">else</FONT> {
+<A NAME="271"></A>         log.error(<FONT ID="StringLiteral">"could not rename "</FONT> + from + <FONT ID="StringLiteral">" to "</FONT> + to);
+<A NAME="272"></A>      }
+<A NAME="273"></A>   }
+<A NAME="274"></A>   <FONT ID="SingleLineComment">// Inner classes -------------------------------------------------
+<A NAME="275"></A></FONT>}
+<A NAME="276"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">PollDirSrvImpl</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

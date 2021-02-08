@@ -1,0 +1,568 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.services.StorageService (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">StorageService</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/* ***** BEGIN LICENSE BLOCK *****
+<A NAME="2"></A> * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+<A NAME="3"></A> *
+<A NAME="4"></A> * The contents of this file are subject to the Mozilla Public License Version
+<A NAME="5"></A> * 1.1 (the "License"); you may not use this file except in compliance with
+<A NAME="6"></A> * the License. You may obtain a copy of the License at
+<A NAME="7"></A> * http://www.mozilla.org/MPL/
+<A NAME="8"></A> *
+<A NAME="9"></A> * Software distributed under the License is distributed on an "AS IS" basis,
+<A NAME="10"></A> * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+<A NAME="11"></A> * for the specific language governing rights and limitations under the
+<A NAME="12"></A> * License.
+<A NAME="13"></A> *
+<A NAME="14"></A> * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+<A NAME="15"></A> * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+<A NAME="16"></A> *
+<A NAME="17"></A> * The Initial Developer of the Original Code is
+<A NAME="18"></A> * TIANI Medgraph AG.
+<A NAME="19"></A> * Portions created by the Initial Developer are Copyright (C) 2002-2005
+<A NAME="20"></A> * the Initial Developer. All Rights Reserved.
+<A NAME="21"></A> *
+<A NAME="22"></A> * Contributor(s):
+<A NAME="23"></A> * Gunter Zeilinger &lt;gunter.zeilinger@tiani.com&gt;
+<A NAME="24"></A> *
+<A NAME="25"></A> * Alternatively, the contents of this file may be used under the terms of
+<A NAME="26"></A> * either the GNU General Public License Version 2 or later (the "GPL"), or
+<A NAME="27"></A> * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+<A NAME="28"></A> * in which case the provisions of the GPL or the LGPL are applicable instead
+<A NAME="29"></A> * of those above. If you wish to allow use of your version of this file only
+<A NAME="30"></A> * under the terms of either the GPL or the LGPL, and not to allow others to
+<A NAME="31"></A> * use your version of this file under the terms of the MPL, indicate your
+<A NAME="32"></A> * decision by deleting the provisions above and replace them with the notice
+<A NAME="33"></A> * and other provisions required by the GPL or the LGPL. If you do not delete
+<A NAME="34"></A> * the provisions above, a recipient may use your version of this file under
+<A NAME="35"></A> * the terms of any one of the MPL, the GPL or the LGPL.
+<A NAME="36"></A> *
+<A NAME="37"></A> * ***** END LICENSE BLOCK ***** */</FONT>
+<A NAME="38"></A><FONT ID="Package">package</FONT> <A HREF="../../../../de.iftm.dcm4che.services.index.html" target="packageFrame">de.iftm.dcm4che.services</A>;
+<A NAME="39"></A>
+<A NAME="40"></A><FONT ID="Import">import</FONT> java.io.BufferedInputStream;
+<A NAME="41"></A><FONT ID="Import">import</FONT> java.io.File;
+<A NAME="42"></A><FONT ID="Import">import</FONT> java.io.FileInputStream;
+<A NAME="43"></A><FONT ID="Import">import</FONT> java.io.FileOutputStream;
+<A NAME="44"></A><FONT ID="Import">import</FONT> java.io.IOException;
+<A NAME="45"></A><FONT ID="Import">import</FONT> java.io.InputStream;
+<A NAME="46"></A><FONT ID="Import">import</FONT> java.io.OutputStream;
+<A NAME="47"></A><FONT ID="Import">import</FONT> java.net.URL;
+<A NAME="48"></A><FONT ID="Import">import</FONT> java.net.ConnectException;
+<A NAME="49"></A><FONT ID="Import">import</FONT> java.text.MessageFormat;
+<A NAME="50"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="51"></A><FONT ID="Import">import</FONT> java.text.ParseException;
+<A NAME="52"></A>
+<A NAME="53"></A><FONT ID="Import">import</FONT> org.dcm4che.data.Command;
+<A NAME="54"></A><FONT ID="Import">import</FONT> org.dcm4che.data.Dataset;
+<A NAME="55"></A><FONT ID="Import">import</FONT> org.dcm4che.data.DcmDecodeParam;
+<A NAME="56"></A><FONT ID="Import">import</FONT> org.dcm4che.data.DcmElement;
+<A NAME="57"></A><FONT ID="Import">import</FONT> org.dcm4che.data.DcmEncodeParam;
+<A NAME="58"></A><FONT ID="Import">import</FONT> org.dcm4che.data.DcmObjectFactory;
+<A NAME="59"></A><FONT ID="Import">import</FONT> org.dcm4che.data.DcmParser;
+<A NAME="60"></A><FONT ID="Import">import</FONT> org.dcm4che.data.DcmParserFactory;
+<A NAME="61"></A><FONT ID="Import">import</FONT> org.dcm4che.data.FileFormat;
+<A NAME="62"></A><FONT ID="Import">import</FONT> org.dcm4che.data.FileMetaInfo;
+<A NAME="63"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.Status;
+<A NAME="64"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.Tags;
+<A NAME="65"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.UIDs;
+<A NAME="66"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.VRs;
+<A NAME="67"></A><FONT ID="Import">import</FONT> org.dcm4che.net.AAbort;
+<A NAME="68"></A><FONT ID="Import">import</FONT> org.dcm4che.net.AcceptorPolicy;
+<A NAME="69"></A><FONT ID="Import">import</FONT> org.dcm4che.net.ActiveAssociation;
+<A NAME="70"></A><FONT ID="Import">import</FONT> org.dcm4che.net.AssociationFactory;
+<A NAME="71"></A><FONT ID="Import">import</FONT> org.dcm4che.net.DcmServiceBase;
+<A NAME="72"></A><FONT ID="Import">import</FONT> org.dcm4che.net.DcmServiceException;
+<A NAME="73"></A><FONT ID="Import">import</FONT> org.dcm4che.net.DcmServiceRegistry;
+<A NAME="74"></A><FONT ID="Import">import</FONT> org.dcm4che.net.Dimse;
+<A NAME="75"></A><FONT ID="Import">import</FONT> org.dcm4che.server.DcmHandler;
+<A NAME="76"></A><FONT ID="Import">import</FONT> org.dcm4che.server.Server;
+<A NAME="77"></A><FONT ID="Import">import</FONT> org.dcm4che.server.ServerFactory;
+<A NAME="78"></A><FONT ID="Import">import</FONT> org.dcm4che.util.BufferedOutputStream;
+<A NAME="79"></A><FONT ID="Import">import</FONT> org.dcm4che.util.DcmProtocol;
+<A NAME="80"></A><FONT ID="Import">import</FONT> org.dcm4che.util.SSLContextAdapter;
+<A NAME="81"></A>
+<A NAME="82"></A><FONT ID="Import">import</FONT> org.apache.log4j.Logger;
+<A NAME="83"></A>
+<A NAME="84"></A><FONT ID="FormalComment">/**
+<A NAME="85"></A> * Implementation of a DICOM server.
+<A NAME="86"></A> * &lt;p&gt;
+<A NAME="87"></A> * &lt;p&gt; Usage:
+<A NAME="88"></A> * &lt;p&gt; 1. Create a new instance of this class.
+<A NAME="89"></A> * &lt;p&gt; 2. Register one or more listeners for StorageServiceEvents. These events are fired for each received DICOM object.
+<A NAME="90"></A> * &lt;p&gt; 3. Use the start method to start the server.
+<A NAME="91"></A> * &lt;p&gt; 4. Use the stop method to start the server.
+<A NAME="92"></A> * &lt;p&gt;
+<A NAME="93"></A> * &lt;p&gt;Details of how to run the server is given in another configuration property file.
+<A NAME="94"></A> * A sample may be found at "./resources/StorageService.cfg".
+<A NAME="95"></A> * &lt;p&gt;
+<A NAME="96"></A> * &lt;p&gt;Based on dcm4che 1.4.0 sample: DcmRcv.java revision date 2006-04-06
+<A NAME="97"></A> * &lt;p&gt;
+<A NAME="98"></A> * &lt;p&gt;See: PS 3.4 - Annex B STORAGE SERVICE CLASS
+<A NAME="99"></A> * 
+<A NAME="100"></A> * @author Thomas Hacklaender
+<A NAME="101"></A> * @version 2006-07-25
+<A NAME="102"></A> */</FONT>
+<A NAME="103"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> StorageService <FONT ID="Extends">extends</FONT> DcmServiceBase {
+<A NAME="104"></A>    
+<A NAME="105"></A>    <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> Logger log = Logger.getLogger(<A HREF="../../../../de/iftm/dcm4che/services/StorageService.java.html">StorageService</A>.<FONT ID="Class">class</FONT>);
+<A NAME="106"></A>    
+<A NAME="107"></A>    <FONT ID="FormalComment">/** The DEBUG flag is set, if the logging level of this class is Debug */</FONT>
+<A NAME="108"></A>    <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> <FONT ID="Boolean">boolean</FONT> DEBUG = log.isDebugEnabled();
+<A NAME="109"></A>    
+<A NAME="110"></A>    
+<A NAME="111"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Factorys &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="112"></A></FONT>    <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> ServerFactory srvFact = ServerFactory.getInstance();
+<A NAME="113"></A>    <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> AssociationFactory fact = AssociationFactory.getInstance();
+<A NAME="114"></A>    <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> DcmParserFactory pFact = DcmParserFactory.getInstance();
+<A NAME="115"></A>    <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> DcmObjectFactory oFact = DcmObjectFactory.getInstance();
+<A NAME="116"></A>    
+<A NAME="117"></A>    
+<A NAME="118"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Fields &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="119"></A></FONT>    
+<A NAME="120"></A>    <FONT ID="FormalComment">/** TLS context. Set by method initTLS */</FONT>
+<A NAME="121"></A>    <FONT ID="Private">private</FONT> SSLContextAdapter tls = <FONT ID="Null">null</FONT>;
+<A NAME="122"></A>    
+<A NAME="123"></A>    <FONT ID="FormalComment">/** Type of encryption used for connections [default=DICOM]. */</FONT>
+<A NAME="124"></A>    <FONT ID="Private">private</FONT> DcmProtocol protocol = DcmProtocol.DICOM;
+<A NAME="125"></A>    
+<A NAME="126"></A>    <FONT ID="FormalComment">/** Acceptor policy of the server. */</FONT>
+<A NAME="127"></A>    <FONT ID="Private">private</FONT> AcceptorPolicy policy = fact.newAcceptorPolicy();
+<A NAME="128"></A>    
+<A NAME="129"></A>    <FONT ID="FormalComment">/** ??? */</FONT>
+<A NAME="130"></A>    <FONT ID="Private">private</FONT> DcmServiceRegistry services = fact.newDcmServiceRegistry();
+<A NAME="131"></A>    
+<A NAME="132"></A>    <FONT ID="FormalComment">/** The server handler instance.*/</FONT>
+<A NAME="133"></A>    <FONT ID="Private">private</FONT> DcmHandler handler = srvFact.newDcmHandler(policy, services);
+<A NAME="134"></A>    
+<A NAME="135"></A>    <FONT ID="FormalComment">/** The server instance.*/</FONT>
+<A NAME="136"></A>    <FONT ID="Private">private</FONT> Server server = srvFact.newServer(handler);
+<A NAME="137"></A>    
+<A NAME="138"></A>    <FONT ID="FormalComment">/** Additional delay of response [in sec] (useful for testing async mode). */</FONT>
+<A NAME="139"></A>    <FONT ID="Private">private</FONT> <FONT ID="Long">long</FONT> rspDelay = <FONT ID="IntegerLiteral">0L</FONT>;
+<A NAME="140"></A>    
+<A NAME="141"></A>    <FONT ID="FormalComment">/** Status code in C-STORE-RSP in decimal (#####) or hex (####H) [default=0].
+<A NAME="142"></A>     * Useful for testing modality behavior in case of status != 0 */</FONT>
+<A NAME="143"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> rspStatus = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="144"></A>    
+<A NAME="145"></A>    <FONT ID="FormalComment">/** A Vector of listeners registered to receive StorageServiceClassEvents. */</FONT>
+<A NAME="146"></A>    <FONT ID="Private">private</FONT> Vector eventListeners = <FONT ID="New">new</FONT> Vector();
+<A NAME="147"></A>    
+<A NAME="148"></A>    
+<A NAME="149"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Constructor &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="150"></A></FONT>    
+<A NAME="151"></A>    <FONT ID="FormalComment">/**
+<A NAME="152"></A>     *  Constructor for the StorageService object. Initializes everything.
+<A NAME="153"></A>     * 
+<A NAME="154"></A>     * @param cfg the configuration properties for this class.
+<A NAME="155"></A>     * @throws ParseException
+<A NAME="156"></A>     */</FONT>
+<A NAME="157"></A>    <FONT ID="Public">public</FONT> StorageService(<A HREF="../../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A> cfg) <FONT ID="Throws">throws</FONT> ParseException {
+<A NAME="158"></A>        <FONT ID="SingleLineComment">// Additional delay of response [in sec] (useful for testing async mode).
+<A NAME="159"></A></FONT>        rspDelay = Integer.parseInt(cfg.getProperty(<FONT ID="StringLiteral">"rsp-delay"</FONT>, <FONT ID="StringLiteral">"0"</FONT>)) * <FONT ID="IntegerLiteral">1000L</FONT>;
+<A NAME="160"></A>        
+<A NAME="161"></A>        <FONT ID="SingleLineComment">// Status code in C-STORE-RSP in decimal (#####) or hex (####H) [default=0]. Useful for testing modality behavior in case of status != 0
+<A NAME="162"></A></FONT>        String decOrHex = cfg.getProperty(<FONT ID="StringLiteral">"rsp-status"</FONT>, <FONT ID="StringLiteral">"0"</FONT>);
+<A NAME="163"></A>        <FONT ID="If">if</FONT> (decOrHex.endsWith(<FONT ID="StringLiteral">"H"</FONT>)) {
+<A NAME="164"></A>            rspStatus = Integer.parseInt(decOrHex.substring(<FONT ID="IntegerLiteral">0</FONT>, decOrHex.length()-<FONT ID="IntegerLiteral">1</FONT>), <FONT ID="IntegerLiteral">16</FONT>);
+<A NAME="165"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="166"></A>            rspStatus = Integer.parseInt(decOrHex);
+<A NAME="167"></A>        }
+<A NAME="168"></A>        
+<A NAME="169"></A>        initServer(cfg);
+<A NAME="170"></A>        initTLS(cfg);
+<A NAME="171"></A>        initPolicy(cfg);
+<A NAME="172"></A>    }
+<A NAME="173"></A>    
+<A NAME="174"></A>    
+<A NAME="175"></A>    <FONT ID="FormalComment">/**
+<A NAME="176"></A>     * Initializes server related parameters.
+<A NAME="177"></A>     *
+<A NAME="178"></A>     * @param cfg the configuration properties for this class.
+<A NAME="179"></A>     */</FONT>
+<A NAME="180"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> initServer(<A HREF="../../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A> cfg) {
+<A NAME="181"></A>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Setup parameters of the server itself
+<A NAME="182"></A></FONT>        
+<A NAME="183"></A>        <FONT ID="SingleLineComment">// Port number of the server [default=104]
+<A NAME="184"></A></FONT>        server.setPort(Integer.parseInt(cfg.getProperty(<FONT ID="StringLiteral">"port"</FONT>, <FONT ID="StringLiteral">"104"</FONT>)));
+<A NAME="185"></A>        <FONT ID="SingleLineComment">// Maximum number of simultaneous clients [default=10].
+<A NAME="186"></A></FONT>        server.setMaxClients(Integer.parseInt(cfg.getProperty(<FONT ID="StringLiteral">"max-clients"</FONT>, <FONT ID="StringLiteral">"10"</FONT>)));
+<A NAME="187"></A>        
+<A NAME="188"></A>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Setup parameters of the server handler
+<A NAME="189"></A></FONT>        
+<A NAME="190"></A>        <FONT ID="SingleLineComment">// Time-out waiting [in msec] for A-ASSOCIATE-RQ after TCP connect. 0 is interpreted as an infinite timeout [default=5000].
+<A NAME="191"></A></FONT>        handler.setRqTimeout(Integer.parseInt(cfg.getProperty(<FONT ID="StringLiteral">"rq-timeout"</FONT>, <FONT ID="StringLiteral">"5000"</FONT>)));
+<A NAME="192"></A>        <FONT ID="SingleLineComment">// Time-out waiting [in msec] for DIMSE on open association. 0 is interpreted as an infinite timeout [default=0].
+<A NAME="193"></A></FONT>        handler.setDimseTimeout(Integer.parseInt(cfg.getProperty(<FONT ID="StringLiteral">"dimse-timeout"</FONT>, <FONT ID="StringLiteral">"0"</FONT>)));
+<A NAME="194"></A>        <FONT ID="SingleLineComment">// Time delay [in msec] for socket close after sending A-RELEASE-RP or A-ABORT [default=500].
+<A NAME="195"></A></FONT>        handler.setSoCloseDelay(Integer.parseInt(cfg.getProperty(<FONT ID="StringLiteral">"so-close-delay"</FONT>, <FONT ID="StringLiteral">"500"</FONT>)));
+<A NAME="196"></A>        <FONT ID="SingleLineComment">// Activates packing of command PDV (Presentation Data Value) + (first) data PDV into one P-DATA-TF PDU (Protocol Data Unit)
+<A NAME="197"></A></FONT>        handler.setPackPDVs(<FONT ID="StringLiteral">"true"</FONT>.equalsIgnoreCase(cfg.getProperty(<FONT ID="StringLiteral">"pack-pdvs"</FONT>, <FONT ID="StringLiteral">"false"</FONT>)));
+<A NAME="198"></A>    }
+<A NAME="199"></A>    
+<A NAME="200"></A>    
+<A NAME="201"></A>    <FONT ID="FormalComment">/**
+<A NAME="202"></A>     * Initializes TLS (Transport Layer Security, predecessor of SSL, Secure 
+<A NAME="203"></A>     * Sockets Layer) connection related parameters. TLS expects RSA (Ron Rivest, 
+<A NAME="204"></A>     * Adi Shamir and Len Adleman) encoded keys and certificates.
+<A NAME="205"></A>     *
+<A NAME="206"></A>     * &lt;p&gt;Keys and certificates may be stored in PKCS #12 (Public Key 
+<A NAME="207"></A>     * Cryptography Standards) or JKS (Java Keystore) containers.
+<A NAME="208"></A>     *
+<A NAME="209"></A>     * &lt;p&gt;TSL is used to encrypt data during transmission, which is accomplished 
+<A NAME="210"></A>     * when the connection between the two partners A (normally the client) and B 
+<A NAME="211"></A>     * (normally the server) is established. If A asks B to send TSL encrypted 
+<A NAME="212"></A>     * data, both partners exchange some handshake information. In a first step 
+<A NAME="213"></A>     * B tries to authentify itself against A (server authentification, optional 
+<A NAME="214"></A>     * in TSL but implementet in this way in dcm4che). For that B presents its 
+<A NAME="215"></A>     * public key for A to accept or deny. If the authentification is accepted, 
+<A NAME="216"></A>     * A tries to authentify itself against B (client authentification, optional 
+<A NAME="217"></A>     * in TSL but implementet in this way in dcm4che).If B accepts the 
+<A NAME="218"></A>     * authentification A and B agree on a hash (symmetric key, which is 
+<A NAME="219"></A>     * independent of the private/public keys used for authentification) for the 
+<A NAME="220"></A>     * duration of their conversation, which is used to encrypt the data.
+<A NAME="221"></A>     *
+<A NAME="222"></A>     * &lt;p&gt;To be able to establish a TSL connection B needs a privat/public key 
+<A NAME="223"></A>     * pair, which identifies B unambiguously. For that the private key is 
+<A NAME="224"></A>     * generated first; than the root-public key is derived from that private 
+<A NAME="225"></A>     * key. To bind the root-public key with the identity of B a Certificate 
+<A NAME="226"></A>     * Authority (CA) is used: The root-public key is send to CA, which returns 
+<A NAME="227"></A>     * a certified-public key, which includes information about the CA as well 
+<A NAME="228"></A>     * as the root-public key. Optionally this process can be repeated several 
+<A NAME="229"></A>     * times so that the certified-public key contains a chain of certificates 
+<A NAME="230"></A>     * of different CA's.
+<A NAME="231"></A>     *
+<A NAME="232"></A>     * &lt;p&gt;The certified-public key of B is presented to A during server 
+<A NAME="233"></A>     * authentification. Partner A should accept this key, if it can match the 
+<A NAME="234"></A>     * last certificate in the chain with a root-certificat found in its local 
+<A NAME="235"></A>     * list of root-certificates of CA's. That means, that A does not check the 
+<A NAME="236"></A>     * identity of B, but "trusts" B because it was certified by an authority. 
+<A NAME="237"></A>     * The same happens for client authentification. Handling of authentification 
+<A NAME="238"></A>     * of the identity of the communication partner is subject of PS 3.15 - 
+<A NAME="239"></A>     * Security and System Management Profiles.
+<A NAME="240"></A>     *
+<A NAME="241"></A>     * &lt;p&gt;In the configuration files of this method the certified-public key is 
+<A NAME="242"></A>     * stored in the property "tls-key" and the root-certificates of the known 
+<A NAME="243"></A>     * CA's in "tls-cacerts".
+<A NAME="244"></A>     *
+<A NAME="245"></A>     * &lt;p&gt;Usually the certified-public keys of A and B are different, but they 
+<A NAME="246"></A>     * also may be the same. In this case the root-certificates are also the same.
+<A NAME="247"></A>     *
+<A NAME="248"></A>     * &lt;p&gt;It is possible to establish a TLS connection without using a CA: In 
+<A NAME="249"></A>     * this case both partners creates a individual container holding their 
+<A NAME="250"></A>     * private and root-public key. These containers could be used for certifying 
+<A NAME="251"></A>     * also, because the length of the certifying chain is one and therefore the 
+<A NAME="252"></A>     * root-public key is also the last certified-public key. Therefore the 
+<A NAME="253"></A>     * root-public key works in this scenario also as the root-certificate of 
+<A NAME="254"></A>     * the "certifying authoroty".
+<A NAME="255"></A>     *
+<A NAME="256"></A>     * &lt;p&gt;If no keystores are specified in the configuration properties, the 
+<A NAME="257"></A>     * not-certified default-keystore "resources/identityJava.jks" is used for 
+<A NAME="258"></A>     * "tls-key" and "tls-cacerts" when establishing the connection.
+<A NAME="259"></A>     *
+<A NAME="260"></A>     * @param cfg the configuration properties for this class.
+<A NAME="261"></A>     * @throws ParseException
+<A NAME="262"></A>     */</FONT>
+<A NAME="263"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> initTLS(<A HREF="../../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A> cfg) <FONT ID="Throws">throws</FONT> ParseException {
+<A NAME="264"></A>        <FONT ID="Char">char</FONT>[]  keystorepasswd;
+<A NAME="265"></A>        <FONT ID="Char">char</FONT>[]  keypasswd;
+<A NAME="266"></A>        <FONT ID="Char">char</FONT>[]  cacertspasswd;
+<A NAME="267"></A>        URL     keyURL;
+<A NAME="268"></A>        URL     cacertURL;
+<A NAME="269"></A>        String  value;
+<A NAME="270"></A>
+<A NAME="271"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="272"></A>            
+<A NAME="273"></A>            <FONT ID="SingleLineComment">// Get the requested protocol from the configuration properties
+<A NAME="274"></A></FONT>            <FONT ID="This">this</FONT>.protocol = DcmProtocol.valueOf(cfg.getProperty(<FONT ID="StringLiteral">"protocol"</FONT>, <FONT ID="StringLiteral">"dicom"</FONT>));
+<A NAME="275"></A>            
+<A NAME="276"></A>            <FONT ID="SingleLineComment">// If no TLS encryption is requested, nothing to do
+<A NAME="277"></A></FONT>            <FONT ID="If">if</FONT> (!protocol.isTLS()) {
+<A NAME="278"></A>                <FONT ID="Return">return</FONT>;
+<A NAME="279"></A>            }
+<A NAME="280"></A>            
+<A NAME="281"></A>            <FONT ID="SingleLineComment">// Get a new TLS context
+<A NAME="282"></A></FONT>            tls = SSLContextAdapter.getInstance();
+<A NAME="283"></A>            
+<A NAME="284"></A>            
+<A NAME="285"></A>            <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Managing the keystore file containing the privat key and
+<A NAME="286"></A></FONT>            <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; certified-public key to establish the communication
+<A NAME="287"></A></FONT>            
+<A NAME="288"></A>            <FONT ID="SingleLineComment">// Password of the keystore [default: secret]
+<A NAME="289"></A></FONT>            keystorepasswd = cfg.getProperty(<FONT ID="StringLiteral">"tls-keystore-passwd"</FONT>, <FONT ID="StringLiteral">"secret"</FONT>).toCharArray();
+<A NAME="290"></A>            
+<A NAME="291"></A>            <FONT ID="SingleLineComment">// Password of the private key [default: secret]
+<A NAME="292"></A></FONT>            keypasswd = cfg.getProperty(<FONT ID="StringLiteral">"tls-key-passwd"</FONT>, <FONT ID="StringLiteral">"secret"</FONT>).toCharArray();
+<A NAME="293"></A>            
+<A NAME="294"></A>            <FONT ID="SingleLineComment">// URL of the file containing the default-keystore
+<A NAME="295"></A></FONT>            keyURL = <A HREF="../../../../de/iftm/dcm4che/services/CDimseService.java.html">CDimseService</A>.<FONT ID="Class">class</FONT>.getResource(<FONT ID="StringLiteral">"resources/identityJava.jks"</FONT>);
+<A NAME="296"></A>            
+<A NAME="297"></A>            <FONT ID="SingleLineComment">// If availabel, replace URL with the one specified in the configuration file
+<A NAME="298"></A></FONT>            <FONT ID="If">if</FONT> ((value = cfg.getProperty(<FONT ID="StringLiteral">"tls-key"</FONT>)) != <FONT ID="Null">null</FONT>) {
+<A NAME="299"></A>                <FONT ID="Try">try</FONT> {
+<A NAME="300"></A>                    <FONT ID="SingleLineComment">// Property specified, try to set to specified value
+<A NAME="301"></A></FONT>                    keyURL = ConfigProperties.fileRefToURL(<A HREF="../../../../de/iftm/dcm4che/services/CDimseService.java.html">CDimseService</A>.<FONT ID="Class">class</FONT>.getResource(<FONT ID="StringLiteral">""</FONT>), value);
+<A NAME="302"></A>                } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="303"></A>                    log.warn(<FONT ID="StringLiteral">"Wrong value for tls-key: "</FONT> + value + <FONT ID="StringLiteral">". tls-key was set to default value."</FONT>);
+<A NAME="304"></A>                }
+<A NAME="305"></A>            }
+<A NAME="306"></A>            
+<A NAME="307"></A>            <FONT ID="SingleLineComment">// log.info("Key URL: " + keyURL.toString());
+<A NAME="308"></A></FONT>            
+<A NAME="309"></A>            <FONT ID="SingleLineComment">// Sets the key attribute of the SSLContextAdapter object
+<A NAME="310"></A></FONT>            <FONT ID="SingleLineComment">// API doc: SSLContextAdapter.loadKeyStore(java.net.URL url, char[] password)
+<A NAME="311"></A></FONT>            <FONT ID="SingleLineComment">// API doc: SSLContextAdapter.setKey(java.security.KeyStore key, char[] password)
+<A NAME="312"></A></FONT>            tls.setKey(tls.loadKeyStore(keyURL, keystorepasswd), keypasswd);
+<A NAME="313"></A>            
+<A NAME="314"></A>            <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Managing the keystore containing the root-certificates of the Ceritifying Authorities
+<A NAME="315"></A></FONT>            <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; used for signing the public key
+<A NAME="316"></A></FONT>            
+<A NAME="317"></A>            <FONT ID="SingleLineComment">// Password of the keystore [default: secret]
+<A NAME="318"></A></FONT>            cacertspasswd = cfg.getProperty(<FONT ID="StringLiteral">"tls-cacerts-passwd"</FONT>, <FONT ID="StringLiteral">"secret"</FONT>).toCharArray();
+<A NAME="319"></A>            
+<A NAME="320"></A>            <FONT ID="SingleLineComment">// URL of the file containing the default-keystore
+<A NAME="321"></A></FONT>            cacertURL = <A HREF="../../../../de/iftm/dcm4che/services/CDimseService.java.html">CDimseService</A>.<FONT ID="Class">class</FONT>.getResource(<FONT ID="StringLiteral">"resources/identityJava.jks"</FONT>);
+<A NAME="322"></A>            
+<A NAME="323"></A>            <FONT ID="SingleLineComment">// If availabel, replace URL with the one specified in the configuration file
+<A NAME="324"></A></FONT>            <FONT ID="If">if</FONT> ((value = cfg.getProperty(<FONT ID="StringLiteral">"tls-cacerts"</FONT>)) != <FONT ID="Null">null</FONT>) {
+<A NAME="325"></A>                <FONT ID="Try">try</FONT> {
+<A NAME="326"></A>                    <FONT ID="SingleLineComment">// Property specified, try to set to specified value
+<A NAME="327"></A></FONT>                    cacertURL = ConfigProperties.fileRefToURL(<A HREF="../../../../de/iftm/dcm4che/services/CDimseService.java.html">CDimseService</A>.<FONT ID="Class">class</FONT>.getResource(<FONT ID="StringLiteral">""</FONT>), value);
+<A NAME="328"></A>                } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="329"></A>                    log.warn(<FONT ID="StringLiteral">"Wrong value for tls-cacerts: "</FONT> + value + <FONT ID="StringLiteral">". tls-cacerts was set to default value."</FONT>);
+<A NAME="330"></A>                }
+<A NAME="331"></A>            }
+<A NAME="332"></A>            
+<A NAME="333"></A>            <FONT ID="SingleLineComment">// log.info("Root-certificat of CA URL: " + cacertURL.toString());
+<A NAME="334"></A></FONT>            
+<A NAME="335"></A>            <FONT ID="SingleLineComment">// Sets the trust attribute of the SSLContextAdapter object
+<A NAME="336"></A></FONT>            <FONT ID="SingleLineComment">// API doc: SSLContextAdapter.loadKeyStore(java.net.URL url, char[] password)
+<A NAME="337"></A></FONT>            <FONT ID="SingleLineComment">// API doc: SSLContextAdapter.setTrust(java.security.KeyStore cacerts)
+<A NAME="338"></A></FONT>            tls.setTrust(tls.loadKeyStore(cacertURL, cacertspasswd));
+<A NAME="339"></A>            
+<A NAME="340"></A>            <FONT ID="SingleLineComment">// Get ciphers for selected protocol
+<A NAME="341"></A></FONT>            <FONT ID="This">this</FONT>.server.setServerSocketFactory(tls.getServerSocketFactory(protocol.getCipherSuites()));
+<A NAME="342"></A>            
+<A NAME="343"></A>        } <FONT ID="Catch">catch</FONT> (Exception ex) {
+<A NAME="344"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> ParseException(<FONT ID="StringLiteral">"Could not initialize TLS configuration."</FONT>, <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="345"></A>        }
+<A NAME="346"></A>    }
+<A NAME="347"></A>    
+<A NAME="348"></A>    
+<A NAME="349"></A>    <FONT ID="FormalComment">/**
+<A NAME="350"></A>     * Initializes acceptor policy related parameters.
+<A NAME="351"></A>     *
+<A NAME="352"></A>     * @param cfg the configuration properties for this class.
+<A NAME="353"></A>     */</FONT>
+<A NAME="354"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> initPolicy(<A HREF="../../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A> cfg) {
+<A NAME="355"></A>        
+<A NAME="356"></A>        <FONT ID="SingleLineComment">// Own AET (Application Entity Title).
+<A NAME="357"></A></FONT>        <FONT ID="SingleLineComment">// Default is null, that means no AET specified.
+<A NAME="358"></A></FONT>        <FONT ID="SingleLineComment">// The provided property value should be a comma or space separated list of individual AETs.
+<A NAME="359"></A></FONT>        <FONT ID="SingleLineComment">// The string "&lt;any&gt;" is interpreted also as null.
+<A NAME="360"></A></FONT>        policy.setCalledAETs(cfg.tokenize(cfg.getProperty(<FONT ID="StringLiteral">"called-aets"</FONT>, <FONT ID="Null">null</FONT>, <FONT ID="StringLiteral">"&lt;any&gt;"</FONT>, <FONT ID="Null">null</FONT>)));
+<A NAME="361"></A>        
+<A NAME="362"></A>        <FONT ID="SingleLineComment">// AETs  (Application Entity Titles) of the storage service users.
+<A NAME="363"></A></FONT>        <FONT ID="SingleLineComment">// Default is null, that means association of any AET is accepted.
+<A NAME="364"></A></FONT>        <FONT ID="SingleLineComment">// The provided property value should be a comma or space separated list of individual AETs.
+<A NAME="365"></A></FONT>        <FONT ID="SingleLineComment">// The string "&lt;any&gt;" is interpreted also as null.
+<A NAME="366"></A></FONT>        policy.setCallingAETs(cfg.tokenize(cfg.getProperty(<FONT ID="StringLiteral">"calling-aets"</FONT>, <FONT ID="Null">null</FONT>, <FONT ID="StringLiteral">"&lt;any&gt;"</FONT>, <FONT ID="Null">null</FONT>)));
+<A NAME="367"></A>        
+<A NAME="368"></A>        <FONT ID="SingleLineComment">// Maximal length of receiving PDUs (Protocol Data Unit) [default=16352]
+<A NAME="369"></A></FONT>        policy.setMaxPDULength(Integer.parseInt(cfg.getProperty(<FONT ID="StringLiteral">"max-pdu-len"</FONT>, <FONT ID="StringLiteral">"16352"</FONT>)));
+<A NAME="370"></A>        
+<A NAME="371"></A>        <FONT ID="SingleLineComment">// Maximal number of invoked operations with outstanding response.
+<A NAME="372"></A></FONT>        policy.setAsyncOpsWindow(Integer.parseInt(cfg.getProperty(<FONT ID="StringLiteral">"max-op-invoked"</FONT>, <FONT ID="StringLiteral">"0"</FONT>)), <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="373"></A>        
+<A NAME="374"></A>        <FONT ID="For">for</FONT> (Enumeration it = cfg.keys(); it.hasMoreElements(); ) {
+<A NAME="375"></A>            String key = (String) it.nextElement();
+<A NAME="376"></A>            
+<A NAME="377"></A>            <FONT ID="SingleLineComment">// Setup available transfer syntaces for storage SOP classes
+<A NAME="378"></A></FONT>            <FONT ID="SingleLineComment">// PS 3.4 - Annex B STORAGE SERVICE CLASS
+<A NAME="379"></A></FONT>            <FONT ID="SingleLineComment">// PS 3.4 - B.5 STANDARD SOP CLASSES
+<A NAME="380"></A></FONT>            <FONT ID="If">if</FONT> (key.startsWith(<FONT ID="StringLiteral">"pc."</FONT>)) {
+<A NAME="381"></A>                initPresContext(key.substring(<FONT ID="IntegerLiteral">3</FONT>), cfg.tokenize(cfg.getProperty(key)));
+<A NAME="382"></A>            }
+<A NAME="383"></A>            
+<A NAME="384"></A>            <FONT ID="SingleLineComment">// Setup user/provider role for Management Service Classes
+<A NAME="385"></A></FONT>            <FONT ID="SingleLineComment">// PS3.4 - Annex E PATIENT MANAGEMENT SERVICE CLASS (retired since 2004)
+<A NAME="386"></A></FONT>            <FONT ID="SingleLineComment">//                 -- Detached Patient Management SOP class
+<A NAME="387"></A></FONT>            <FONT ID="SingleLineComment">// PS3.4 - Annex G RESULTS MANAGEMENT SERVICE CLASS (retired since 2004)
+<A NAME="388"></A></FONT>            <FONT ID="SingleLineComment">//                 -- Detached Result Management SOP class
+<A NAME="389"></A></FONT>            <FONT ID="SingleLineComment">//                 -- Detached Interpretation Management SOP class
+<A NAME="390"></A></FONT>            <FONT ID="If">if</FONT> (key.startsWith(<FONT ID="StringLiteral">"role."</FONT>)) {
+<A NAME="391"></A>                initRole(key.substring(<FONT ID="IntegerLiteral">5</FONT>), cfg.tokenize(cfg.getProperty(key)));
+<A NAME="392"></A>            }
+<A NAME="393"></A>        }
+<A NAME="394"></A>    }
+<A NAME="395"></A>    
+<A NAME="396"></A>    
+<A NAME="397"></A>    <FONT ID="FormalComment">/**
+<A NAME="398"></A>     * Only used by method initPolicy:
+<A NAME="399"></A>     * Setsup available transfer syntaces for storage SOP classes.
+<A NAME="400"></A>     * @param asName name of the storage SOP class (PS 3.4 - B.5 STANDARD SOP CLASSES)
+<A NAME="401"></A>     * @param tsNames the list of transfer syntaces.
+<A NAME="402"></A>     */</FONT>
+<A NAME="403"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> initPresContext(String asName, String[] tsNames) {
+<A NAME="404"></A>        String as = UIDs.forName(asName);
+<A NAME="405"></A>        String[] tsUIDs = <FONT ID="New">new</FONT> String[tsNames.length];
+<A NAME="406"></A>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; tsUIDs.length; ++i) {
+<A NAME="407"></A>            tsUIDs[i] = UIDs.forName(tsNames[i]);
+<A NAME="408"></A>        }
+<A NAME="409"></A>        policy.putPresContext(as, tsUIDs);
+<A NAME="410"></A>        services.bind(as, <FONT ID="This">this</FONT>);
+<A NAME="411"></A>    }
+<A NAME="412"></A>    
+<A NAME="413"></A>    
+<A NAME="414"></A>    <FONT ID="FormalComment">/**
+<A NAME="415"></A>     * Only used by method initPolicy:
+<A NAME="416"></A>     * &lt;p&gt;Setup user/provider role for Management Service Classes.
+<A NAME="417"></A>     * &lt;p&gt;PS3.4 - Annex E PATIENT MANAGEMENT SERVICE CLASS (retired since 2004)
+<A NAME="418"></A>     * &lt;p&gt;                -- Detached Patient Management SOP class
+<A NAME="419"></A>     * &lt;p&gt;PS3.4 - Annex G RESULTS MANAGEMENT SERVICE CLASS (retired since 2004)
+<A NAME="420"></A>     * &lt;p&gt;                -- Detached Result Management SOP class
+<A NAME="421"></A>     * &lt;p&gt;                -- Detached Interpretation Management SOP class
+<A NAME="422"></A>     * @param asName the name of the Detached Management SOP class.
+<A NAME="423"></A>     * @param roles the list of implemented roles. Enumerated: "scu" and "scp".
+<A NAME="424"></A>     */</FONT>
+<A NAME="425"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> initRole(String asName, String[] roles) {
+<A NAME="426"></A>        String as = UIDs.forName(asName);
+<A NAME="427"></A>        policy.putRoleSelection(as, contains(roles, <FONT ID="StringLiteral">"scu"</FONT>), contains(roles, <FONT ID="StringLiteral">"scp"</FONT>));
+<A NAME="428"></A>    }
+<A NAME="429"></A>    
+<A NAME="430"></A>    
+<A NAME="431"></A>    <FONT ID="FormalComment">/**
+<A NAME="432"></A>     * Only used by method initRole:
+<A NAME="433"></A>     * Returns true, if one of the Strings in roles are equal to the key String.
+<A NAME="434"></A>     * @param roles an array of Strings.
+<A NAME="435"></A>     * @param key a key to match.
+<A NAME="436"></A>     */</FONT>
+<A NAME="437"></A>    <FONT ID="Private">private</FONT> <FONT ID="Boolean">boolean</FONT> contains(String[] roles, String key) {
+<A NAME="438"></A>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; roles.length; i++) {
+<A NAME="439"></A>            <FONT ID="If">if</FONT> (key.equalsIgnoreCase(roles[i]))
+<A NAME="440"></A>                <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="441"></A>        }
+<A NAME="442"></A>        <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="443"></A>    }
+<A NAME="444"></A>    
+<A NAME="445"></A>    
+<A NAME="446"></A>    <FONT ID="FormalComment">/**
+<A NAME="447"></A>     * Add a listener to StorageServiceClassEvenEvents.
+<A NAME="448"></A>     * @param l the listener object.
+<A NAME="449"></A>     */</FONT>
+<A NAME="450"></A>    <FONT ID="Public">public</FONT> <FONT ID="Synchronized">synchronized</FONT> <FONT ID="Void">void</FONT> addStorageServiceClassEventListener(<A HREF="../../../../de/iftm/dcm4che/services/StorageServiceEventListener.java.html">StorageServiceEventListener</A> l) {
+<A NAME="451"></A>        <FONT ID="SingleLineComment">// add a listener if it is not already registered
+<A NAME="452"></A></FONT>        <FONT ID="If">if</FONT> (!eventListeners.contains(l)) {
+<A NAME="453"></A>            eventListeners.addElement(l);
+<A NAME="454"></A>        }
+<A NAME="455"></A>    }
+<A NAME="456"></A>    
+<A NAME="457"></A>    
+<A NAME="458"></A>    <FONT ID="FormalComment">/**
+<A NAME="459"></A>     * Removes a listener to StorageServiceClassEvenEvents.
+<A NAME="460"></A>     * @param l the listener object.
+<A NAME="461"></A>     */</FONT>
+<A NAME="462"></A>    <FONT ID="Public">public</FONT> <FONT ID="Synchronized">synchronized</FONT> <FONT ID="Void">void</FONT> removeStorageServiceClassEvenEventListener(<A HREF="../../../../de/iftm/dcm4che/services/StorageServiceEventListener.java.html">StorageServiceEventListener</A> l) {
+<A NAME="463"></A>        <FONT ID="SingleLineComment">// remove a listener if it is not already registered
+<A NAME="464"></A></FONT>        <FONT ID="If">if</FONT> (eventListeners.contains(l)) {
+<A NAME="465"></A>            eventListeners.removeElement(l);
+<A NAME="466"></A>        }
+<A NAME="467"></A>    }
+<A NAME="468"></A>    
+<A NAME="469"></A>    
+<A NAME="470"></A>    <FONT ID="FormalComment">/**
+<A NAME="471"></A>     * Notify all listener to StorageServiceClassEvenEvents.
+<A NAME="472"></A>     * @param evt the event object.
+<A NAME="473"></A>     */</FONT>
+<A NAME="474"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> fireStorageServiceClassEvent(<A HREF="../../../../de/iftm/dcm4che/services/StorageServiceEvent.java.html">StorageServiceEvent</A> evt) {
+<A NAME="475"></A>        Vector v = <FONT ID="Null">null</FONT>;
+<A NAME="476"></A>        
+<A NAME="477"></A>        <FONT ID="SingleLineComment">// make a copy of the listener object so that it cannot be
+<A NAME="478"></A></FONT>        <FONT ID="SingleLineComment">// changed while we are firing events
+<A NAME="479"></A></FONT>        <FONT ID="Synchronized">synchronized</FONT>(<FONT ID="This">this</FONT>) {
+<A NAME="480"></A>            v = (Vector) eventListeners.clone();
+<A NAME="481"></A>        }
+<A NAME="482"></A>        
+<A NAME="483"></A>        <FONT ID="SingleLineComment">// fire the events
+<A NAME="484"></A></FONT>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; v.size(); i++) {
+<A NAME="485"></A>            <A HREF="../../../../de/iftm/dcm4che/services/StorageServiceEventListener.java.html">StorageServiceEventListener</A> client = (<A HREF="../../../../de/iftm/dcm4che/services/StorageServiceEventListener.java.html">StorageServiceEventListener</A>) v.elementAt(i);
+<A NAME="486"></A>            client.handleStorageServiceEvent(evt);
+<A NAME="487"></A>        }
+<A NAME="488"></A>    }
+<A NAME="489"></A>    
+<A NAME="490"></A>    
+<A NAME="491"></A>    <FONT ID="FormalComment">/**
+<A NAME="492"></A>     *  Start the server.
+<A NAME="493"></A>     *
+<A NAME="494"></A>     * @exception  IOException
+<A NAME="495"></A>     */</FONT>
+<A NAME="496"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> start() <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="497"></A>        server.start();
+<A NAME="498"></A>    }
+<A NAME="499"></A>    
+<A NAME="500"></A>    
+<A NAME="501"></A>    <FONT ID="FormalComment">/**
+<A NAME="502"></A>     * Stops the server.
+<A NAME="503"></A>     */</FONT>
+<A NAME="504"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> stop() {
+<A NAME="505"></A>        server.stop();
+<A NAME="506"></A>    }
+<A NAME="507"></A>    
+<A NAME="508"></A>    
+<A NAME="509"></A>    <FONT ID="FormalComment">/**
+<A NAME="510"></A>     * If a DICOM object is received,this method is automatically invoken by the 
+<A NAME="511"></A>     * server implementation of the toolkit. This method extracts the Dataset of 
+<A NAME="512"></A>     * this object is send to registered listeners as a StorageServiceEvent.
+<A NAME="513"></A>     * &lt;p&gt;
+<A NAME="514"></A>     * &lt;p&gt;Overwrites the doCStore method of the parent class DcmServiceBase.
+<A NAME="515"></A>     * 
+<A NAME="516"></A>     * @param assoc
+<A NAME="517"></A>     * @param rq
+<A NAME="518"></A>     * @param rspCmd
+<A NAME="519"></A>     * @exception IOException
+<A NAME="520"></A>     */</FONT>
+<A NAME="521"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> doCStore(ActiveAssociation assoc, Dimse rq, Command rspCmd) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="522"></A>        Command rqCmd = rq.getCommand();
+<A NAME="523"></A>        FileMetaInfo fmi = objFact.newFileMetaInfo(rqCmd.getAffectedSOPClassUID(), rqCmd.getAffectedSOPInstanceUID(), rq.getTransferSyntaxUID());
+<A NAME="524"></A>        
+<A NAME="525"></A>        <FONT ID="SingleLineComment">// Send the event
+<A NAME="526"></A></FONT>        fireStorageServiceClassEvent(<FONT ID="New">new</FONT> <A HREF="../../../../de/iftm/dcm4che/services/StorageServiceEvent.java.html">StorageServiceEvent</A>(<FONT ID="This">this</FONT>, rq.getDataset()));
+<A NAME="527"></A>        
+<A NAME="528"></A>        <FONT ID="If">if</FONT> (rspDelay &gt; <FONT ID="IntegerLiteral">0L</FONT>) {
+<A NAME="529"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="530"></A>                Thread.sleep(rspDelay);
+<A NAME="531"></A>            } <FONT ID="Catch">catch</FONT> (InterruptedException ie) {
+<A NAME="532"></A>                log.error(ie.getMessage());
+<A NAME="533"></A>            }
+<A NAME="534"></A>        }
+<A NAME="535"></A>        rspCmd.putUS(Tags.Status, rspStatus);
+<A NAME="536"></A>    }
+<A NAME="537"></A>    
+<A NAME="538"></A>}
+<A NAME="539"></A>
+<A NAME="540"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">StorageService</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

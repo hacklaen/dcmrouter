@@ -1,0 +1,313 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.sample.DcmTreeSampleApplication (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DcmTreeSampleApplication</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="Package">package</FONT> <A HREF="../../../de.iftm.sample.index.html" target="packageFrame">de.iftm.sample</A>;
+<A NAME="2"></A>
+<A NAME="3"></A><FONT ID="Import">import</FONT> <A HREF="../../../de.iftm.dcm4che.tree.index.html" target="packageFrame">de.iftm.dcm4che.tree.*</A>;
+<A NAME="4"></A>
+<A NAME="5"></A><FONT ID="Import">import</FONT> java.awt.*;
+<A NAME="6"></A><FONT ID="Import">import</FONT> java.io.*;
+<A NAME="7"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="8"></A><FONT ID="Import">import</FONT> java.sql.*;
+<A NAME="9"></A><FONT ID="Import">import</FONT> javax.swing.*;
+<A NAME="10"></A><FONT ID="Import">import</FONT> javax.swing.event.*;
+<A NAME="11"></A>
+<A NAME="12"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="13"></A>
+<A NAME="14"></A><FONT ID="MultiLineComment">/*
+<A NAME="15"></A> * DcmTreeSampleApplication.java
+<A NAME="16"></A> *
+<A NAME="17"></A> * Created on 18. September 2005, 18:28
+<A NAME="18"></A> */</FONT>
+<A NAME="19"></A>
+<A NAME="20"></A><FONT ID="FormalComment">/**
+<A NAME="21"></A> *
+<A NAME="22"></A> * @author  Tom
+<A NAME="23"></A> */</FONT>
+<A NAME="24"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> DcmTreeSampleApplication <FONT ID="Extends">extends</FONT> javax.swing.JFrame <FONT ID="Implements">implements</FONT> <A HREF="../../../de/iftm/dcm4che/tree/DcmTreeSelectionEventListener.java.html">DcmTreeSelectionEventListener</A> {
+<A NAME="25"></A>    
+<A NAME="26"></A>    <FONT ID="FormalComment">/** Initialize logger */</FONT>
+<A NAME="27"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> Logger log = Logger.getLogger(<A HREF="../../../de/iftm/sample/DcmTreeSampleApplication.java.html">DcmTreeSampleApplication</A>.<FONT ID="Class">class</FONT>);
+<A NAME="28"></A>    
+<A NAME="29"></A>    <FONT ID="FormalComment">/**
+<A NAME="30"></A>     * Creates new form DcmTreeSampleApplication
+<A NAME="31"></A>     */</FONT>
+<A NAME="32"></A>    <FONT ID="Public">public</FONT> DcmTreeSampleApplication() {
+<A NAME="33"></A>        <FONT ID="SingleLineComment">// Alle bestehenden Appender loeschen und Logging Level auf INFO setzen
+<A NAME="34"></A></FONT>        BasicConfigurator.resetConfiguration();
+<A NAME="35"></A>        
+<A NAME="36"></A>        <FONT ID="SingleLineComment">// Logging System initialisieren
+<A NAME="37"></A></FONT>        BasicConfigurator.configure();
+<A NAME="38"></A>        
+<A NAME="39"></A>        <FONT ID="SingleLineComment">// Logging Level auf INFO setzen
+<A NAME="40"></A></FONT>        Logger.getRootLogger().setLevel(Level.INFO);
+<A NAME="41"></A>        
+<A NAME="42"></A>        setLookAndFeel();
+<A NAME="43"></A>        initComponents();
+<A NAME="44"></A>        postInitComponents();
+<A NAME="45"></A>    }
+<A NAME="46"></A>    
+<A NAME="47"></A>    
+<A NAME="48"></A>    <FONT ID="FormalComment">/**
+<A NAME="49"></A>     * Register this component for evnts of components accessible from fileTreePanel.
+<A NAME="50"></A>     */</FONT>
+<A NAME="51"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> postInitComponents() {
+<A NAME="52"></A>        <FONT ID="SingleLineComment">// Register for DcmTreeSelectionEvents
+<A NAME="53"></A></FONT>        dcmTreePanel.addDcmTreeSelectionEventListener(<FONT ID="This">this</FONT>);
+<A NAME="54"></A>    }
+<A NAME="55"></A>    
+<A NAME="56"></A>    
+<A NAME="57"></A>    <FONT ID="FormalComment">/**
+<A NAME="58"></A>     *
+<A NAME="59"></A>     * @param evt
+<A NAME="60"></A>     */</FONT>
+<A NAME="61"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> handleDcmTreeSelectionEvent(<A HREF="../../../de/iftm/dcm4che/tree/DcmTreeSelectionEvent.java.html">DcmTreeSelectionEvent</A> evt) {
+<A NAME="62"></A>        String s;
+<A NAME="63"></A>        Vector selectedFiles = evt.getSelectedFiles();
+<A NAME="64"></A>
+<A NAME="65"></A>        <FONT ID="If">if</FONT> (selectedFiles == <FONT ID="Null">null</FONT> || selectedFiles.size() == <FONT ID="IntegerLiteral">0</FONT>) <FONT ID="Return">return</FONT>;
+<A NAME="66"></A>
+<A NAME="67"></A>        s = String.valueOf(selectedFiles.size()) + <FONT ID="StringLiteral">" files selected. Path of first: "</FONT>;
+<A NAME="68"></A>        s += ((File) selectedFiles.elementAt(<FONT ID="IntegerLiteral">0</FONT>)).getPath();
+<A NAME="69"></A>        evtLabel.setText(s);
+<A NAME="70"></A>    }
+<A NAME="71"></A>    
+<A NAME="72"></A>    
+<A NAME="73"></A>    <FONT ID="FormalComment">/**
+<A NAME="74"></A>     * Sets the Look-And-Feel of the program.
+<A NAME="75"></A>     */</FONT>
+<A NAME="76"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setLookAndFeel() {
+<A NAME="77"></A>        <FONT ID="SingleLineComment">// Look and Feel
+<A NAME="78"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="79"></A>            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+<A NAME="80"></A>            <FONT ID="SingleLineComment">// UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+<A NAME="81"></A></FONT>            <FONT ID="SingleLineComment">// UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+<A NAME="82"></A></FONT>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="83"></A>            e.printStackTrace();
+<A NAME="84"></A>        }
+<A NAME="85"></A>    }
+<A NAME="86"></A>    
+<A NAME="87"></A>    
+<A NAME="88"></A>    <FONT ID="FormalComment">/**
+<A NAME="89"></A>     * Centers the frame on the screen.
+<A NAME="90"></A>     */</FONT>
+<A NAME="91"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> showCentered() {
+<A NAME="92"></A>        Dimension frameSize;
+<A NAME="93"></A>        Dimension scrSize;
+<A NAME="94"></A>        
+<A NAME="95"></A>        <FONT ID="SingleLineComment">// Frame validieren, die er eine voreingestellte Groeﬂe besitzen.
+<A NAME="96"></A></FONT>        <FONT ID="This">this</FONT>.validate();
+<A NAME="97"></A>        
+<A NAME="98"></A>        <FONT ID="SingleLineComment">// Frame zentriert zeigen
+<A NAME="99"></A></FONT>        frameSize = <FONT ID="This">this</FONT>.getSize();
+<A NAME="100"></A>        scrSize = Toolkit.getDefaultToolkit().getScreenSize();
+<A NAME="101"></A>        <FONT ID="This">this</FONT>.setLocation((scrSize.width - frameSize.width) / <FONT ID="IntegerLiteral">2</FONT>, (scrSize.height - frameSize.height) / <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="102"></A>        <FONT ID="This">this</FONT>.setVisible(<FONT ID="True">true</FONT>);
+<A NAME="103"></A>        <FONT ID="This">this</FONT>.toFront();
+<A NAME="104"></A>    }
+<A NAME="105"></A>    
+<A NAME="106"></A>    
+<A NAME="107"></A>    <FONT ID="FormalComment">/** This method is called from within the constructor to
+<A NAME="108"></A>     * initialize the form.
+<A NAME="109"></A>     * WARNING: Do NOT modify this code. The content of this method is
+<A NAME="110"></A>     * always regenerated by the Form Editor.
+<A NAME="111"></A>     */</FONT>
+<A NAME="112"></A>    <FONT ID="SingleLineComment">// &lt;editor-fold defaultstate="collapsed" desc=" Generated Code "&gt;//GEN-BEGIN:initComponents
+<A NAME="113"></A></FONT>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> initComponents() {
+<A NAME="114"></A>        dcmTreePanel = <FONT ID="New">new</FONT> <A HREF="../../../de/iftm/dcm4che/tree/DcmTreePanel.java.html">de.iftm.dcm4che.tree.DcmTreePanel</A>();
+<A NAME="115"></A>        evtLabel = <FONT ID="New">new</FONT> javax.swing.JLabel();
+<A NAME="116"></A>        menuBar = <FONT ID="New">new</FONT> javax.swing.JMenuBar();
+<A NAME="117"></A>        fileMenu = <FONT ID="New">new</FONT> javax.swing.JMenu();
+<A NAME="118"></A>        openMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="119"></A>        saveMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="120"></A>        saveAsMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="121"></A>        exitMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="122"></A>        editMenu = <FONT ID="New">new</FONT> javax.swing.JMenu();
+<A NAME="123"></A>        cutMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="124"></A>        copyMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="125"></A>        pasteMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="126"></A>        deleteMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="127"></A>        helpMenu = <FONT ID="New">new</FONT> javax.swing.JMenu();
+<A NAME="128"></A>        contentsMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="129"></A>        aboutMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="130"></A>
+<A NAME="131"></A>        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+<A NAME="132"></A>        getContentPane().add(dcmTreePanel, java.awt.BorderLayout.CENTER);
+<A NAME="133"></A>
+<A NAME="134"></A>        evtLabel.setBackground(<FONT ID="New">new</FONT> java.awt.Color(<FONT ID="IntegerLiteral">255</FONT>, <FONT ID="IntegerLiteral">255</FONT>, <FONT ID="IntegerLiteral">204</FONT>));
+<A NAME="135"></A>        evtLabel.setMinimumSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">25</FONT>, <FONT ID="IntegerLiteral">25</FONT>));
+<A NAME="136"></A>        evtLabel.setPreferredSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">25</FONT>, <FONT ID="IntegerLiteral">25</FONT>));
+<A NAME="137"></A>        evtLabel.setRequestFocusEnabled(<FONT ID="False">false</FONT>);
+<A NAME="138"></A>        getContentPane().add(evtLabel, java.awt.BorderLayout.SOUTH);
+<A NAME="139"></A>
+<A NAME="140"></A>        fileMenu.setText(<FONT ID="StringLiteral">"File"</FONT>);
+<A NAME="141"></A>        openMenuItem.setText(<FONT ID="StringLiteral">"Open"</FONT>);
+<A NAME="142"></A>        fileMenu.add(openMenuItem);
+<A NAME="143"></A>
+<A NAME="144"></A>        saveMenuItem.setText(<FONT ID="StringLiteral">"Save"</FONT>);
+<A NAME="145"></A>        fileMenu.add(saveMenuItem);
+<A NAME="146"></A>
+<A NAME="147"></A>        saveAsMenuItem.setText(<FONT ID="StringLiteral">"Save As ..."</FONT>);
+<A NAME="148"></A>        fileMenu.add(saveAsMenuItem);
+<A NAME="149"></A>
+<A NAME="150"></A>        exitMenuItem.setText(<FONT ID="StringLiteral">"Exit"</FONT>);
+<A NAME="151"></A>        exitMenuItem.addActionListener(<FONT ID="New">new</FONT> java.awt.event.ActionListener() {
+<A NAME="152"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> actionPerformed(java.awt.event.ActionEvent evt) {
+<A NAME="153"></A>                exitMenuItemActionPerformed(evt);
+<A NAME="154"></A>            }
+<A NAME="155"></A>        });
+<A NAME="156"></A>
+<A NAME="157"></A>        fileMenu.add(exitMenuItem);
+<A NAME="158"></A>
+<A NAME="159"></A>        menuBar.add(fileMenu);
+<A NAME="160"></A>
+<A NAME="161"></A>        editMenu.setText(<FONT ID="StringLiteral">"Edit"</FONT>);
+<A NAME="162"></A>        cutMenuItem.setText(<FONT ID="StringLiteral">"Cut"</FONT>);
+<A NAME="163"></A>        editMenu.add(cutMenuItem);
+<A NAME="164"></A>
+<A NAME="165"></A>        copyMenuItem.setText(<FONT ID="StringLiteral">"Copy"</FONT>);
+<A NAME="166"></A>        editMenu.add(copyMenuItem);
+<A NAME="167"></A>
+<A NAME="168"></A>        pasteMenuItem.setText(<FONT ID="StringLiteral">"Paste"</FONT>);
+<A NAME="169"></A>        editMenu.add(pasteMenuItem);
+<A NAME="170"></A>
+<A NAME="171"></A>        deleteMenuItem.setText(<FONT ID="StringLiteral">"Delete"</FONT>);
+<A NAME="172"></A>        editMenu.add(deleteMenuItem);
+<A NAME="173"></A>
+<A NAME="174"></A>        menuBar.add(editMenu);
+<A NAME="175"></A>
+<A NAME="176"></A>        helpMenu.setText(<FONT ID="StringLiteral">"Help"</FONT>);
+<A NAME="177"></A>        contentsMenuItem.setText(<FONT ID="StringLiteral">"Contents"</FONT>);
+<A NAME="178"></A>        helpMenu.add(contentsMenuItem);
+<A NAME="179"></A>
+<A NAME="180"></A>        aboutMenuItem.setText(<FONT ID="StringLiteral">"About"</FONT>);
+<A NAME="181"></A>        helpMenu.add(aboutMenuItem);
+<A NAME="182"></A>
+<A NAME="183"></A>        menuBar.add(helpMenu);
+<A NAME="184"></A>
+<A NAME="185"></A>        setJMenuBar(menuBar);
+<A NAME="186"></A>
+<A NAME="187"></A>        pack();
+<A NAME="188"></A>    }<FONT ID="SingleLineComment">// &lt;/editor-fold&gt;//GEN-END:initComponents
+<A NAME="189"></A></FONT>    
+<A NAME="190"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_exitMenuItemActionPerformed
+<A NAME="191"></A></FONT>        System.exit(<FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="192"></A>    }<FONT ID="SingleLineComment">//GEN-LAST:event_exitMenuItemActionPerformed
+<A NAME="193"></A></FONT>    
+<A NAME="194"></A>    <FONT ID="FormalComment">/**
+<A NAME="195"></A>     * @param args the command line arguments
+<A NAME="196"></A>     */</FONT>
+<A NAME="197"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Void">void</FONT> main(String args[]) {
+<A NAME="198"></A>        <A HREF="../../../de/iftm/sample/DcmTreeSampleApplication.java.html">DcmTreeSampleApplication</A> app = <FONT ID="New">new</FONT> <A HREF="../../../de/iftm/sample/DcmTreeSampleApplication.java.html">DcmTreeSampleApplication</A>();
+<A NAME="199"></A>        app.showCentered();
+<A NAME="200"></A>        app.run();
+<A NAME="201"></A>    }
+<A NAME="202"></A>    
+<A NAME="203"></A>    <FONT ID="SingleLineComment">// Variables declaration - do not modify//GEN-BEGIN:variables
+<A NAME="204"></A></FONT>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem aboutMenuItem;
+<A NAME="205"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem contentsMenuItem;
+<A NAME="206"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem copyMenuItem;
+<A NAME="207"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem cutMenuItem;
+<A NAME="208"></A>    <FONT ID="Private">private</FONT> <A HREF="../../../de/iftm/dcm4che/tree/DcmTreePanel.java.html">de.iftm.dcm4che.tree.DcmTreePanel</A> dcmTreePanel;
+<A NAME="209"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem deleteMenuItem;
+<A NAME="210"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenu editMenu;
+<A NAME="211"></A>    <FONT ID="Private">private</FONT> javax.swing.JLabel evtLabel;
+<A NAME="212"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem exitMenuItem;
+<A NAME="213"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenu fileMenu;
+<A NAME="214"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenu helpMenu;
+<A NAME="215"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuBar menuBar;
+<A NAME="216"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem openMenuItem;
+<A NAME="217"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem pasteMenuItem;
+<A NAME="218"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem saveAsMenuItem;
+<A NAME="219"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem saveMenuItem;
+<A NAME="220"></A>    <FONT ID="SingleLineComment">// End of variables declaration//GEN-END:variables
+<A NAME="221"></A></FONT>    
+<A NAME="222"></A>    
+<A NAME="223"></A>    <FONT ID="FormalComment">/** Our database */</FONT>
+<A NAME="224"></A>    <FONT ID="Private">private</FONT> <A HREF="../../../de/iftm/dcm4che/tree/DcmObjectDB.java.html">DcmObjectDB</A> db = <FONT ID="Null">null</FONT>;
+<A NAME="225"></A>    
+<A NAME="226"></A>    
+<A NAME="227"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> run() {
+<A NAME="228"></A>        <FONT ID="SingleLineComment">// The file or directory to diplay
+<A NAME="229"></A></FONT>        <FONT ID="SingleLineComment">// File fileOrDirToDisplay = new File(System.getProperty("user.dir"), "./samples");
+<A NAME="230"></A></FONT>        <FONT ID="SingleLineComment">// File fileOrDirToDisplay = new File(System.getProperty("user.dir"), "./samples/DICOMDIR");
+<A NAME="231"></A></FONT>        File fileOrDirToDisplay = <FONT ID="New">new</FONT> File(System.getProperty(<FONT ID="StringLiteral">"user.dir"</FONT>), <FONT ID="StringLiteral">"./samples/DICOMDIR_wo_files"</FONT>);
+<A NAME="232"></A>        
+<A NAME="233"></A>        <FONT ID="SingleLineComment">// Create database
+<A NAME="234"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="235"></A>            db = <FONT ID="New">new</FONT> <A HREF="../../../de/iftm/dcm4che/tree/DcmObjectDB.java.html">DcmObjectDB</A>();
+<A NAME="236"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="237"></A>            log.error(e.getMessage());
+<A NAME="238"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="239"></A>        }
+<A NAME="240"></A>        
+<A NAME="241"></A>        <FONT ID="SingleLineComment">// Build database of files
+<A NAME="242"></A></FONT>        <FONT ID="SingleLineComment">// db.insertFiles(fileOrDirToDisplay, true);
+<A NAME="243"></A></FONT>        
+<A NAME="244"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="245"></A>            db.insertDICOMDIR(fileOrDirToDisplay);
+<A NAME="246"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="247"></A>            log.error(e.getMessage());
+<A NAME="248"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="249"></A>        }
+<A NAME="250"></A>        
+<A NAME="251"></A>        <FONT ID="SingleLineComment">// Create the tree
+<A NAME="252"></A></FONT>        dcmTreePanel.createTree(fileOrDirToDisplay.getPath());
+<A NAME="253"></A>        
+<A NAME="254"></A>        <FONT ID="SingleLineComment">// Update tree
+<A NAME="255"></A></FONT>        <FONT ID="SingleLineComment">// test();
+<A NAME="256"></A></FONT>        dcmTreePanel.updateTree(db);
+<A NAME="257"></A>        
+<A NAME="258"></A>        <FONT ID="SingleLineComment">// Shutdow database
+<A NAME="259"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="260"></A>            db.shutdown();
+<A NAME="261"></A>        } <FONT ID="Catch">catch</FONT> (SQLException e) {
+<A NAME="262"></A>            log.error(e.getMessage());
+<A NAME="263"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="264"></A>        }
+<A NAME="265"></A>        
+<A NAME="266"></A>        log.info(<FONT ID="StringLiteral">"All done."</FONT>);
+<A NAME="267"></A>    }
+<A NAME="268"></A>    
+<A NAME="269"></A>    
+<A NAME="270"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> test() {
+<A NAME="271"></A>        Vector patientVector;
+<A NAME="272"></A>        Vector studyVector;
+<A NAME="273"></A>        
+<A NAME="274"></A>        <FONT ID="SingleLineComment">// Query patient list
+<A NAME="275"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="276"></A>            db.query(<FONT ID="StringLiteral">"SELECT DISTINCT study_id, study_description FROM dcm_table WHERE patient_name &gt;= 'A'"</FONT>);
+<A NAME="277"></A>        } <FONT ID="Catch">catch</FONT> (SQLException e) {
+<A NAME="278"></A>            log.error(e.getMessage());
+<A NAME="279"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="280"></A>        }
+<A NAME="281"></A>        
+<A NAME="282"></A>    }
+<A NAME="283"></A>    
+<A NAME="284"></A>}
+<A NAME="285"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DcmTreeSampleApplication</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

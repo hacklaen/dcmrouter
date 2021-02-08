@@ -1,0 +1,1498 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.gui.DicomRouterGUI2 (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DicomRouterGUI2</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  DicomRouterGUI.java
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Copyright (c) 2004 by
+<A NAME="5"></A> *
+<A NAME="6"></A> *  IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="7"></A> *  VISUS Technology Transfer GmbH
+<A NAME="8"></A> *
+<A NAME="9"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="10"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="11"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="12"></A> *  (at your option) any later version.
+<A NAME="13"></A> *
+<A NAME="14"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="15"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="16"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="17"></A> *  Lesser General Public License for more details.
+<A NAME="18"></A> *
+<A NAME="19"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="20"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="21"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="22"></A> *
+<A NAME="23"></A> *
+<A NAME="24"></A> *****************************************************************************/</FONT>
+<A NAME="25"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.gui.index.html" target="packageFrame">de.iftm.dcm4che.router.gui</A>;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/receiver/DicomStorageSCPReceiver.java.html">de.iftm.dcm4che.router.receiver.DicomStorageSCPReceiver</A>;
+<A NAME="28"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/receiver/GeneralFileReceiver.java.html">de.iftm.dcm4che.router.receiver.GeneralFileReceiver</A>;
+<A NAME="29"></A><FONT ID="Import">import</FONT> java.awt.*;
+<A NAME="30"></A><FONT ID="Import">import</FONT> java.awt.event.*;
+<A NAME="31"></A><FONT ID="Import">import</FONT> java.io.*;
+<A NAME="32"></A><FONT ID="Import">import</FONT> java.net.*;
+<A NAME="33"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="34"></A><FONT ID="Import">import</FONT> javax.swing.*;
+<A NAME="35"></A>
+<A NAME="36"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="37"></A><FONT ID="Import">import</FONT> org.apache.log4j.Logger.*;
+<A NAME="38"></A>
+<A NAME="39"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.property.index.html" target="packageFrame">de.iftm.dcm4che.router.property.*</A>;
+<A NAME="40"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.receiver.index.html" target="packageFrame">de.iftm.dcm4che.router.receiver.*</A>;
+<A NAME="41"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.util.index.html" target="packageFrame">de.iftm.dcm4che.router.util.*</A>;
+<A NAME="42"></A>
+<A NAME="43"></A>
+<A NAME="44"></A><FONT ID="FormalComment">/**
+<A NAME="45"></A> * This is the main program of the DicomRouter using a GUI.&lt;br&gt;
+<A NAME="46"></A> * @author Thomas Hacklaender
+<A NAME="47"></A> * @version 2005.01.18
+<A NAME="48"></A> */</FONT>
+<A NAME="49"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> DicomRouterGUI2 <FONT ID="Extends">extends</FONT> javax.swing.JFrame <FONT ID="Implements">implements</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEventListener.java.html">DicomRouterEventListener</A> {
+<A NAME="50"></A>    
+<A NAME="51"></A>    <FONT ID="FormalComment">/** DOCUMENT ME! */</FONT>
+<A NAME="52"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> Logger log = Logger.getLogger(<A HREF="../../../../../de/iftm/dcm4che/router/gui/DicomRouterGUI.java.html">DicomRouterGUI</A>.<FONT ID="Class">class</FONT>);
+<A NAME="53"></A>    
+<A NAME="54"></A>    <FONT ID="FormalComment">/** URI of the property file of the application RouterGUI */</FONT>
+<A NAME="55"></A>    <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> String    myProperties = <FONT ID="StringLiteral">"./cfg/DicomRouterGUI2.properties"</FONT>;
+<A NAME="56"></A>    
+<A NAME="57"></A>    <FONT ID="FormalComment">/** The file containing the source file. */</FONT>
+<A NAME="58"></A>    <FONT ID="Private">private</FONT> File            sourceFile = <FONT ID="Null">null</FONT>;
+<A NAME="59"></A>    
+<A NAME="60"></A>    <FONT ID="FormalComment">/** The file containing the configuration properties. */</FONT>
+<A NAME="61"></A>    <FONT ID="Private">private</FONT> File            propertyFile = <FONT ID="Null">null</FONT>;
+<A NAME="62"></A>    
+<A NAME="63"></A>    <FONT ID="FormalComment">/** The file containing the logging properties. */</FONT>
+<A NAME="64"></A>    <FONT ID="Private">private</FONT> File            loggerFile = <FONT ID="Null">null</FONT>;
+<A NAME="65"></A>    
+<A NAME="66"></A>    <FONT ID="FormalComment">/** Vector of files to process. */</FONT>
+<A NAME="67"></A>    <FONT ID="Private">private</FONT> Vector          fVec = <FONT ID="Null">null</FONT>;
+<A NAME="68"></A>    
+<A NAME="69"></A>    <FONT ID="FormalComment">/** The new PrintStream for System.out. */</FONT>
+<A NAME="70"></A>    <FONT ID="Private">private</FONT> PrintStream     ps;
+<A NAME="71"></A>    
+<A NAME="72"></A>    <FONT ID="FormalComment">/** The DataInputStream for redirecting System.out to the JTextArea. */</FONT>
+<A NAME="73"></A>    <FONT ID="Private">private</FONT> DataInputStream iis;
+<A NAME="74"></A>    
+<A NAME="75"></A>    <FONT ID="FormalComment">/** Receiver currently running */</FONT>
+<A NAME="76"></A>    <FONT ID="Private">private</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/receiver/DicomReceiver.java.html">DicomReceiver</A>   receiverRunning = <FONT ID="Null">null</FONT>;
+<A NAME="77"></A>    
+<A NAME="78"></A>    <FONT ID="FormalComment">/**
+<A NAME="79"></A>     * Creates a new DicomRouterGUI application object.
+<A NAME="80"></A>     */</FONT>
+<A NAME="81"></A>    <FONT ID="Public">public</FONT> DicomRouterGUI2() {
+<A NAME="82"></A>        
+<A NAME="83"></A>        initComponents();
+<A NAME="84"></A>        postInitComponents();
+<A NAME="85"></A>        loadProperties();
+<A NAME="86"></A>        centerOnScreen();
+<A NAME="87"></A>        setStdOut();
+<A NAME="88"></A>    }
+<A NAME="89"></A>    
+<A NAME="90"></A>    
+<A NAME="91"></A>    <FONT ID="FormalComment">/**
+<A NAME="92"></A>     *
+<A NAME="93"></A>     */</FONT>
+<A NAME="94"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> postInitComponents() {
+<A NAME="95"></A>        <FONT ID="SingleLineComment">// Add a ConsoleAppender that uses PatternLayout using the 
+<A NAME="96"></A></FONT>        <FONT ID="SingleLineComment">// PatternLayout.TTCC_CONVERSION_PATTERN and prints to System.out 
+<A NAME="97"></A></FONT>        <FONT ID="SingleLineComment">// to the root category.
+<A NAME="98"></A></FONT>        BasicConfigurator.configure();
+<A NAME="99"></A>        
+<A NAME="100"></A>        <FONT ID="SingleLineComment">// Set logging level to INFO
+<A NAME="101"></A></FONT>        Logger.getRootLogger().setLevel(Level.INFO);
+<A NAME="102"></A>        
+<A NAME="103"></A>        progressBar.setMinimum(<FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="104"></A>    }
+<A NAME="105"></A>    
+<A NAME="106"></A>    
+<A NAME="107"></A>    <FONT ID="FormalComment">/**
+<A NAME="108"></A>     *
+<A NAME="109"></A>     */</FONT>
+<A NAME="110"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> handleDicomRouterEvent(<A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEvent.java.html">DicomRouterEvent</A> evt) {
+<A NAME="111"></A>        <FONT ID="Switch">switch</FONT> (evt.getID()) {
+<A NAME="112"></A>            
+<A NAME="113"></A>            <FONT ID="Case">case</FONT> DicomRouterEvent.NEXT_OBJECT_EVENT:
+<A NAME="114"></A>                <FONT ID="SingleLineComment">// No visaul feedback;
+<A NAME="115"></A></FONT>                <FONT ID="Break">break</FONT>;
+<A NAME="116"></A>                
+<A NAME="117"></A>            <FONT ID="Case">case</FONT> DicomRouterEvent.FINISHED_EVENT:
+<A NAME="118"></A>                lastObjectSetFinished();
+<A NAME="119"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="120"></A>                
+<A NAME="121"></A>            <FONT ID="Case">case</FONT> DicomRouterEvent.PROGRESS_EVENT:
+<A NAME="122"></A>                progressBar.setValue(evt.getActualValue());
+<A NAME="123"></A>                progressBar.setMaximum(evt.getMaxValue());
+<A NAME="124"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="125"></A>                
+<A NAME="126"></A>        }
+<A NAME="127"></A>    }
+<A NAME="128"></A>    
+<A NAME="129"></A>    
+<A NAME="130"></A>    <FONT ID="FormalComment">/**
+<A NAME="131"></A>     *
+<A NAME="132"></A>     */</FONT>
+<A NAME="133"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> lastObjectSetFinished() {
+<A NAME="134"></A>        progressBar.setValue(<FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="135"></A>        
+<A NAME="136"></A>        startBtn.setEnabled(<FONT ID="True">true</FONT>);
+<A NAME="137"></A>        stopBtn.setEnabled(<FONT ID="False">false</FONT>);
+<A NAME="138"></A>    }
+<A NAME="139"></A>    
+<A NAME="140"></A>    
+<A NAME="141"></A>    <FONT ID="FormalComment">/**
+<A NAME="142"></A>     * Stores the GUI properties in the file ./cfg/DicomRouter.properties.
+<A NAME="143"></A>     */</FONT>
+<A NAME="144"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> storeProperties() {
+<A NAME="145"></A>        Properties      props = <FONT ID="New">new</FONT> Properties();
+<A NAME="146"></A>        
+<A NAME="147"></A>        <FONT ID="SingleLineComment">// Frame
+<A NAME="148"></A></FONT>        props.setProperty(<FONT ID="StringLiteral">"frame.width"</FONT>, String.valueOf(<FONT ID="This">this</FONT>.getSize().width));
+<A NAME="149"></A>        props.setProperty(<FONT ID="StringLiteral">"frame.height"</FONT>, String.valueOf(<FONT ID="This">this</FONT>.getSize().height));
+<A NAME="150"></A>        
+<A NAME="151"></A>        <FONT ID="SingleLineComment">// taskTabbedPane
+<A NAME="152"></A></FONT>        <FONT ID="If">if</FONT> (taskTabbedPane.getSelectedComponent().equals(receiverTab)) {
+<A NAME="153"></A>            props.setProperty(<FONT ID="StringLiteral">"taskTabbedPane"</FONT>, <FONT ID="StringLiteral">"receiverTab"</FONT>);
+<A NAME="154"></A>        } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (taskTabbedPane.getSelectedComponent().equals(propertiesTab)) {
+<A NAME="155"></A>            props.setProperty(<FONT ID="StringLiteral">"taskTabbedPane"</FONT>, <FONT ID="StringLiteral">"propertiesTab"</FONT>);
+<A NAME="156"></A>        } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (taskTabbedPane.getSelectedComponent().equals(runTab)) {
+<A NAME="157"></A>            props.setProperty(<FONT ID="StringLiteral">"taskTabbedPane"</FONT>, <FONT ID="StringLiteral">"runTab"</FONT>);
+<A NAME="158"></A>        }
+<A NAME="159"></A>        
+<A NAME="160"></A>        <FONT ID="SingleLineComment">// sourceTabbedPane
+<A NAME="161"></A></FONT>        <FONT ID="If">if</FONT> (sourceTabbedPane.getSelectedComponent().equals(fileTab)) {
+<A NAME="162"></A>            props.setProperty(<FONT ID="StringLiteral">"sourceTabbedPane"</FONT>, <FONT ID="StringLiteral">"fileTab"</FONT>);
+<A NAME="163"></A>        } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (sourceTabbedPane.getSelectedComponent().equals(networkTab)) {
+<A NAME="164"></A>            props.setProperty(<FONT ID="StringLiteral">"sourceTabbedPane"</FONT>, <FONT ID="StringLiteral">"networkTab"</FONT>);
+<A NAME="165"></A>        }
+<A NAME="166"></A>        
+<A NAME="167"></A>        <FONT ID="SingleLineComment">// Source File
+<A NAME="168"></A></FONT>        <FONT ID="If">if</FONT> (sourceFile != <FONT ID="Null">null</FONT>) {
+<A NAME="169"></A>            props.setProperty(<FONT ID="StringLiteral">"source.file"</FONT>, sourceFile.toString());
+<A NAME="170"></A>        }
+<A NAME="171"></A>        
+<A NAME="172"></A>        <FONT ID="If">if</FONT> (selectFilesRadioBtn.isSelected()) {
+<A NAME="173"></A>            props.setProperty(<FONT ID="StringLiteral">"source.filesRadioBtn"</FONT>, <FONT ID="StringLiteral">"true"</FONT>);
+<A NAME="174"></A>            props.setProperty(<FONT ID="StringLiteral">"source.directoryRadioBtn"</FONT>, <FONT ID="StringLiteral">"false"</FONT>);
+<A NAME="175"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="176"></A>            props.setProperty(<FONT ID="StringLiteral">"source.filesRadioBtn"</FONT>, <FONT ID="StringLiteral">"false"</FONT>);
+<A NAME="177"></A>            props.setProperty(<FONT ID="StringLiteral">"source.directoryRadioBtn"</FONT>, <FONT ID="StringLiteral">"true"</FONT>);
+<A NAME="178"></A>        }
+<A NAME="179"></A>        
+<A NAME="180"></A>        <FONT ID="If">if</FONT> (includeSubdirectoriesCheckBox.isSelected()) {
+<A NAME="181"></A>            props.setProperty(<FONT ID="StringLiteral">"source.includeSubdirectoriesCheckBox"</FONT>, <FONT ID="StringLiteral">"true"</FONT>);
+<A NAME="182"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="183"></A>            props.setProperty(<FONT ID="StringLiteral">"source.includeSubdirectoriesCheckBox"</FONT>, <FONT ID="StringLiteral">"false"</FONT>);
+<A NAME="184"></A>        }
+<A NAME="185"></A>        
+<A NAME="186"></A>        <FONT ID="SingleLineComment">// Property File
+<A NAME="187"></A></FONT>        <FONT ID="If">if</FONT> (propertyFile != <FONT ID="Null">null</FONT>) {
+<A NAME="188"></A>            props.setProperty(<FONT ID="StringLiteral">"property.file"</FONT>, propertyFile.toString());
+<A NAME="189"></A>        }
+<A NAME="190"></A>        
+<A NAME="191"></A>        <FONT ID="SingleLineComment">// Logger
+<A NAME="192"></A></FONT>        <FONT ID="If">if</FONT> (loggerFile != <FONT ID="Null">null</FONT>) {
+<A NAME="193"></A>            props.setProperty(<FONT ID="StringLiteral">"logger.file"</FONT>, loggerFile.toString());
+<A NAME="194"></A>        }
+<A NAME="195"></A>        
+<A NAME="196"></A>        <FONT ID="If">if</FONT> (loggerDefaultBtn.isSelected()) {
+<A NAME="197"></A>            props.setProperty(<FONT ID="StringLiteral">"logger.defaultBtn"</FONT>, <FONT ID="StringLiteral">"true"</FONT>);
+<A NAME="198"></A>            props.setProperty(<FONT ID="StringLiteral">"logger.selectBtn"</FONT>, <FONT ID="StringLiteral">"false"</FONT>);
+<A NAME="199"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="200"></A>            props.setProperty(<FONT ID="StringLiteral">"logger.defaultBtn"</FONT>, <FONT ID="StringLiteral">"false"</FONT>);
+<A NAME="201"></A>            props.setProperty(<FONT ID="StringLiteral">"logger.selectBtn"</FONT>, <FONT ID="StringLiteral">"true"</FONT>);
+<A NAME="202"></A>        }
+<A NAME="203"></A>        
+<A NAME="204"></A>        <FONT ID="SingleLineComment">// Eigenschaften in Datei speichern
+<A NAME="205"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="206"></A>            File f = Util.uriToFile(myProperties);
+<A NAME="207"></A>            OutputStream out = <FONT ID="New">new</FONT> FileOutputStream(f);
+<A NAME="208"></A>            props.store(out, <FONT ID="StringLiteral">""</FONT>);
+<A NAME="209"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="210"></A>            log.warn(<FONT ID="StringLiteral">"Could not write properties to file "</FONT> + myProperties + <FONT ID="StringLiteral">": "</FONT> + e.getMessage());
+<A NAME="211"></A>        } <FONT ID="Finally">finally</FONT> {
+<A NAME="212"></A>        }
+<A NAME="213"></A>    }
+<A NAME="214"></A>    
+<A NAME="215"></A>    
+<A NAME="216"></A>    <FONT ID="FormalComment">/**
+<A NAME="217"></A>     * Loads the GUI properties from the file.
+<A NAME="218"></A>     */</FONT>
+<A NAME="219"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> loadProperties() {
+<A NAME="220"></A>        Properties  props = <FONT ID="New">new</FONT> Properties();
+<A NAME="221"></A>        String      value;
+<A NAME="222"></A>        
+<A NAME="223"></A>        <FONT ID="SingleLineComment">// Properties aus Datei laden
+<A NAME="224"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="225"></A>            File f = Util.uriToFile(myProperties);
+<A NAME="226"></A>            InputStream in = <FONT ID="New">new</FONT> FileInputStream(f);
+<A NAME="227"></A>            props.load(in);
+<A NAME="228"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="229"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="230"></A>        }
+<A NAME="231"></A>        
+<A NAME="232"></A>        <FONT ID="SingleLineComment">// Frame
+<A NAME="233"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="234"></A>            <FONT ID="If">if</FONT> ((value = props.getProperty(<FONT ID="StringLiteral">"frame.width"</FONT>)) != <FONT ID="Null">null</FONT>) {
+<A NAME="235"></A>                <FONT ID="Int">int</FONT> width = Integer.parseInt(value);
+<A NAME="236"></A>                <FONT ID="If">if</FONT> ((value = props.getProperty(<FONT ID="StringLiteral">"frame.height"</FONT>)) != <FONT ID="Null">null</FONT>) {
+<A NAME="237"></A>                    <FONT ID="Int">int</FONT> height = Integer.parseInt(value);
+<A NAME="238"></A>                    <FONT ID="This">this</FONT>.setSize(width, height);
+<A NAME="239"></A>                }
+<A NAME="240"></A>            }
+<A NAME="241"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {}
+<A NAME="242"></A>        
+<A NAME="243"></A>        <FONT ID="SingleLineComment">// taskTabbedPane
+<A NAME="244"></A></FONT>        <FONT ID="If">if</FONT> ((value = props.getProperty(<FONT ID="StringLiteral">"taskTabbedPane"</FONT>)) != <FONT ID="Null">null</FONT>) {
+<A NAME="245"></A>            <FONT ID="If">if</FONT> (value.equals(<FONT ID="StringLiteral">"receiverTab"</FONT>)) {
+<A NAME="246"></A>                taskTabbedPane.setSelectedComponent(receiverTab);
+<A NAME="247"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (value.equals(<FONT ID="StringLiteral">"propertiesTab"</FONT>)) {
+<A NAME="248"></A>                taskTabbedPane.setSelectedComponent(propertiesTab);
+<A NAME="249"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (value.equals(<FONT ID="StringLiteral">"runTab"</FONT>)) {
+<A NAME="250"></A>                taskTabbedPane.setSelectedComponent(runTab);
+<A NAME="251"></A>            }
+<A NAME="252"></A>        }
+<A NAME="253"></A>        
+<A NAME="254"></A>        <FONT ID="SingleLineComment">// sourceTabbedPane
+<A NAME="255"></A></FONT>        <FONT ID="If">if</FONT> ((value = props.getProperty(<FONT ID="StringLiteral">"sourceTabbedPane"</FONT>)) != <FONT ID="Null">null</FONT>) {
+<A NAME="256"></A>            <FONT ID="If">if</FONT> (value.equals(<FONT ID="StringLiteral">"fileTab"</FONT>)) {
+<A NAME="257"></A>                sourceTabbedPane.setSelectedComponent(fileTab);
+<A NAME="258"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (value.equals(<FONT ID="StringLiteral">"networkTab"</FONT>)) {
+<A NAME="259"></A>                sourceTabbedPane.setSelectedComponent(networkTab);
+<A NAME="260"></A>            }
+<A NAME="261"></A>        }
+<A NAME="262"></A>        
+<A NAME="263"></A>        <FONT ID="SingleLineComment">// Source File
+<A NAME="264"></A></FONT>        <FONT ID="If">if</FONT> ((value = props.getProperty(<FONT ID="StringLiteral">"source.file"</FONT>)) != <FONT ID="Null">null</FONT>) {
+<A NAME="265"></A>            sourceFile = <FONT ID="New">new</FONT> File(value);
+<A NAME="266"></A>            <FONT ID="If">if</FONT> (sourceFile.isDirectory()) {
+<A NAME="267"></A>                sourceNameField.setText(<FONT ID="StringLiteral">""</FONT>);
+<A NAME="268"></A>                sourceParentField.setText(sourceFile.toString());
+<A NAME="269"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="270"></A>                sourceNameField.setText(sourceFile.getName());
+<A NAME="271"></A>                sourceParentField.setText(sourceFile.getParent());
+<A NAME="272"></A>            }
+<A NAME="273"></A>            <FONT ID="SingleLineComment">// Lokale Variablen updaten
+<A NAME="274"></A></FONT>            sourceNameToVector(sourceFile);
+<A NAME="275"></A>        }
+<A NAME="276"></A>        
+<A NAME="277"></A>        <FONT ID="If">if</FONT> ((value = props.getProperty(<FONT ID="StringLiteral">"source.directoryRadioBtn"</FONT>)) != <FONT ID="Null">null</FONT>) {
+<A NAME="278"></A>            selectDirectoryRadioBtn.setSelected(value.equals(<FONT ID="StringLiteral">"true"</FONT>));
+<A NAME="279"></A>        }
+<A NAME="280"></A>        <FONT ID="If">if</FONT> ((value = props.getProperty(<FONT ID="StringLiteral">"source.filesRadioBtn"</FONT>)) != <FONT ID="Null">null</FONT>) {
+<A NAME="281"></A>            selectFilesRadioBtn.setSelected(value.equals(<FONT ID="StringLiteral">"true"</FONT>));
+<A NAME="282"></A>        }
+<A NAME="283"></A>        
+<A NAME="284"></A>        <FONT ID="If">if</FONT> ((value = props.getProperty(<FONT ID="StringLiteral">"source.includeSubdirectoriesCheckBox"</FONT>)) != <FONT ID="Null">null</FONT>) {
+<A NAME="285"></A>            includeSubdirectoriesCheckBox.setSelected(value.equals(<FONT ID="StringLiteral">"true"</FONT>));
+<A NAME="286"></A>        }
+<A NAME="287"></A>        
+<A NAME="288"></A>        
+<A NAME="289"></A>        <FONT ID="SingleLineComment">// Property File
+<A NAME="290"></A></FONT>        <FONT ID="If">if</FONT> ((value = props.getProperty(<FONT ID="StringLiteral">"property.file"</FONT>)) != <FONT ID="Null">null</FONT>) {
+<A NAME="291"></A>            <FONT ID="SingleLineComment">// Lokale Variable updaten
+<A NAME="292"></A></FONT>            propertyFile = <FONT ID="New">new</FONT> File(value);
+<A NAME="293"></A>            propertyNameField.setText(propertyFile.getName());
+<A NAME="294"></A>            propertyParentField.setText(propertyFile.getParent());
+<A NAME="295"></A>        }
+<A NAME="296"></A>        
+<A NAME="297"></A>        <FONT ID="SingleLineComment">// Logger
+<A NAME="298"></A></FONT>        <FONT ID="If">if</FONT> ((value = props.getProperty(<FONT ID="StringLiteral">"logger.file"</FONT>)) != <FONT ID="Null">null</FONT>) {
+<A NAME="299"></A>            <FONT ID="SingleLineComment">// Lokale Variable updaten
+<A NAME="300"></A></FONT>            loggerFile = <FONT ID="New">new</FONT> File(value);
+<A NAME="301"></A>            loggerNameField.setText(loggerFile.getName());
+<A NAME="302"></A>            loggerParentField.setText(loggerFile.getParent());
+<A NAME="303"></A>        }
+<A NAME="304"></A>        
+<A NAME="305"></A>        <FONT ID="If">if</FONT> ((value = props.getProperty(<FONT ID="StringLiteral">"logger.defaultBtn"</FONT>)) != <FONT ID="Null">null</FONT>) {
+<A NAME="306"></A>            loggerDefaultBtn.setSelected(value.equals(<FONT ID="StringLiteral">"true"</FONT>));
+<A NAME="307"></A>        }
+<A NAME="308"></A>        <FONT ID="If">if</FONT> ((value = props.getProperty(<FONT ID="StringLiteral">"logger.selectBtn"</FONT>)) != <FONT ID="Null">null</FONT>) {
+<A NAME="309"></A>            loggerSelectBtn.setSelected(value.equals(<FONT ID="StringLiteral">"true"</FONT>));
+<A NAME="310"></A>        }
+<A NAME="311"></A>        
+<A NAME="312"></A>        <FONT ID="SingleLineComment">// Lokale Variable fuer Logging setzten
+<A NAME="313"></A></FONT>        <FONT ID="If">if</FONT> (loggerDefaultBtn.isSelected()) {
+<A NAME="314"></A>            loggerFile = <FONT ID="Null">null</FONT>;
+<A NAME="315"></A>        }
+<A NAME="316"></A>    }
+<A NAME="317"></A>    
+<A NAME="318"></A>    
+<A NAME="319"></A>    <FONT ID="FormalComment">/**
+<A NAME="320"></A>     * Centers the application frame on the screen.
+<A NAME="321"></A>     */</FONT>
+<A NAME="322"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> centerOnScreen() {
+<A NAME="323"></A>        Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+<A NAME="324"></A>        Dimension frameSize = <FONT ID="This">this</FONT>.getSize();
+<A NAME="325"></A>        
+<A NAME="326"></A>        <FONT ID="If">if</FONT> (frameSize.height &gt; screenSize.height) {
+<A NAME="327"></A>            frameSize.height = screenSize.height;
+<A NAME="328"></A>        }
+<A NAME="329"></A>        <FONT ID="If">if</FONT> (frameSize.width &gt; screenSize.width) {
+<A NAME="330"></A>            frameSize.width = screenSize.width;
+<A NAME="331"></A>        }
+<A NAME="332"></A>        <FONT ID="This">this</FONT>.setLocation((screenSize.width - frameSize.width) / <FONT ID="IntegerLiteral">2</FONT>, (screenSize.height - frameSize.height) / <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="333"></A>        
+<A NAME="334"></A>    }
+<A NAME="335"></A>    
+<A NAME="336"></A>    
+<A NAME="337"></A>    <FONT ID="FormalComment">/**
+<A NAME="338"></A>     * Redirects System.out and System.err to the JTextArea.&lt;br&gt;
+<A NAME="339"></A>     * see also: http://codeguru.earthweb.com/java/articles/382.shtml
+<A NAME="340"></A>     */</FONT>
+<A NAME="341"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> setStdOut() {
+<A NAME="342"></A>        PrintStream ps = <FONT ID="New">new</FONT> PrintStream(<FONT ID="New">new</FONT> FilteredStream(<FONT ID="New">new</FONT> ByteArrayOutputStream()));
+<A NAME="343"></A>        
+<A NAME="344"></A>        <FONT ID="SingleLineComment">// Redirect System Output und Error
+<A NAME="345"></A></FONT>        System.setOut(ps);
+<A NAME="346"></A>        System.setErr(ps);
+<A NAME="347"></A>    }
+<A NAME="348"></A>    
+<A NAME="349"></A>    
+<A NAME="350"></A>    
+<A NAME="351"></A>    <FONT ID="FormalComment">/**
+<A NAME="352"></A>     * Builds the global field fVec from the filename given in the text field
+<A NAME="353"></A>     * sourceNameField.
+<A NAME="354"></A>     *
+<A NAME="355"></A>     * @param f the file to analyse.
+<A NAME="356"></A>     */</FONT>
+<A NAME="357"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> sourceNameToVector(File f) {
+<A NAME="358"></A>        <FONT ID="SingleLineComment">// Vector der files erstellen
+<A NAME="359"></A></FONT>        fVec = <FONT ID="New">new</FONT> Vector();
+<A NAME="360"></A>        addFile(f, fVec);
+<A NAME="361"></A>        
+<A NAME="362"></A>        <FONT ID="SingleLineComment">// Anzahl der Files darstellen
+<A NAME="363"></A></FONT>        numberOfFilesLabel.setText(String.valueOf(fVec.size()));
+<A NAME="364"></A>    }
+<A NAME="365"></A>    
+<A NAME="366"></A>    
+<A NAME="367"></A>    <FONT ID="FormalComment">/**
+<A NAME="368"></A>     * Adds one file or all files in a directory to a given Vector of files.
+<A NAME="369"></A>     * @param f The file or directory to add.
+<A NAME="370"></A>     * @param fVector The Vector of files.
+<A NAME="371"></A>     */</FONT>
+<A NAME="372"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> addFile(File f, Vector fVector) {
+<A NAME="373"></A>        File[] fList;
+<A NAME="374"></A>        
+<A NAME="375"></A>        <FONT ID="If">if</FONT> (f == <FONT ID="Null">null</FONT>) {
+<A NAME="376"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="377"></A>        }
+<A NAME="378"></A>        
+<A NAME="379"></A>        <FONT ID="If">if</FONT> (! f.exists()) {
+<A NAME="380"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="381"></A>        }
+<A NAME="382"></A>        
+<A NAME="383"></A>        <FONT ID="If">if</FONT> (f.isFile()) {
+<A NAME="384"></A>            <FONT ID="SingleLineComment">// f ist ein File: nur diesen File zum Vector hinzufuegen
+<A NAME="385"></A></FONT>            fVector.add(f);
+<A NAME="386"></A>            
+<A NAME="387"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="388"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="389"></A>            <FONT ID="SingleLineComment">// f ist ein Directory: Alle Files aus dem Diectory hinzufuegen
+<A NAME="390"></A></FONT>            <FONT ID="SingleLineComment">// Liste aller Files und Subdirectories erstellen
+<A NAME="391"></A></FONT>            fList = f.listFiles();
+<A NAME="392"></A>            
+<A NAME="393"></A>            <FONT ID="SingleLineComment">// Liste abarbeiten
+<A NAME="394"></A></FONT>            <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; fList.length; i++) {
+<A NAME="395"></A>                <FONT ID="If">if</FONT> (includeSubdirectoriesCheckBox.isSelected()) {
+<A NAME="396"></A>                    <FONT ID="SingleLineComment">// Subdirectories mit einschliessen: Recursiver Aufruf
+<A NAME="397"></A></FONT>                    addFile(fList[i], fVector);
+<A NAME="398"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="399"></A>                    <FONT ID="SingleLineComment">// Subdirectories nicht einschliessen: Ignorieren
+<A NAME="400"></A></FONT>                    <FONT ID="If">if</FONT> (fList[i].isFile()) {
+<A NAME="401"></A>                        fVector.add(fList[i]);
+<A NAME="402"></A>                    }
+<A NAME="403"></A>                }
+<A NAME="404"></A>            }
+<A NAME="405"></A>        }
+<A NAME="406"></A>    }
+<A NAME="407"></A>    
+<A NAME="408"></A>    
+<A NAME="409"></A>    
+<A NAME="410"></A>    <FONT ID="FormalComment">/** This method is called from within the constructor to initialize the form.&lt;br&gt;
+<A NAME="411"></A>     * WARNING: Do NOT modify this code. The content of this method is always regenerated by the Form Editor.
+<A NAME="412"></A>     */</FONT>
+<A NAME="413"></A>    <FONT ID="SingleLineComment">// &lt;editor-fold defaultstate="collapsed" desc=" Generated Code "&gt;//GEN-BEGIN:initComponents
+<A NAME="414"></A></FONT>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> initComponents() {
+<A NAME="415"></A>        java.awt.GridBagConstraints gridBagConstraints;
+<A NAME="416"></A>
+<A NAME="417"></A>        sourceBtnGroup = <FONT ID="New">new</FONT> javax.swing.ButtonGroup();
+<A NAME="418"></A>        loggerBtnGroup = <FONT ID="New">new</FONT> javax.swing.ButtonGroup();
+<A NAME="419"></A>        fileTypeGroup = <FONT ID="New">new</FONT> javax.swing.ButtonGroup();
+<A NAME="420"></A>        guiPanel = <FONT ID="New">new</FONT> javax.swing.JPanel();
+<A NAME="421"></A>        taskTabbedPane = <FONT ID="New">new</FONT> javax.swing.JTabbedPane();
+<A NAME="422"></A>        receiverTab = <FONT ID="New">new</FONT> javax.swing.JPanel();
+<A NAME="423"></A>        sourcePanel = <FONT ID="New">new</FONT> javax.swing.JPanel();
+<A NAME="424"></A>        sourceTabbedPane = <FONT ID="New">new</FONT> javax.swing.JTabbedPane();
+<A NAME="425"></A>        fileTab = <FONT ID="New">new</FONT> javax.swing.JPanel();
+<A NAME="426"></A>        fileSourcePanel = <FONT ID="New">new</FONT> javax.swing.JPanel();
+<A NAME="427"></A>        numberOfFilesLabel = <FONT ID="New">new</FONT> javax.swing.JLabel();
+<A NAME="428"></A>        numberOfFilesText = <FONT ID="New">new</FONT> javax.swing.JLabel();
+<A NAME="429"></A>        selectDirectoryRadioBtn = <FONT ID="New">new</FONT> javax.swing.JRadioButton();
+<A NAME="430"></A>        selectFilesRadioBtn = <FONT ID="New">new</FONT> javax.swing.JRadioButton();
+<A NAME="431"></A>        includeSubdirectoriesCheckBox = <FONT ID="New">new</FONT> javax.swing.JCheckBox();
+<A NAME="432"></A>        sourceParentField = <FONT ID="New">new</FONT> javax.swing.JTextField();
+<A NAME="433"></A>        sourceNameField = <FONT ID="New">new</FONT> javax.swing.JTextField();
+<A NAME="434"></A>        selectSourceBtn = <FONT ID="New">new</FONT> javax.swing.JButton();
+<A NAME="435"></A>        networkTab = <FONT ID="New">new</FONT> javax.swing.JPanel();
+<A NAME="436"></A>        networkPanel = <FONT ID="New">new</FONT> javax.swing.JPanel();
+<A NAME="437"></A>        networkLabel = <FONT ID="New">new</FONT> javax.swing.JLabel();
+<A NAME="438"></A>        propertiesTab = <FONT ID="New">new</FONT> javax.swing.JPanel();
+<A NAME="439"></A>        propertyPanel = <FONT ID="New">new</FONT> javax.swing.JPanel();
+<A NAME="440"></A>        selectPropertyBtn = <FONT ID="New">new</FONT> javax.swing.JButton();
+<A NAME="441"></A>        propertyNameField = <FONT ID="New">new</FONT> javax.swing.JTextField();
+<A NAME="442"></A>        propertyParentField = <FONT ID="New">new</FONT> javax.swing.JTextField();
+<A NAME="443"></A>        runTab = <FONT ID="New">new</FONT> javax.swing.JPanel();
+<A NAME="444"></A>        processPanel = <FONT ID="New">new</FONT> javax.swing.JPanel();
+<A NAME="445"></A>        progressBar = <FONT ID="New">new</FONT> javax.swing.JProgressBar();
+<A NAME="446"></A>        startBtn = <FONT ID="New">new</FONT> javax.swing.JButton();
+<A NAME="447"></A>        stopBtn = <FONT ID="New">new</FONT> javax.swing.JButton();
+<A NAME="448"></A>        messagePanel = <FONT ID="New">new</FONT> javax.swing.JPanel();
+<A NAME="449"></A>        scrollMessageArea = <FONT ID="New">new</FONT> javax.swing.JScrollPane();
+<A NAME="450"></A>        messageArea = <FONT ID="New">new</FONT> javax.swing.JTextArea();
+<A NAME="451"></A>        loggerPanel = <FONT ID="New">new</FONT> javax.swing.JPanel();
+<A NAME="452"></A>        selectLoggerBtn = <FONT ID="New">new</FONT> javax.swing.JButton();
+<A NAME="453"></A>        loggerNameField = <FONT ID="New">new</FONT> javax.swing.JTextField();
+<A NAME="454"></A>        loggerParentField = <FONT ID="New">new</FONT> javax.swing.JTextField();
+<A NAME="455"></A>        loggerDefaultBtn = <FONT ID="New">new</FONT> javax.swing.JRadioButton();
+<A NAME="456"></A>        loggerSelectBtn = <FONT ID="New">new</FONT> javax.swing.JRadioButton();
+<A NAME="457"></A>        menuBar = <FONT ID="New">new</FONT> javax.swing.JMenuBar();
+<A NAME="458"></A>        fileMenu = <FONT ID="New">new</FONT> javax.swing.JMenu();
+<A NAME="459"></A>        openMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="460"></A>        saveMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="461"></A>        saveAsMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="462"></A>        exitMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="463"></A>        editMenu = <FONT ID="New">new</FONT> javax.swing.JMenu();
+<A NAME="464"></A>        cutMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="465"></A>        copyMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="466"></A>        pasteMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="467"></A>        deleteMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="468"></A>        helpMenu = <FONT ID="New">new</FONT> javax.swing.JMenu();
+<A NAME="469"></A>        contentsMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="470"></A>        aboutMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="471"></A>
+<A NAME="472"></A>        setTitle(<FONT ID="StringLiteral">"DicomRouterGUI"</FONT>);
+<A NAME="473"></A>        addWindowListener(<FONT ID="New">new</FONT> java.awt.event.WindowAdapter() {
+<A NAME="474"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> windowClosing(java.awt.event.WindowEvent evt) {
+<A NAME="475"></A>                exitForm(evt);
+<A NAME="476"></A>            }
+<A NAME="477"></A>        });
+<A NAME="478"></A>
+<A NAME="479"></A>        guiPanel.setLayout(<FONT ID="New">new</FONT> java.awt.GridBagLayout());
+<A NAME="480"></A>
+<A NAME="481"></A>        guiPanel.setBorder(javax.swing.BorderFactory.createEtchedBorder());
+<A NAME="482"></A>        guiPanel.setMinimumSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">780</FONT>, <FONT ID="IntegerLiteral">600</FONT>));
+<A NAME="483"></A>        guiPanel.setPreferredSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">780</FONT>, <FONT ID="IntegerLiteral">520</FONT>));
+<A NAME="484"></A>        receiverTab.setLayout(<FONT ID="New">new</FONT> java.awt.GridBagLayout());
+<A NAME="485"></A>
+<A NAME="486"></A>        sourcePanel.setLayout(<FONT ID="New">new</FONT> java.awt.GridBagLayout());
+<A NAME="487"></A>
+<A NAME="488"></A>        sourcePanel.setMinimumSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">256</FONT>, <FONT ID="IntegerLiteral">192</FONT>));
+<A NAME="489"></A>        sourcePanel.setPreferredSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">256</FONT>, <FONT ID="IntegerLiteral">192</FONT>));
+<A NAME="490"></A>        fileTab.setLayout(<FONT ID="New">new</FONT> java.awt.GridBagLayout());
+<A NAME="491"></A>
+<A NAME="492"></A>        fileTab.setMinimumSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">256</FONT>, <FONT ID="IntegerLiteral">192</FONT>));
+<A NAME="493"></A>        fileSourcePanel.setLayout(<FONT ID="New">new</FONT> java.awt.GridBagLayout());
+<A NAME="494"></A>
+<A NAME="495"></A>        fileSourcePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(<FONT ID="StringLiteral">"Source"</FONT>));
+<A NAME="496"></A>        numberOfFilesLabel.setFont(<FONT ID="New">new</FONT> java.awt.Font(<FONT ID="StringLiteral">"Dialog"</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">12</FONT>));
+<A NAME="497"></A>        numberOfFilesLabel.setText(<FONT ID="StringLiteral">"0"</FONT>);
+<A NAME="498"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="499"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="500"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="501"></A>        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+<A NAME="502"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+<A NAME="503"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">20</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">10</FONT>);
+<A NAME="504"></A>        fileSourcePanel.add(numberOfFilesLabel, gridBagConstraints);
+<A NAME="505"></A>
+<A NAME="506"></A>        numberOfFilesText.setFont(<FONT ID="New">new</FONT> java.awt.Font(<FONT ID="StringLiteral">"Dialog"</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">12</FONT>));
+<A NAME="507"></A>        numberOfFilesText.setText(<FONT ID="StringLiteral">"Number of selected files:"</FONT>);
+<A NAME="508"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="509"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="510"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="511"></A>        gridBagConstraints.gridwidth = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="512"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+<A NAME="513"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">20</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="514"></A>        fileSourcePanel.add(numberOfFilesText, gridBagConstraints);
+<A NAME="515"></A>
+<A NAME="516"></A>        sourceBtnGroup.add(selectDirectoryRadioBtn);
+<A NAME="517"></A>        selectDirectoryRadioBtn.setText(<FONT ID="StringLiteral">"Select directory"</FONT>);
+<A NAME="518"></A>        selectDirectoryRadioBtn.addActionListener(<FONT ID="New">new</FONT> java.awt.event.ActionListener() {
+<A NAME="519"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> actionPerformed(java.awt.event.ActionEvent evt) {
+<A NAME="520"></A>                selectDirectoryRadioBtnActionPerformed(evt);
+<A NAME="521"></A>            }
+<A NAME="522"></A>        });
+<A NAME="523"></A>        selectDirectoryRadioBtn.addChangeListener(<FONT ID="New">new</FONT> javax.swing.event.ChangeListener() {
+<A NAME="524"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> stateChanged(javax.swing.event.ChangeEvent evt) {
+<A NAME="525"></A>                selectDirectoryRadioBtnStateChanged(evt);
+<A NAME="526"></A>            }
+<A NAME="527"></A>        });
+<A NAME="528"></A>
+<A NAME="529"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="530"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="531"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="532"></A>        gridBagConstraints.gridwidth = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="533"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+<A NAME="534"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="535"></A>        fileSourcePanel.add(selectDirectoryRadioBtn, gridBagConstraints);
+<A NAME="536"></A>
+<A NAME="537"></A>        sourceBtnGroup.add(selectFilesRadioBtn);
+<A NAME="538"></A>        selectFilesRadioBtn.setSelected(<FONT ID="True">true</FONT>);
+<A NAME="539"></A>        selectFilesRadioBtn.setText(<FONT ID="StringLiteral">"Select files"</FONT>);
+<A NAME="540"></A>        selectFilesRadioBtn.addActionListener(<FONT ID="New">new</FONT> java.awt.event.ActionListener() {
+<A NAME="541"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> actionPerformed(java.awt.event.ActionEvent evt) {
+<A NAME="542"></A>                selectFilesRadioBtnActionPerformed(evt);
+<A NAME="543"></A>            }
+<A NAME="544"></A>        });
+<A NAME="545"></A>        selectFilesRadioBtn.addChangeListener(<FONT ID="New">new</FONT> javax.swing.event.ChangeListener() {
+<A NAME="546"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> stateChanged(javax.swing.event.ChangeEvent evt) {
+<A NAME="547"></A>                selectFilesRadioBtnStateChanged(evt);
+<A NAME="548"></A>            }
+<A NAME="549"></A>        });
+<A NAME="550"></A>
+<A NAME="551"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="552"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="553"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="554"></A>        gridBagConstraints.gridwidth = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="555"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+<A NAME="556"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="557"></A>        fileSourcePanel.add(selectFilesRadioBtn, gridBagConstraints);
+<A NAME="558"></A>
+<A NAME="559"></A>        includeSubdirectoriesCheckBox.setText(<FONT ID="StringLiteral">"Include subdirectories"</FONT>);
+<A NAME="560"></A>        includeSubdirectoriesCheckBox.addActionListener(<FONT ID="New">new</FONT> java.awt.event.ActionListener() {
+<A NAME="561"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> actionPerformed(java.awt.event.ActionEvent evt) {
+<A NAME="562"></A>                includeSubdirectoriesCheckBoxActionPerformed(evt);
+<A NAME="563"></A>            }
+<A NAME="564"></A>        });
+<A NAME="565"></A>
+<A NAME="566"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="567"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="568"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="569"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+<A NAME="570"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="571"></A>        fileSourcePanel.add(includeSubdirectoriesCheckBox, gridBagConstraints);
+<A NAME="572"></A>
+<A NAME="573"></A>        sourceParentField.setEditable(<FONT ID="False">false</FONT>);
+<A NAME="574"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="575"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="576"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">4</FONT>;
+<A NAME="577"></A>        gridBagConstraints.gridwidth = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="578"></A>        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+<A NAME="579"></A>        gridBagConstraints.weightx = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="580"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">10</FONT>);
+<A NAME="581"></A>        fileSourcePanel.add(sourceParentField, gridBagConstraints);
+<A NAME="582"></A>
+<A NAME="583"></A>        sourceNameField.setEditable(<FONT ID="False">false</FONT>);
+<A NAME="584"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="585"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="586"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">3</FONT>;
+<A NAME="587"></A>        gridBagConstraints.gridwidth = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="588"></A>        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+<A NAME="589"></A>        gridBagConstraints.weightx = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="590"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">40</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">10</FONT>);
+<A NAME="591"></A>        fileSourcePanel.add(sourceNameField, gridBagConstraints);
+<A NAME="592"></A>
+<A NAME="593"></A>        selectSourceBtn.setText(<FONT ID="StringLiteral">"Select..."</FONT>);
+<A NAME="594"></A>        selectSourceBtn.addActionListener(<FONT ID="New">new</FONT> java.awt.event.ActionListener() {
+<A NAME="595"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> actionPerformed(java.awt.event.ActionEvent evt) {
+<A NAME="596"></A>                selectSourceBtnActionPerformed(evt);
+<A NAME="597"></A>            }
+<A NAME="598"></A>        });
+<A NAME="599"></A>
+<A NAME="600"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="601"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="602"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">3</FONT>;
+<A NAME="603"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+<A NAME="604"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">40</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="605"></A>        fileSourcePanel.add(selectSourceBtn, gridBagConstraints);
+<A NAME="606"></A>
+<A NAME="607"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="608"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="609"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="610"></A>        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+<A NAME="611"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+<A NAME="612"></A>        gridBagConstraints.weightx = <FONT ID="FloatPointLiteral">100.0</FONT>;
+<A NAME="613"></A>        gridBagConstraints.weighty = <FONT ID="FloatPointLiteral">90.0</FONT>;
+<A NAME="614"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>);
+<A NAME="615"></A>        fileTab.add(fileSourcePanel, gridBagConstraints);
+<A NAME="616"></A>
+<A NAME="617"></A>        sourceTabbedPane.addTab(<FONT ID="StringLiteral">"File"</FONT>, fileTab);
+<A NAME="618"></A>
+<A NAME="619"></A>        networkTab.setLayout(<FONT ID="New">new</FONT> java.awt.GridBagLayout());
+<A NAME="620"></A>
+<A NAME="621"></A>        networkTab.setMinimumSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">256</FONT>, <FONT ID="IntegerLiteral">192</FONT>));
+<A NAME="622"></A>        networkPanel.setLayout(<FONT ID="New">new</FONT> java.awt.GridBagLayout());
+<A NAME="623"></A>
+<A NAME="624"></A>        networkLabel.setFont(<FONT ID="New">new</FONT> java.awt.Font(<FONT ID="StringLiteral">"Dialog"</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">14</FONT>));
+<A NAME="625"></A>        networkLabel.setText(<FONT ID="StringLiteral">"All configuration is done in the property file."</FONT>);
+<A NAME="626"></A>        networkPanel.add(networkLabel, <FONT ID="New">new</FONT> java.awt.GridBagConstraints());
+<A NAME="627"></A>
+<A NAME="628"></A>        networkTab.add(networkPanel, <FONT ID="New">new</FONT> java.awt.GridBagConstraints());
+<A NAME="629"></A>
+<A NAME="630"></A>        sourceTabbedPane.addTab(<FONT ID="StringLiteral">"Network"</FONT>, networkTab);
+<A NAME="631"></A>
+<A NAME="632"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="633"></A>        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+<A NAME="634"></A>        gridBagConstraints.weightx = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="635"></A>        gridBagConstraints.weighty = <FONT ID="FloatPointLiteral">100.0</FONT>;
+<A NAME="636"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>);
+<A NAME="637"></A>        sourcePanel.add(sourceTabbedPane, gridBagConstraints);
+<A NAME="638"></A>
+<A NAME="639"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="640"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="641"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="642"></A>        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+<A NAME="643"></A>        gridBagConstraints.weightx = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="644"></A>        gridBagConstraints.weighty = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="645"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>);
+<A NAME="646"></A>        receiverTab.add(sourcePanel, gridBagConstraints);
+<A NAME="647"></A>
+<A NAME="648"></A>        taskTabbedPane.addTab(<FONT ID="StringLiteral">"Receiver"</FONT>, receiverTab);
+<A NAME="649"></A>
+<A NAME="650"></A>        propertiesTab.setLayout(<FONT ID="New">new</FONT> java.awt.GridBagLayout());
+<A NAME="651"></A>
+<A NAME="652"></A>        propertiesTab.setMinimumSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">32</FONT>, <FONT ID="IntegerLiteral">256</FONT>));
+<A NAME="653"></A>        propertiesTab.setPreferredSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">32</FONT>, <FONT ID="IntegerLiteral">256</FONT>));
+<A NAME="654"></A>        propertyPanel.setLayout(<FONT ID="New">new</FONT> java.awt.GridBagLayout());
+<A NAME="655"></A>
+<A NAME="656"></A>        propertyPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(<FONT ID="Null">null</FONT>, <FONT ID="StringLiteral">"Property file"</FONT>, javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, <FONT ID="New">new</FONT> java.awt.Font(<FONT ID="StringLiteral">"Dialog"</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">11</FONT>)));
+<A NAME="657"></A>        propertyPanel.setMinimumSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">256</FONT>, <FONT ID="IntegerLiteral">102</FONT>));
+<A NAME="658"></A>        propertyPanel.setPreferredSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">256</FONT>, <FONT ID="IntegerLiteral">102</FONT>));
+<A NAME="659"></A>        propertyPanel.setVerifyInputWhenFocusTarget(<FONT ID="False">false</FONT>);
+<A NAME="660"></A>        selectPropertyBtn.setText(<FONT ID="StringLiteral">"Select..."</FONT>);
+<A NAME="661"></A>        selectPropertyBtn.addActionListener(<FONT ID="New">new</FONT> java.awt.event.ActionListener() {
+<A NAME="662"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> actionPerformed(java.awt.event.ActionEvent evt) {
+<A NAME="663"></A>                selectPropertyBtnActionPerformed(evt);
+<A NAME="664"></A>            }
+<A NAME="665"></A>        });
+<A NAME="666"></A>
+<A NAME="667"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="668"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="669"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="670"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+<A NAME="671"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="672"></A>        propertyPanel.add(selectPropertyBtn, gridBagConstraints);
+<A NAME="673"></A>
+<A NAME="674"></A>        propertyNameField.setEditable(<FONT ID="False">false</FONT>);
+<A NAME="675"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="676"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="677"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="678"></A>        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+<A NAME="679"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+<A NAME="680"></A>        gridBagConstraints.weightx = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="681"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">10</FONT>);
+<A NAME="682"></A>        propertyPanel.add(propertyNameField, gridBagConstraints);
+<A NAME="683"></A>
+<A NAME="684"></A>        propertyParentField.setEditable(<FONT ID="False">false</FONT>);
+<A NAME="685"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="686"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="687"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="688"></A>        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+<A NAME="689"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+<A NAME="690"></A>        gridBagConstraints.weightx = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="691"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>);
+<A NAME="692"></A>        propertyPanel.add(propertyParentField, gridBagConstraints);
+<A NAME="693"></A>
+<A NAME="694"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="695"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="696"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="697"></A>        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+<A NAME="698"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.NORTHWEST;
+<A NAME="699"></A>        gridBagConstraints.weightx = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="700"></A>        gridBagConstraints.weighty = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="701"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>);
+<A NAME="702"></A>        propertiesTab.add(propertyPanel, gridBagConstraints);
+<A NAME="703"></A>
+<A NAME="704"></A>        taskTabbedPane.addTab(<FONT ID="StringLiteral">"Properties"</FONT>, propertiesTab);
+<A NAME="705"></A>
+<A NAME="706"></A>        runTab.setLayout(<FONT ID="New">new</FONT> java.awt.GridBagLayout());
+<A NAME="707"></A>
+<A NAME="708"></A>        runTab.setMinimumSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">384</FONT>, <FONT ID="IntegerLiteral">256</FONT>));
+<A NAME="709"></A>        runTab.setPreferredSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">384</FONT>, <FONT ID="IntegerLiteral">256</FONT>));
+<A NAME="710"></A>        runTab.setRequestFocusEnabled(<FONT ID="False">false</FONT>);
+<A NAME="711"></A>        processPanel.setLayout(<FONT ID="New">new</FONT> java.awt.GridBagLayout());
+<A NAME="712"></A>
+<A NAME="713"></A>        processPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(<FONT ID="StringLiteral">"Process"</FONT>));
+<A NAME="714"></A>        progressBar.setMinimumSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">20</FONT>));
+<A NAME="715"></A>        progressBar.setPreferredSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">148</FONT>, <FONT ID="IntegerLiteral">20</FONT>));
+<A NAME="716"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="717"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="718"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="719"></A>        gridBagConstraints.gridwidth = <FONT ID="IntegerLiteral">3</FONT>;
+<A NAME="720"></A>        gridBagConstraints.fill = java.awt.GridBagConstraints.HORIZONTAL;
+<A NAME="721"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+<A NAME="722"></A>        gridBagConstraints.weightx = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="723"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">20</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>);
+<A NAME="724"></A>        processPanel.add(progressBar, gridBagConstraints);
+<A NAME="725"></A>
+<A NAME="726"></A>        startBtn.setText(<FONT ID="StringLiteral">"Start"</FONT>);
+<A NAME="727"></A>        startBtn.addActionListener(<FONT ID="New">new</FONT> java.awt.event.ActionListener() {
+<A NAME="728"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> actionPerformed(java.awt.event.ActionEvent evt) {
+<A NAME="729"></A>                startBtnActionPerformed(evt);
+<A NAME="730"></A>            }
+<A NAME="731"></A>        });
+<A NAME="732"></A>
+<A NAME="733"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="734"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="735"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="736"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+<A NAME="737"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="738"></A>        processPanel.add(startBtn, gridBagConstraints);
+<A NAME="739"></A>
+<A NAME="740"></A>        stopBtn.setText(<FONT ID="StringLiteral">"Stop"</FONT>);
+<A NAME="741"></A>        stopBtn.setEnabled(<FONT ID="False">false</FONT>);
+<A NAME="742"></A>        stopBtn.addActionListener(<FONT ID="New">new</FONT> java.awt.event.ActionListener() {
+<A NAME="743"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> actionPerformed(java.awt.event.ActionEvent evt) {
+<A NAME="744"></A>                stopBtnActionPerformed(evt);
+<A NAME="745"></A>            }
+<A NAME="746"></A>        });
+<A NAME="747"></A>
+<A NAME="748"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="749"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="750"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="751"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+<A NAME="752"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">20</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="753"></A>        processPanel.add(stopBtn, gridBagConstraints);
+<A NAME="754"></A>
+<A NAME="755"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="756"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="757"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="758"></A>        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+<A NAME="759"></A>        gridBagConstraints.weightx = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="760"></A>        gridBagConstraints.weighty = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="761"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">10</FONT>);
+<A NAME="762"></A>        runTab.add(processPanel, gridBagConstraints);
+<A NAME="763"></A>
+<A NAME="764"></A>        messagePanel.setLayout(<FONT ID="New">new</FONT> java.awt.GridBagLayout());
+<A NAME="765"></A>
+<A NAME="766"></A>        messagePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(<FONT ID="StringLiteral">"Messages"</FONT>));
+<A NAME="767"></A>        messageArea.setEditable(<FONT ID="False">false</FONT>);
+<A NAME="768"></A>        scrollMessageArea.setViewportView(messageArea);
+<A NAME="769"></A>
+<A NAME="770"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="771"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="772"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="773"></A>        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+<A NAME="774"></A>        gridBagConstraints.weightx = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="775"></A>        gridBagConstraints.weighty = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="776"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>);
+<A NAME="777"></A>        messagePanel.add(scrollMessageArea, gridBagConstraints);
+<A NAME="778"></A>
+<A NAME="779"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="780"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="781"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="782"></A>        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+<A NAME="783"></A>        gridBagConstraints.weightx = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="784"></A>        gridBagConstraints.weighty = <FONT ID="FloatPointLiteral">100.0</FONT>;
+<A NAME="785"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>);
+<A NAME="786"></A>        runTab.add(messagePanel, gridBagConstraints);
+<A NAME="787"></A>
+<A NAME="788"></A>        loggerPanel.setLayout(<FONT ID="New">new</FONT> java.awt.GridBagLayout());
+<A NAME="789"></A>
+<A NAME="790"></A>        loggerPanel.setBorder(javax.swing.BorderFactory.createTitledBorder(<FONT ID="Null">null</FONT>, <FONT ID="StringLiteral">"Logger"</FONT>, javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, <FONT ID="New">new</FONT> java.awt.Font(<FONT ID="StringLiteral">"Dialog"</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">11</FONT>)));
+<A NAME="791"></A>        loggerPanel.setMinimumSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">256</FONT>, <FONT ID="IntegerLiteral">170</FONT>));
+<A NAME="792"></A>        loggerPanel.setOpaque(<FONT ID="False">false</FONT>);
+<A NAME="793"></A>        loggerPanel.setPreferredSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">256</FONT>, <FONT ID="IntegerLiteral">170</FONT>));
+<A NAME="794"></A>        selectLoggerBtn.setText(<FONT ID="StringLiteral">"Select..."</FONT>);
+<A NAME="795"></A>        selectLoggerBtn.addActionListener(<FONT ID="New">new</FONT> java.awt.event.ActionListener() {
+<A NAME="796"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> actionPerformed(java.awt.event.ActionEvent evt) {
+<A NAME="797"></A>                selectLoggerBtnActionPerformed(evt);
+<A NAME="798"></A>            }
+<A NAME="799"></A>        });
+<A NAME="800"></A>
+<A NAME="801"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="802"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="803"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="804"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+<A NAME="805"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="806"></A>        loggerPanel.add(selectLoggerBtn, gridBagConstraints);
+<A NAME="807"></A>
+<A NAME="808"></A>        loggerNameField.setEditable(<FONT ID="False">false</FONT>);
+<A NAME="809"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="810"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="811"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="812"></A>        gridBagConstraints.gridwidth = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="813"></A>        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+<A NAME="814"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+<A NAME="815"></A>        gridBagConstraints.weightx = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="816"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">10</FONT>);
+<A NAME="817"></A>        loggerPanel.add(loggerNameField, gridBagConstraints);
+<A NAME="818"></A>
+<A NAME="819"></A>        loggerParentField.setEditable(<FONT ID="False">false</FONT>);
+<A NAME="820"></A>        loggerParentField.addActionListener(<FONT ID="New">new</FONT> java.awt.event.ActionListener() {
+<A NAME="821"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> actionPerformed(java.awt.event.ActionEvent evt) {
+<A NAME="822"></A>                loggerParentFieldActionPerformed(evt);
+<A NAME="823"></A>            }
+<A NAME="824"></A>        });
+<A NAME="825"></A>
+<A NAME="826"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="827"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="828"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">3</FONT>;
+<A NAME="829"></A>        gridBagConstraints.gridwidth = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="830"></A>        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+<A NAME="831"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+<A NAME="832"></A>        gridBagConstraints.weightx = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="833"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>);
+<A NAME="834"></A>        loggerPanel.add(loggerParentField, gridBagConstraints);
+<A NAME="835"></A>
+<A NAME="836"></A>        loggerBtnGroup.add(loggerDefaultBtn);
+<A NAME="837"></A>        loggerDefaultBtn.setSelected(<FONT ID="True">true</FONT>);
+<A NAME="838"></A>        loggerDefaultBtn.setText(<FONT ID="StringLiteral">"Use default logger"</FONT>);
+<A NAME="839"></A>        loggerDefaultBtn.addActionListener(<FONT ID="New">new</FONT> java.awt.event.ActionListener() {
+<A NAME="840"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> actionPerformed(java.awt.event.ActionEvent evt) {
+<A NAME="841"></A>                loggerDefaultBtnActionPerformed(evt);
+<A NAME="842"></A>            }
+<A NAME="843"></A>        });
+<A NAME="844"></A>
+<A NAME="845"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="846"></A>        gridBagConstraints.gridwidth = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="847"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+<A NAME="848"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="849"></A>        loggerPanel.add(loggerDefaultBtn, gridBagConstraints);
+<A NAME="850"></A>
+<A NAME="851"></A>        loggerBtnGroup.add(loggerSelectBtn);
+<A NAME="852"></A>        loggerSelectBtn.setText(<FONT ID="StringLiteral">"Select logger"</FONT>);
+<A NAME="853"></A>        loggerSelectBtn.addActionListener(<FONT ID="New">new</FONT> java.awt.event.ActionListener() {
+<A NAME="854"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> actionPerformed(java.awt.event.ActionEvent evt) {
+<A NAME="855"></A>                loggerSelectBtnActionPerformed(evt);
+<A NAME="856"></A>            }
+<A NAME="857"></A>        });
+<A NAME="858"></A>
+<A NAME="859"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="860"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="861"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="862"></A>        gridBagConstraints.gridwidth = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="863"></A>        gridBagConstraints.anchor = java.awt.GridBagConstraints.WEST;
+<A NAME="864"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="865"></A>        loggerPanel.add(loggerSelectBtn, gridBagConstraints);
+<A NAME="866"></A>
+<A NAME="867"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="868"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="869"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="870"></A>        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+<A NAME="871"></A>        gridBagConstraints.weightx = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="872"></A>        gridBagConstraints.weighty = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="873"></A>        gridBagConstraints.insets = <FONT ID="New">new</FONT> java.awt.Insets(<FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">10</FONT>, <FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">10</FONT>);
+<A NAME="874"></A>        runTab.add(loggerPanel, gridBagConstraints);
+<A NAME="875"></A>
+<A NAME="876"></A>        taskTabbedPane.addTab(<FONT ID="StringLiteral">"Run"</FONT>, runTab);
+<A NAME="877"></A>
+<A NAME="878"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="879"></A>        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+<A NAME="880"></A>        gridBagConstraints.weightx = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="881"></A>        gridBagConstraints.weighty = <FONT ID="FloatPointLiteral">1.0</FONT>;
+<A NAME="882"></A>        guiPanel.add(taskTabbedPane, gridBagConstraints);
+<A NAME="883"></A>
+<A NAME="884"></A>        getContentPane().add(guiPanel, java.awt.BorderLayout.CENTER);
+<A NAME="885"></A>
+<A NAME="886"></A>        menuBar.setBorder(<FONT ID="Null">null</FONT>);
+<A NAME="887"></A>        fileMenu.setText(<FONT ID="StringLiteral">"File"</FONT>);
+<A NAME="888"></A>        openMenuItem.setText(<FONT ID="StringLiteral">"Open"</FONT>);
+<A NAME="889"></A>        openMenuItem.setEnabled(<FONT ID="False">false</FONT>);
+<A NAME="890"></A>        fileMenu.add(openMenuItem);
+<A NAME="891"></A>
+<A NAME="892"></A>        saveMenuItem.setText(<FONT ID="StringLiteral">"Save"</FONT>);
+<A NAME="893"></A>        saveMenuItem.setEnabled(<FONT ID="False">false</FONT>);
+<A NAME="894"></A>        fileMenu.add(saveMenuItem);
+<A NAME="895"></A>
+<A NAME="896"></A>        saveAsMenuItem.setText(<FONT ID="StringLiteral">"Save As ..."</FONT>);
+<A NAME="897"></A>        saveAsMenuItem.setEnabled(<FONT ID="False">false</FONT>);
+<A NAME="898"></A>        fileMenu.add(saveAsMenuItem);
+<A NAME="899"></A>
+<A NAME="900"></A>        exitMenuItem.setText(<FONT ID="StringLiteral">"Exit"</FONT>);
+<A NAME="901"></A>        exitMenuItem.addActionListener(<FONT ID="New">new</FONT> java.awt.event.ActionListener() {
+<A NAME="902"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> actionPerformed(java.awt.event.ActionEvent evt) {
+<A NAME="903"></A>                exitMenuItemActionPerformed(evt);
+<A NAME="904"></A>            }
+<A NAME="905"></A>        });
+<A NAME="906"></A>
+<A NAME="907"></A>        fileMenu.add(exitMenuItem);
+<A NAME="908"></A>
+<A NAME="909"></A>        menuBar.add(fileMenu);
+<A NAME="910"></A>
+<A NAME="911"></A>        editMenu.setText(<FONT ID="StringLiteral">"Edit"</FONT>);
+<A NAME="912"></A>        editMenu.setEnabled(<FONT ID="False">false</FONT>);
+<A NAME="913"></A>        cutMenuItem.setText(<FONT ID="StringLiteral">"Cut"</FONT>);
+<A NAME="914"></A>        editMenu.add(cutMenuItem);
+<A NAME="915"></A>
+<A NAME="916"></A>        copyMenuItem.setText(<FONT ID="StringLiteral">"Copy"</FONT>);
+<A NAME="917"></A>        editMenu.add(copyMenuItem);
+<A NAME="918"></A>
+<A NAME="919"></A>        pasteMenuItem.setText(<FONT ID="StringLiteral">"Paste"</FONT>);
+<A NAME="920"></A>        editMenu.add(pasteMenuItem);
+<A NAME="921"></A>
+<A NAME="922"></A>        deleteMenuItem.setText(<FONT ID="StringLiteral">"Delete"</FONT>);
+<A NAME="923"></A>        editMenu.add(deleteMenuItem);
+<A NAME="924"></A>
+<A NAME="925"></A>        menuBar.add(editMenu);
+<A NAME="926"></A>
+<A NAME="927"></A>        helpMenu.setText(<FONT ID="StringLiteral">"Help"</FONT>);
+<A NAME="928"></A>        contentsMenuItem.setText(<FONT ID="StringLiteral">"Contents"</FONT>);
+<A NAME="929"></A>        contentsMenuItem.setEnabled(<FONT ID="False">false</FONT>);
+<A NAME="930"></A>        helpMenu.add(contentsMenuItem);
+<A NAME="931"></A>
+<A NAME="932"></A>        aboutMenuItem.setText(<FONT ID="StringLiteral">"About"</FONT>);
+<A NAME="933"></A>        aboutMenuItem.addActionListener(<FONT ID="New">new</FONT> java.awt.event.ActionListener() {
+<A NAME="934"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> actionPerformed(java.awt.event.ActionEvent evt) {
+<A NAME="935"></A>                aboutMenuItemActionPerformed(evt);
+<A NAME="936"></A>            }
+<A NAME="937"></A>        });
+<A NAME="938"></A>
+<A NAME="939"></A>        helpMenu.add(aboutMenuItem);
+<A NAME="940"></A>
+<A NAME="941"></A>        menuBar.add(helpMenu);
+<A NAME="942"></A>
+<A NAME="943"></A>        setJMenuBar(menuBar);
+<A NAME="944"></A>
+<A NAME="945"></A>        pack();
+<A NAME="946"></A>    }<FONT ID="SingleLineComment">// &lt;/editor-fold&gt;//GEN-END:initComponents
+<A NAME="947"></A></FONT>
+<A NAME="948"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> stopBtnActionPerformed(java.awt.event.ActionEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_stopBtnActionPerformed
+<A NAME="949"></A></FONT>        startBtn.setEnabled(<FONT ID="True">true</FONT>);
+<A NAME="950"></A>        stopBtn.setEnabled(<FONT ID="False">false</FONT>);
+<A NAME="951"></A>        
+<A NAME="952"></A>        <FONT ID="If">if</FONT> (receiverRunning != <FONT ID="Null">null</FONT>) {
+<A NAME="953"></A>            receiverRunning.stop();
+<A NAME="954"></A>        }
+<A NAME="955"></A>    }<FONT ID="SingleLineComment">//GEN-LAST:event_stopBtnActionPerformed
+<A NAME="956"></A></FONT>    
+<A NAME="957"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> includeSubdirectoriesCheckBoxActionPerformed(java.awt.event.ActionEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_includeSubdirectoriesCheckBoxActionPerformed
+<A NAME="958"></A></FONT>        <FONT ID="SingleLineComment">// TODO add your handling code here:
+<A NAME="959"></A></FONT>    }<FONT ID="SingleLineComment">//GEN-LAST:event_includeSubdirectoriesCheckBoxActionPerformed
+<A NAME="960"></A></FONT>    
+<A NAME="961"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> selectDirectoryRadioBtnActionPerformed(java.awt.event.ActionEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_selectDirectoryRadioBtnActionPerformed
+<A NAME="962"></A></FONT>        <FONT ID="SingleLineComment">// TODO add your handling code here:
+<A NAME="963"></A></FONT>    }<FONT ID="SingleLineComment">//GEN-LAST:event_selectDirectoryRadioBtnActionPerformed
+<A NAME="964"></A></FONT>    
+<A NAME="965"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> selectFilesRadioBtnActionPerformed(java.awt.event.ActionEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_selectFilesRadioBtnActionPerformed
+<A NAME="966"></A></FONT>        <FONT ID="SingleLineComment">// TODO add your handling code here:
+<A NAME="967"></A></FONT>    }<FONT ID="SingleLineComment">//GEN-LAST:event_selectFilesRadioBtnActionPerformed
+<A NAME="968"></A></FONT>    
+<A NAME="969"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> loggerParentFieldActionPerformed(java.awt.event.ActionEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_loggerParentFieldActionPerformed
+<A NAME="970"></A></FONT>        <FONT ID="SingleLineComment">// TODO add your handling code here:
+<A NAME="971"></A></FONT>    }<FONT ID="SingleLineComment">//GEN-LAST:event_loggerParentFieldActionPerformed
+<A NAME="972"></A></FONT>    
+<A NAME="973"></A>    
+<A NAME="974"></A>    <FONT ID="FormalComment">/**
+<A NAME="975"></A>     * Action method of the radio button to select a logger file.
+<A NAME="976"></A>     * @param evt the event.
+<A NAME="977"></A>     */</FONT>
+<A NAME="978"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> loggerSelectBtnActionPerformed(java.awt.event.ActionEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_loggerSelectBtnActionPerformed
+<A NAME="979"></A></FONT>        loggerFile = <FONT ID="New">new</FONT> File(<FONT ID="New">new</FONT> File(loggerParentField.getText()), loggerNameField.getText());
+<A NAME="980"></A>    }<FONT ID="SingleLineComment">//GEN-LAST:event_loggerSelectBtnActionPerformed
+<A NAME="981"></A></FONT>    
+<A NAME="982"></A>    
+<A NAME="983"></A>    <FONT ID="FormalComment">/**
+<A NAME="984"></A>     * Action method of the radio button to select the default logger file.
+<A NAME="985"></A>     * @param evt the event.
+<A NAME="986"></A>     */</FONT>
+<A NAME="987"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> loggerDefaultBtnActionPerformed(java.awt.event.ActionEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_loggerDefaultBtnActionPerformed
+<A NAME="988"></A></FONT>        loggerFile = <FONT ID="Null">null</FONT>;
+<A NAME="989"></A>    }<FONT ID="SingleLineComment">//GEN-LAST:event_loggerDefaultBtnActionPerformed
+<A NAME="990"></A></FONT>    
+<A NAME="991"></A>    
+<A NAME="992"></A>    <FONT ID="FormalComment">/**
+<A NAME="993"></A>     * Action method of the button to select a logger file.
+<A NAME="994"></A>     * @param evt the event.
+<A NAME="995"></A>     */</FONT>
+<A NAME="996"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> selectLoggerBtnActionPerformed(java.awt.event.ActionEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_selectLoggerBtnActionPerformed
+<A NAME="997"></A></FONT>        JFileChooser    jfc;
+<A NAME="998"></A>        
+<A NAME="999"></A>        <FONT ID="SingleLineComment">// Klasse fuer den Dialog generieren
+<A NAME="1000"></A></FONT>        jfc = <FONT ID="New">new</FONT> JFileChooser();
+<A NAME="1001"></A>        
+<A NAME="1002"></A>        jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+<A NAME="1003"></A>        
+<A NAME="1004"></A>        <FONT ID="SingleLineComment">// Immer nur einen File selektieren
+<A NAME="1005"></A></FONT>        jfc.setMultiSelectionEnabled(<FONT ID="False">false</FONT>);
+<A NAME="1006"></A>        
+<A NAME="1007"></A>        <FONT ID="SingleLineComment">// Bestehenden Namen als Default eintragen
+<A NAME="1008"></A></FONT>        jfc.setCurrentDirectory(loggerFile);
+<A NAME="1009"></A>        
+<A NAME="1010"></A>        <FONT ID="If">if</FONT> (jfc.showOpenDialog(<FONT ID="This">this</FONT>) != <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="1011"></A>            <FONT ID="SingleLineComment">// Cancel oder Dialog ohne Auswahl geschlossen
+<A NAME="1012"></A></FONT>            <FONT ID="Return">return</FONT>;
+<A NAME="1013"></A>        }
+<A NAME="1014"></A>        
+<A NAME="1015"></A>        <FONT ID="If">if</FONT> (jfc.getSelectedFile() == <FONT ID="Null">null</FONT>) {
+<A NAME="1016"></A>            <FONT ID="SingleLineComment">// Kein gueltiges File selektiert
+<A NAME="1017"></A></FONT>            <FONT ID="Return">return</FONT>;
+<A NAME="1018"></A>        }
+<A NAME="1019"></A>        
+<A NAME="1020"></A>        <FONT ID="SingleLineComment">// File holen
+<A NAME="1021"></A></FONT>        loggerFile = jfc.getSelectedFile();
+<A NAME="1022"></A>        
+<A NAME="1023"></A>        <FONT ID="SingleLineComment">// Textfeld updaten
+<A NAME="1024"></A></FONT>        loggerNameField.setText(loggerFile.getName());
+<A NAME="1025"></A>        loggerParentField.setText(loggerFile.getParent());
+<A NAME="1026"></A>    }<FONT ID="SingleLineComment">//GEN-LAST:event_selectLoggerBtnActionPerformed
+<A NAME="1027"></A></FONT>    
+<A NAME="1028"></A>    
+<A NAME="1029"></A>    <FONT ID="FormalComment">/**
+<A NAME="1030"></A>     * Action method of the radio button to select a source directory.
+<A NAME="1031"></A>     * @param evt the event.
+<A NAME="1032"></A>     */</FONT>
+<A NAME="1033"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> selectDirectoryRadioBtnStateChanged(javax.swing.event.ChangeEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_selectDirectoryRadioBtnStateChanged
+<A NAME="1034"></A></FONT>        sourceNameField.setText(<FONT ID="StringLiteral">""</FONT>);
+<A NAME="1035"></A>        numberOfFilesLabel.setText(<FONT ID="StringLiteral">"0"</FONT>);
+<A NAME="1036"></A>    }<FONT ID="SingleLineComment">//GEN-LAST:event_selectDirectoryRadioBtnStateChanged
+<A NAME="1037"></A></FONT>    
+<A NAME="1038"></A>    
+<A NAME="1039"></A>    <FONT ID="FormalComment">/**
+<A NAME="1040"></A>     * Action method of the radio button to select source files.
+<A NAME="1041"></A>     * @param evt the event.
+<A NAME="1042"></A>     */</FONT>
+<A NAME="1043"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> selectFilesRadioBtnStateChanged(javax.swing.event.ChangeEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_selectFilesRadioBtnStateChanged
+<A NAME="1044"></A></FONT>        sourceNameField.setText(<FONT ID="StringLiteral">""</FONT>);
+<A NAME="1045"></A>        numberOfFilesLabel.setText(<FONT ID="StringLiteral">"0"</FONT>);
+<A NAME="1046"></A>    }<FONT ID="SingleLineComment">//GEN-LAST:event_selectFilesRadioBtnStateChanged
+<A NAME="1047"></A></FONT>    
+<A NAME="1048"></A>    
+<A NAME="1049"></A>    <FONT ID="FormalComment">/**
+<A NAME="1050"></A>     * Action method of the button to start the processing.
+<A NAME="1051"></A>     * @param evt the event.
+<A NAME="1052"></A>     */</FONT>
+<A NAME="1053"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> startBtnActionPerformed(java.awt.event.ActionEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_startBtnActionPerformed
+<A NAME="1054"></A></FONT>        
+<A NAME="1055"></A>        <FONT ID="SingleLineComment">// Inhalt des JTextArea loeschen.
+<A NAME="1056"></A></FONT>        messageArea.setText(<FONT ID="StringLiteral">""</FONT>);
+<A NAME="1057"></A>        
+<A NAME="1058"></A>        <FONT ID="SingleLineComment">// File oder Network Runner starten
+<A NAME="1059"></A></FONT>        <FONT ID="If">if</FONT> (sourceTabbedPane.getSelectedComponent().equals(fileTab)) {
+<A NAME="1060"></A>            
+<A NAME="1061"></A>            <FONT ID="If">if</FONT> ((fVec != <FONT ID="Null">null</FONT>) &amp; (propertyFile != <FONT ID="Null">null</FONT>)) {
+<A NAME="1062"></A>                startFile();
+<A NAME="1063"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="1064"></A>                <FONT ID="SingleLineComment">// Source und/oder Property file fehlen
+<A NAME="1065"></A></FONT>                messageArea.append(<FONT ID="StringLiteral">"&lt;No propery or source file selected.&gt;"</FONT> + <FONT ID="StringLiteral">"\n"</FONT>);
+<A NAME="1066"></A>                <FONT ID="Return">return</FONT>;
+<A NAME="1067"></A>            }
+<A NAME="1068"></A>            
+<A NAME="1069"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="1070"></A>            startNetwork();
+<A NAME="1071"></A>        }
+<A NAME="1072"></A>        
+<A NAME="1073"></A>    }<FONT ID="SingleLineComment">//GEN-LAST:event_startBtnActionPerformed
+<A NAME="1074"></A></FONT>    
+<A NAME="1075"></A>    
+<A NAME="1076"></A>    <FONT ID="FormalComment">/**
+<A NAME="1077"></A>     *
+<A NAME="1078"></A>     */</FONT>
+<A NAME="1079"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> startFile() {
+<A NAME="1080"></A>        <A HREF="../../../../../de/iftm/dcm4che/router/receiver/GeneralFileReceiver.java.html">GeneralFileReceiver</A>     fileReceiver;
+<A NAME="1081"></A>        Properties              receiverProps;
+<A NAME="1082"></A>        <FONT ID="Boolean">boolean</FONT>                 success;
+<A NAME="1083"></A>        
+<A NAME="1084"></A>        fileReceiver = GeneralFileReceiver.createByName(propertyFile);
+<A NAME="1085"></A>        <FONT ID="If">if</FONT> (fileReceiver == <FONT ID="Null">null</FONT>) {
+<A NAME="1086"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="1087"></A>        }
+<A NAME="1088"></A>                
+<A NAME="1089"></A>        <FONT ID="If">if</FONT> (loggerFile == <FONT ID="Null">null</FONT>) {
+<A NAME="1090"></A>            <FONT ID="SingleLineComment">// Kein Loggerfile angegeben. Default Logger verwenden
+<A NAME="1091"></A></FONT>            fileReceiver.setLoggerProperties((Properties) <FONT ID="Null">null</FONT>);
+<A NAME="1092"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="1093"></A>            <FONT ID="SingleLineComment">// Spezieller Loggerfile angegeben.
+<A NAME="1094"></A></FONT>            <FONT ID="Try">try</FONT> {
+<A NAME="1095"></A>                fileReceiver.setLoggerProperties(loggerFile.toURI().toString());
+<A NAME="1096"></A>            } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="1097"></A>                log.error(<FONT ID="StringLiteral">"Can't load logger properties from: "</FONT> + loggerFile.toURI().toString());
+<A NAME="1098"></A>                <FONT ID="Return">return</FONT>;
+<A NAME="1099"></A>            }
+<A NAME="1100"></A>        }
+<A NAME="1101"></A>        
+<A NAME="1102"></A>        fileReceiver.addDicomRouterEventListener(<FONT ID="This">this</FONT>);
+<A NAME="1103"></A>        fileReceiver.setFileVectorToProcess(fVec);
+<A NAME="1104"></A>        receiverRunning = fileReceiver;
+<A NAME="1105"></A>        success = fileReceiver.start();
+<A NAME="1106"></A>        
+<A NAME="1107"></A>        <FONT ID="If">if</FONT> ( success) {
+<A NAME="1108"></A>            startBtn.setEnabled(<FONT ID="False">false</FONT>);
+<A NAME="1109"></A>            stopBtn.setEnabled(<FONT ID="True">true</FONT>);
+<A NAME="1110"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="1111"></A>            startBtn.setEnabled(<FONT ID="True">true</FONT>);
+<A NAME="1112"></A>            stopBtn.setEnabled(<FONT ID="False">false</FONT>);
+<A NAME="1113"></A>        }
+<A NAME="1114"></A>    }    
+<A NAME="1115"></A>
+<A NAME="1116"></A>    
+<A NAME="1117"></A>    <FONT ID="FormalComment">/**
+<A NAME="1118"></A>     * This method starts the network receiver. The method runs foreever. The START
+<A NAME="1119"></A>     * button is disabled.
+<A NAME="1120"></A>     */</FONT>
+<A NAME="1121"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> startNetwork() {
+<A NAME="1122"></A>        <A HREF="../../../../../de/iftm/dcm4che/router/receiver/DicomStorageSCPReceiver.java.html">DicomStorageSCPReceiver</A> dsr = <FONT ID="Null">null</FONT>;
+<A NAME="1123"></A>        <FONT ID="Boolean">boolean</FONT>                 success;
+<A NAME="1124"></A>        
+<A NAME="1125"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="1126"></A>            dsr = <FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/receiver/DicomStorageSCPReceiver.java.html">DicomStorageSCPReceiver</A>(propertyFile.toURI().toString());
+<A NAME="1127"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="1128"></A>            log.error(<FONT ID="StringLiteral">"Can't load DicomRouter properties from: "</FONT> + propertyFile.toURI().toString());
+<A NAME="1129"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="1130"></A>        }
+<A NAME="1131"></A>             
+<A NAME="1132"></A>        <FONT ID="If">if</FONT> (loggerFile == <FONT ID="Null">null</FONT>) {
+<A NAME="1133"></A>            <FONT ID="SingleLineComment">// Kein Loggerfile angegeben. Default Logger verwenden
+<A NAME="1134"></A></FONT>            dsr.setLoggerProperties((Properties) <FONT ID="Null">null</FONT>);
+<A NAME="1135"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="1136"></A>            <FONT ID="SingleLineComment">// Spezieller Loggerfile angegeben.
+<A NAME="1137"></A></FONT>            <FONT ID="Try">try</FONT> {
+<A NAME="1138"></A>                dsr.setLoggerProperties(loggerFile.toURI().toString());
+<A NAME="1139"></A>            } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="1140"></A>                log.error(<FONT ID="StringLiteral">"Can't load logger properties from: "</FONT> + loggerFile.toURI().toString());
+<A NAME="1141"></A>                <FONT ID="Return">return</FONT>;
+<A NAME="1142"></A>            }
+<A NAME="1143"></A>        }
+<A NAME="1144"></A>        
+<A NAME="1145"></A>        receiverRunning = dsr;
+<A NAME="1146"></A>        success = dsr.start();
+<A NAME="1147"></A>        <FONT ID="If">if</FONT> ( success) {
+<A NAME="1148"></A>            startBtn.setEnabled(<FONT ID="False">false</FONT>);
+<A NAME="1149"></A>            stopBtn.setEnabled(<FONT ID="True">true</FONT>);
+<A NAME="1150"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="1151"></A>            startBtn.setEnabled(<FONT ID="True">true</FONT>);
+<A NAME="1152"></A>            stopBtn.setEnabled(<FONT ID="False">false</FONT>);
+<A NAME="1153"></A>        }
+<A NAME="1154"></A>    }
+<A NAME="1155"></A>    
+<A NAME="1156"></A>    
+<A NAME="1157"></A>    <FONT ID="FormalComment">/**
+<A NAME="1158"></A>     * Action method of the help menu. Displays a copyright notice.
+<A NAME="1159"></A>     * @param evt the event.
+<A NAME="1160"></A>     */</FONT>
+<A NAME="1161"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> aboutMenuItemActionPerformed(java.awt.event.ActionEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_aboutMenuItemActionPerformed
+<A NAME="1162"></A></FONT>        JOptionPane.showMessageDialog(<FONT ID="This">this</FONT>, Util.getCopyrightMessage());
+<A NAME="1163"></A>    }<FONT ID="SingleLineComment">//GEN-LAST:event_aboutMenuItemActionPerformed
+<A NAME="1164"></A></FONT>    
+<A NAME="1165"></A>    
+<A NAME="1166"></A>    <FONT ID="FormalComment">/**
+<A NAME="1167"></A>     * Action method of the button to select the poperty file.
+<A NAME="1168"></A>     * @param evt the event.
+<A NAME="1169"></A>     */</FONT>
+<A NAME="1170"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> selectPropertyBtnActionPerformed(java.awt.event.ActionEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_selectPropertyBtnActionPerformed
+<A NAME="1171"></A></FONT>        JFileChooser    jfc;
+<A NAME="1172"></A>        
+<A NAME="1173"></A>        <FONT ID="SingleLineComment">// Klasse fuer den Dialog generieren
+<A NAME="1174"></A></FONT>        jfc = <FONT ID="New">new</FONT> JFileChooser();
+<A NAME="1175"></A>        
+<A NAME="1176"></A>        jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+<A NAME="1177"></A>        
+<A NAME="1178"></A>        <FONT ID="SingleLineComment">// Immer nur einen File selektieren
+<A NAME="1179"></A></FONT>        jfc.setMultiSelectionEnabled(<FONT ID="False">false</FONT>);
+<A NAME="1180"></A>        
+<A NAME="1181"></A>        <FONT ID="SingleLineComment">// Bestehenden Namen als Default eintragen
+<A NAME="1182"></A></FONT>        jfc.setCurrentDirectory(propertyFile);
+<A NAME="1183"></A>        
+<A NAME="1184"></A>        <FONT ID="If">if</FONT> (jfc.showOpenDialog(<FONT ID="This">this</FONT>) != <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="1185"></A>            <FONT ID="SingleLineComment">// Cancel oder Dialog ohne Auswahl geschlossen
+<A NAME="1186"></A></FONT>            <FONT ID="Return">return</FONT>;
+<A NAME="1187"></A>        }
+<A NAME="1188"></A>        
+<A NAME="1189"></A>        <FONT ID="SingleLineComment">// File holen
+<A NAME="1190"></A></FONT>        propertyFile = jfc.getSelectedFile();
+<A NAME="1191"></A>        
+<A NAME="1192"></A>        <FONT ID="If">if</FONT> (propertyFile == <FONT ID="Null">null</FONT>) {
+<A NAME="1193"></A>            <FONT ID="SingleLineComment">// Kein gueltiges File selektiert
+<A NAME="1194"></A></FONT>            <FONT ID="Return">return</FONT>;
+<A NAME="1195"></A>        }
+<A NAME="1196"></A>        
+<A NAME="1197"></A>        <FONT ID="SingleLineComment">// Textfelder updaten
+<A NAME="1198"></A></FONT>        propertyNameField.setText(propertyFile.getName());
+<A NAME="1199"></A>        propertyParentField.setText(propertyFile.getParent());
+<A NAME="1200"></A>    }<FONT ID="SingleLineComment">//GEN-LAST:event_selectPropertyBtnActionPerformed
+<A NAME="1201"></A></FONT>    
+<A NAME="1202"></A>    
+<A NAME="1203"></A>    <FONT ID="FormalComment">/**
+<A NAME="1204"></A>     * Action method of the button to select source files or a source directory.
+<A NAME="1205"></A>     * @param evt the event.
+<A NAME="1206"></A>     */</FONT>
+<A NAME="1207"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> selectSourceBtnActionPerformed(java.awt.event.ActionEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_selectSourceBtnActionPerformed
+<A NAME="1208"></A></FONT>        <FONT ID="If">if</FONT> (selectDirectoryRadioBtn.isSelected()) {
+<A NAME="1209"></A>            selectDirectoryOnly();
+<A NAME="1210"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="1211"></A>            selectFilesOnly();
+<A NAME="1212"></A>        }
+<A NAME="1213"></A>    }<FONT ID="SingleLineComment">//GEN-LAST:event_selectSourceBtnActionPerformed
+<A NAME="1214"></A></FONT>    
+<A NAME="1215"></A>    
+<A NAME="1216"></A>    <FONT ID="FormalComment">/**
+<A NAME="1217"></A>     * Action method of the radio button to select directories only as a source.
+<A NAME="1218"></A>     */</FONT>
+<A NAME="1219"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> selectDirectoryOnly() {
+<A NAME="1220"></A>        JFileChooser    jfc;
+<A NAME="1221"></A>        
+<A NAME="1222"></A>        <FONT ID="SingleLineComment">// Klasse fuer den Dialog generieren
+<A NAME="1223"></A></FONT>        jfc = <FONT ID="New">new</FONT> JFileChooser();
+<A NAME="1224"></A>        
+<A NAME="1225"></A>        jfc.setFileSelectionMode(JFileChooser.DIRECTORIES_ONLY);
+<A NAME="1226"></A>        
+<A NAME="1227"></A>        <FONT ID="SingleLineComment">// Bestehenden Namen als Default eintragen
+<A NAME="1228"></A></FONT>        jfc.setCurrentDirectory(sourceFile);
+<A NAME="1229"></A>        
+<A NAME="1230"></A>        <FONT ID="If">if</FONT> (jfc.showOpenDialog(<FONT ID="This">this</FONT>) != <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="1231"></A>            <FONT ID="SingleLineComment">// Cancel oder Dialog ohne Auswahl geschlossen
+<A NAME="1232"></A></FONT>            <FONT ID="Return">return</FONT>;
+<A NAME="1233"></A>        }
+<A NAME="1234"></A>        
+<A NAME="1235"></A>        <FONT ID="SingleLineComment">// Directory holen
+<A NAME="1236"></A></FONT>        sourceFile = jfc.getSelectedFile();
+<A NAME="1237"></A>        
+<A NAME="1238"></A>        <FONT ID="If">if</FONT> (sourceFile == <FONT ID="Null">null</FONT>) {
+<A NAME="1239"></A>            <FONT ID="SingleLineComment">// Kein gueltiges Directory selektiert
+<A NAME="1240"></A></FONT>            <FONT ID="Return">return</FONT>;
+<A NAME="1241"></A>        }
+<A NAME="1242"></A>        
+<A NAME="1243"></A>        <FONT ID="SingleLineComment">// Vector der Files erstellen
+<A NAME="1244"></A></FONT>        sourceNameToVector(sourceFile);
+<A NAME="1245"></A>        
+<A NAME="1246"></A>        <FONT ID="SingleLineComment">// Neuen Path in Textfeld darstellen
+<A NAME="1247"></A></FONT>        sourceNameField.setText(<FONT ID="StringLiteral">""</FONT>);
+<A NAME="1248"></A>        sourceParentField.setText(sourceFile.toString());
+<A NAME="1249"></A>    }
+<A NAME="1250"></A>    
+<A NAME="1251"></A>    
+<A NAME="1252"></A>    <FONT ID="FormalComment">/**
+<A NAME="1253"></A>     * Action method of the radio button to select files only as source.
+<A NAME="1254"></A>     */</FONT>
+<A NAME="1255"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> selectFilesOnly() {
+<A NAME="1256"></A>        JFileChooser    jfc;
+<A NAME="1257"></A>        File[]          fArray;
+<A NAME="1258"></A>        
+<A NAME="1259"></A>        <FONT ID="SingleLineComment">// Klasse fuer den Dialog generieren
+<A NAME="1260"></A></FONT>        jfc = <FONT ID="New">new</FONT> JFileChooser();
+<A NAME="1261"></A>        
+<A NAME="1262"></A>        jfc.setFileSelectionMode(JFileChooser.FILES_ONLY);
+<A NAME="1263"></A>        
+<A NAME="1264"></A>        <FONT ID="SingleLineComment">// Mehrere Files selektieren erlauben
+<A NAME="1265"></A></FONT>        jfc.setMultiSelectionEnabled(<FONT ID="True">true</FONT>);
+<A NAME="1266"></A>        
+<A NAME="1267"></A>        <FONT ID="SingleLineComment">// Bestehenden Namen als Default eintragen
+<A NAME="1268"></A></FONT>        jfc.setCurrentDirectory(sourceFile);
+<A NAME="1269"></A>        
+<A NAME="1270"></A>        <FONT ID="If">if</FONT> (jfc.showOpenDialog(<FONT ID="This">this</FONT>) != <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="1271"></A>            <FONT ID="SingleLineComment">// Cancel oder Dialog ohne Auswahl geschlossen
+<A NAME="1272"></A></FONT>            <FONT ID="Return">return</FONT>;
+<A NAME="1273"></A>        }
+<A NAME="1274"></A>        
+<A NAME="1275"></A>        <FONT ID="SingleLineComment">// File holen
+<A NAME="1276"></A></FONT>        fArray = jfc.getSelectedFiles();
+<A NAME="1277"></A>        
+<A NAME="1278"></A>        <FONT ID="If">if</FONT> (fArray == <FONT ID="Null">null</FONT>) {
+<A NAME="1279"></A>            <FONT ID="SingleLineComment">// Keine gueltigen Files selektiert
+<A NAME="1280"></A></FONT>            <FONT ID="Return">return</FONT>;
+<A NAME="1281"></A>        }
+<A NAME="1282"></A>        
+<A NAME="1283"></A>        <FONT ID="If">if</FONT> (fArray.length == <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="1284"></A>            <FONT ID="SingleLineComment">// Keine gueltigen Files selektiert
+<A NAME="1285"></A></FONT>            <FONT ID="Return">return</FONT>;
+<A NAME="1286"></A>        }
+<A NAME="1287"></A>        
+<A NAME="1288"></A>        <FONT ID="SingleLineComment">// Array in Vector kopieren
+<A NAME="1289"></A></FONT>        fVec = <FONT ID="New">new</FONT> Vector();
+<A NAME="1290"></A>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; fArray.length; i++) {
+<A NAME="1291"></A>            fVec.add(fArray[i]);
+<A NAME="1292"></A>        }
+<A NAME="1293"></A>        
+<A NAME="1294"></A>        <FONT ID="SingleLineComment">// Anzahl der Files darstellen
+<A NAME="1295"></A></FONT>        numberOfFilesLabel.setText(String.valueOf(fVec.size()));
+<A NAME="1296"></A>        
+<A NAME="1297"></A>        <FONT ID="SingleLineComment">// Ersten File in Textfelder darstellen
+<A NAME="1298"></A></FONT>        sourceFile = fArray[<FONT ID="IntegerLiteral">0</FONT>];
+<A NAME="1299"></A>        sourceNameField.setText(sourceFile.getName());
+<A NAME="1300"></A>        sourceParentField.setText(sourceFile.getParent());
+<A NAME="1301"></A>    }
+<A NAME="1302"></A>    
+<A NAME="1303"></A>    
+<A NAME="1304"></A>    <FONT ID="FormalComment">/**
+<A NAME="1305"></A>     * Action method of the exit menu.
+<A NAME="1306"></A>     * @param evt the event.
+<A NAME="1307"></A>     */</FONT>
+<A NAME="1308"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_exitMenuItemActionPerformed
+<A NAME="1309"></A></FONT>        exitApplication();
+<A NAME="1310"></A>    }<FONT ID="SingleLineComment">//GEN-LAST:event_exitMenuItemActionPerformed
+<A NAME="1311"></A></FONT>    
+<A NAME="1312"></A>    
+<A NAME="1313"></A>    <FONT ID="FormalComment">/**
+<A NAME="1314"></A>     * Exit the GUI form.
+<A NAME="1315"></A>     * @param evt the event.
+<A NAME="1316"></A>     */</FONT>
+<A NAME="1317"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> exitForm(java.awt.event.WindowEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_exitForm
+<A NAME="1318"></A></FONT>        exitApplication();
+<A NAME="1319"></A>    }<FONT ID="SingleLineComment">//GEN-LAST:event_exitForm
+<A NAME="1320"></A></FONT>    
+<A NAME="1321"></A>    
+<A NAME="1322"></A>    <FONT ID="FormalComment">/**
+<A NAME="1323"></A>     * Exit the application.
+<A NAME="1324"></A>     */</FONT>
+<A NAME="1325"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> exitApplication() {
+<A NAME="1326"></A>        storeProperties();
+<A NAME="1327"></A>        System.exit(<FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="1328"></A>    }
+<A NAME="1329"></A>    
+<A NAME="1330"></A>    
+<A NAME="1331"></A>    <FONT ID="FormalComment">/**
+<A NAME="1332"></A>     * The main method to start the application.
+<A NAME="1333"></A>     * @param args the command line arguments
+<A NAME="1334"></A>     */</FONT>
+<A NAME="1335"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Void">void</FONT> main(String args[]) {
+<A NAME="1336"></A>        <FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/gui/DicomRouterGUI2.java.html">DicomRouterGUI2</A>().setVisible(<FONT ID="True">true</FONT>);
+<A NAME="1337"></A>    }
+<A NAME="1338"></A>    
+<A NAME="1339"></A>    
+<A NAME="1340"></A>    <FONT ID="SingleLineComment">// Variables declaration - do not modify//GEN-BEGIN:variables
+<A NAME="1341"></A></FONT>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem aboutMenuItem;
+<A NAME="1342"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem contentsMenuItem;
+<A NAME="1343"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem copyMenuItem;
+<A NAME="1344"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem cutMenuItem;
+<A NAME="1345"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem deleteMenuItem;
+<A NAME="1346"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenu editMenu;
+<A NAME="1347"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem exitMenuItem;
+<A NAME="1348"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenu fileMenu;
+<A NAME="1349"></A>    <FONT ID="Private">private</FONT> javax.swing.JPanel fileSourcePanel;
+<A NAME="1350"></A>    <FONT ID="Private">private</FONT> javax.swing.JPanel fileTab;
+<A NAME="1351"></A>    <FONT ID="Private">private</FONT> javax.swing.ButtonGroup fileTypeGroup;
+<A NAME="1352"></A>    <FONT ID="Private">private</FONT> javax.swing.JPanel guiPanel;
+<A NAME="1353"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenu helpMenu;
+<A NAME="1354"></A>    <FONT ID="Private">private</FONT> javax.swing.JCheckBox includeSubdirectoriesCheckBox;
+<A NAME="1355"></A>    <FONT ID="Private">private</FONT> javax.swing.ButtonGroup loggerBtnGroup;
+<A NAME="1356"></A>    <FONT ID="Private">private</FONT> javax.swing.JRadioButton loggerDefaultBtn;
+<A NAME="1357"></A>    <FONT ID="Private">private</FONT> javax.swing.JTextField loggerNameField;
+<A NAME="1358"></A>    <FONT ID="Private">private</FONT> javax.swing.JPanel loggerPanel;
+<A NAME="1359"></A>    <FONT ID="Private">private</FONT> javax.swing.JTextField loggerParentField;
+<A NAME="1360"></A>    <FONT ID="Private">private</FONT> javax.swing.JRadioButton loggerSelectBtn;
+<A NAME="1361"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuBar menuBar;
+<A NAME="1362"></A>    <FONT ID="Private">private</FONT> javax.swing.JTextArea messageArea;
+<A NAME="1363"></A>    <FONT ID="Private">private</FONT> javax.swing.JPanel messagePanel;
+<A NAME="1364"></A>    <FONT ID="Private">private</FONT> javax.swing.JLabel networkLabel;
+<A NAME="1365"></A>    <FONT ID="Private">private</FONT> javax.swing.JPanel networkPanel;
+<A NAME="1366"></A>    <FONT ID="Private">private</FONT> javax.swing.JPanel networkTab;
+<A NAME="1367"></A>    <FONT ID="Private">private</FONT> javax.swing.JLabel numberOfFilesLabel;
+<A NAME="1368"></A>    <FONT ID="Private">private</FONT> javax.swing.JLabel numberOfFilesText;
+<A NAME="1369"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem openMenuItem;
+<A NAME="1370"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem pasteMenuItem;
+<A NAME="1371"></A>    <FONT ID="Private">private</FONT> javax.swing.JPanel processPanel;
+<A NAME="1372"></A>    <FONT ID="Private">private</FONT> javax.swing.JProgressBar progressBar;
+<A NAME="1373"></A>    <FONT ID="Private">private</FONT> javax.swing.JPanel propertiesTab;
+<A NAME="1374"></A>    <FONT ID="Private">private</FONT> javax.swing.JTextField propertyNameField;
+<A NAME="1375"></A>    <FONT ID="Private">private</FONT> javax.swing.JPanel propertyPanel;
+<A NAME="1376"></A>    <FONT ID="Private">private</FONT> javax.swing.JTextField propertyParentField;
+<A NAME="1377"></A>    <FONT ID="Private">private</FONT> javax.swing.JPanel receiverTab;
+<A NAME="1378"></A>    <FONT ID="Private">private</FONT> javax.swing.JPanel runTab;
+<A NAME="1379"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem saveAsMenuItem;
+<A NAME="1380"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem saveMenuItem;
+<A NAME="1381"></A>    <FONT ID="Private">private</FONT> javax.swing.JScrollPane scrollMessageArea;
+<A NAME="1382"></A>    <FONT ID="Private">private</FONT> javax.swing.JRadioButton selectDirectoryRadioBtn;
+<A NAME="1383"></A>    <FONT ID="Private">private</FONT> javax.swing.JRadioButton selectFilesRadioBtn;
+<A NAME="1384"></A>    <FONT ID="Private">private</FONT> javax.swing.JButton selectLoggerBtn;
+<A NAME="1385"></A>    <FONT ID="Private">private</FONT> javax.swing.JButton selectPropertyBtn;
+<A NAME="1386"></A>    <FONT ID="Private">private</FONT> javax.swing.JButton selectSourceBtn;
+<A NAME="1387"></A>    <FONT ID="Private">private</FONT> javax.swing.ButtonGroup sourceBtnGroup;
+<A NAME="1388"></A>    <FONT ID="Private">private</FONT> javax.swing.JTextField sourceNameField;
+<A NAME="1389"></A>    <FONT ID="Private">private</FONT> javax.swing.JPanel sourcePanel;
+<A NAME="1390"></A>    <FONT ID="Private">private</FONT> javax.swing.JTextField sourceParentField;
+<A NAME="1391"></A>    <FONT ID="Private">private</FONT> javax.swing.JTabbedPane sourceTabbedPane;
+<A NAME="1392"></A>    <FONT ID="Private">private</FONT> javax.swing.JButton startBtn;
+<A NAME="1393"></A>    <FONT ID="Private">private</FONT> javax.swing.JButton stopBtn;
+<A NAME="1394"></A>    <FONT ID="Private">private</FONT> javax.swing.JTabbedPane taskTabbedPane;
+<A NAME="1395"></A>    <FONT ID="SingleLineComment">// End of variables declaration//GEN-END:variables
+<A NAME="1396"></A></FONT>    
+<A NAME="1397"></A>    
+<A NAME="1398"></A>    <FONT ID="FormalComment">/**
+<A NAME="1399"></A>     * Inner member class for handling the output of System.out and System.err to the
+<A NAME="1400"></A>     * JTextArea intead of standard out and err.
+<A NAME="1401"></A>     */</FONT>
+<A NAME="1402"></A>    <FONT ID="Class">class</FONT> FilteredStream <FONT ID="Extends">extends</FONT> FilterOutputStream {
+<A NAME="1403"></A>        
+<A NAME="1404"></A>        <FONT ID="FormalComment">/** Maximum length of text in the text area for logging (= 65535). */</FONT>
+<A NAME="1405"></A>        <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> MAXIMUM_LENGTH_OF_TEXT = <FONT ID="IntegerLiteral">65535</FONT>;
+<A NAME="1406"></A>        
+<A NAME="1407"></A>        <FONT ID="FormalComment">/**
+<A NAME="1408"></A>         * The constructor. It calls its super class only.
+<A NAME="1409"></A>         * @param os The OutputStream to process.
+<A NAME="1410"></A>         */</FONT>
+<A NAME="1411"></A>        <FONT ID="Public">public</FONT> FilteredStream(OutputStream os) {
+<A NAME="1412"></A>            <FONT ID="Super">super</FONT>(os);
+<A NAME="1413"></A>        }
+<A NAME="1414"></A>        
+<A NAME="1415"></A>        
+<A NAME="1416"></A>        <FONT ID="FormalComment">/**
+<A NAME="1417"></A>         * Writes b.length bytes from the specified byte array to this output stream.
+<A NAME="1418"></A>         * The length of the text is limited to the MAXIMUM_LENGTH_OF_TEXT characters.
+<A NAME="1419"></A>         * @param b the data.
+<A NAME="1420"></A>         * @throws IOException if an I/O error occurs.
+<A NAME="1421"></A>         */</FONT>
+<A NAME="1422"></A>        <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> write(<FONT ID="Byte">byte</FONT> b[]) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="1423"></A>            String s = <FONT ID="New">new</FONT> String(b);
+<A NAME="1424"></A>            write(s);
+<A NAME="1425"></A>        }
+<A NAME="1426"></A>        
+<A NAME="1427"></A>        
+<A NAME="1428"></A>        <FONT ID="FormalComment">/**
+<A NAME="1429"></A>         * Writes len bytes from the specified byte array starting at offset off to this output
+<A NAME="1430"></A>         * stream.
+<A NAME="1431"></A>         * The length of the text is limited to the MAXIMUM_LENGTH_OF_TEXT characters.
+<A NAME="1432"></A>         * @param b the data.
+<A NAME="1433"></A>         * @param off the start offset in the data.
+<A NAME="1434"></A>         * @param len the number of bytes to write.
+<A NAME="1435"></A>         * @throws IOException if an I/O error occurs.
+<A NAME="1436"></A>         */</FONT>
+<A NAME="1437"></A>        <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> write(<FONT ID="Byte">byte</FONT> b[], <FONT ID="Int">int</FONT> off, <FONT ID="Int">int</FONT> len) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="1438"></A>            String s = <FONT ID="New">new</FONT> String(b , off , len);
+<A NAME="1439"></A>            write(s);
+<A NAME="1440"></A>        }
+<A NAME="1441"></A>        
+<A NAME="1442"></A>        
+<A NAME="1443"></A>        <FONT ID="FormalComment">/**
+<A NAME="1444"></A>         * Writes a String to this output stream.
+<A NAME="1445"></A>         * The length of the text is limited to the MAXIMUM_LENGTH_OF_TEXT characters.
+<A NAME="1446"></A>         * @param s the String to write.
+<A NAME="1447"></A>         * @throws IOException if an I/O error occurs.
+<A NAME="1448"></A>         */</FONT>
+<A NAME="1449"></A>        <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> write(String s) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="1450"></A>            String      loggingText;
+<A NAME="1451"></A>            <FONT ID="Int">int</FONT>         h;
+<A NAME="1452"></A>            JViewport   vp;
+<A NAME="1453"></A>            
+<A NAME="1454"></A>            <FONT ID="SingleLineComment">// Append this logging message at the end of the logging message but respect the maximal message length
+<A NAME="1455"></A></FONT>            loggingText = messageArea.getText();
+<A NAME="1456"></A>            loggingText += s;
+<A NAME="1457"></A>            <FONT ID="If">if</FONT> (loggingText.length() &gt; MAXIMUM_LENGTH_OF_TEXT) {
+<A NAME="1458"></A>                loggingText = loggingText.substring(loggingText.length() - MAXIMUM_LENGTH_OF_TEXT);
+<A NAME="1459"></A>            }
+<A NAME="1460"></A>            messageArea.setText(loggingText);
+<A NAME="1461"></A>            
+<A NAME="1462"></A>            <FONT ID="SingleLineComment">// MessageArea ans Ende scrollen
+<A NAME="1463"></A></FONT>            h = messageArea.getHeight();
+<A NAME="1464"></A>            vp= scrollMessageArea.getViewport();
+<A NAME="1465"></A>            vp.scrollRectToVisible(<FONT ID="New">new</FONT> Rectangle(<FONT ID="IntegerLiteral">0</FONT>, h+<FONT ID="IntegerLiteral">1</FONT>, <FONT ID="IntegerLiteral">1</FONT>, <FONT ID="IntegerLiteral">1</FONT>));
+<A NAME="1466"></A>        }
+<A NAME="1467"></A>    }
+<A NAME="1468"></A>    
+<A NAME="1469"></A>}
+<A NAME="1470"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DicomRouterGUI2</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

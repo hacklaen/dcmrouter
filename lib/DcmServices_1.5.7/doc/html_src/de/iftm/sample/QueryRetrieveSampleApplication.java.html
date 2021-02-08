@@ -1,0 +1,698 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.sample.QueryRetrieveSampleApplication (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">QueryRetrieveSampleApplication</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * Copyright (C) 2006 Thomas Hacklaender
+<A NAME="3"></A> *
+<A NAME="4"></A> * This program is free software; you can redistribute it and/or
+<A NAME="5"></A> * modify it under the terms of the GNU General Public License 2
+<A NAME="6"></A> * as published by the Free Software Foundation.
+<A NAME="7"></A> *
+<A NAME="8"></A> * This program is distributed in the hope that it will be useful,
+<A NAME="9"></A> * but WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="10"></A> * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+<A NAME="11"></A> * GNU General Public License for more details.
+<A NAME="12"></A> *
+<A NAME="13"></A> * You should have received a copy of the GNU General Public License
+<A NAME="14"></A> * along with this program; if not, write to the Free Software
+<A NAME="15"></A> * Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+<A NAME="16"></A> */</FONT>
+<A NAME="17"></A><FONT ID="Package">package</FONT> <A HREF="../../../de.iftm.sample.index.html" target="packageFrame">de.iftm.sample</A>;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> <A HREF="../../../de/iftm/dcm4che/services/ConfigProperties.java.html">de.iftm.dcm4che.services.ConfigProperties</A>;
+<A NAME="20"></A><FONT ID="Import">import</FONT> <A HREF="../../../de/iftm/dcm4che/services/CDimseService.java.html">de.iftm.dcm4che.services.CDimseService</A>;
+<A NAME="21"></A><FONT ID="Import">import</FONT> <A HREF="../../../de/iftm/dcm4che/services/StorageService.java.html">de.iftm.dcm4che.services.StorageService</A>;
+<A NAME="22"></A><FONT ID="Import">import</FONT> <A HREF="../../../de/iftm/dcm4che/services/StorageServiceAdapter.java.html">de.iftm.dcm4che.services.StorageServiceAdapter</A>;
+<A NAME="23"></A>
+<A NAME="24"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.*;
+<A NAME="25"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="26"></A><FONT ID="Import">import</FONT> org.dcm4che.util.*;
+<A NAME="27"></A><FONT ID="Import">import</FONT> org.dcm4che.data.Dataset;
+<A NAME="28"></A><FONT ID="Import">import</FONT> org.dcm4che.net.Dimse;
+<A NAME="29"></A>
+<A NAME="30"></A><FONT ID="Import">import</FONT> java.awt.*;
+<A NAME="31"></A><FONT ID="Import">import</FONT> java.io.*;
+<A NAME="32"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="33"></A><FONT ID="Import">import</FONT> java.text.SimpleDateFormat;
+<A NAME="34"></A><FONT ID="Import">import</FONT> java.sql.*;
+<A NAME="35"></A><FONT ID="Import">import</FONT> javax.swing.*;
+<A NAME="36"></A><FONT ID="Import">import</FONT> javax.swing.event.*;
+<A NAME="37"></A><FONT ID="Import">import</FONT> java.security.GeneralSecurityException;
+<A NAME="38"></A>
+<A NAME="39"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="40"></A>
+<A NAME="41"></A>
+<A NAME="42"></A><FONT ID="FormalComment">/**
+<A NAME="43"></A> * Sample application to test the implementet service classes.
+<A NAME="44"></A> *
+<A NAME="45"></A> * @author Thomas Hacklaender
+<A NAME="46"></A> * @version 2006-06-23
+<A NAME="47"></A> */</FONT>
+<A NAME="48"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> QueryRetrieveSampleApplication <FONT ID="Extends">extends</FONT> javax.swing.JFrame {
+<A NAME="49"></A>    
+<A NAME="50"></A>    <FONT ID="FormalComment">/** Initialize logger */</FONT>
+<A NAME="51"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> Logger log = Logger.getLogger(<A HREF="../../../de/iftm/sample/QueryRetrieveSampleApplication.java.html">QueryRetrieveSampleApplication</A>.<FONT ID="Class">class</FONT>);
+<A NAME="52"></A>    
+<A NAME="53"></A>    
+<A NAME="54"></A>    <FONT ID="FormalComment">/**
+<A NAME="55"></A>     * Creates new form QueryRetrieveSampleApplication
+<A NAME="56"></A>     */</FONT>
+<A NAME="57"></A>    <FONT ID="Public">public</FONT> QueryRetrieveSampleApplication() {
+<A NAME="58"></A>        <FONT ID="SingleLineComment">// Clear all existing Appenders
+<A NAME="59"></A></FONT>        BasicConfigurator.resetConfiguration();
+<A NAME="60"></A>        
+<A NAME="61"></A>        <FONT ID="SingleLineComment">// Initialize logging system
+<A NAME="62"></A></FONT>        BasicConfigurator.configure();
+<A NAME="63"></A>        
+<A NAME="64"></A>        <FONT ID="SingleLineComment">// Set logging level to INFO
+<A NAME="65"></A></FONT>        Logger.getRootLogger().setLevel(Level.INFO);
+<A NAME="66"></A>        
+<A NAME="67"></A>        <FONT ID="SingleLineComment">// Set logging level of QueryRetrieveServiceClass to DEBUG
+<A NAME="68"></A></FONT>        <FONT ID="SingleLineComment">//Logger.getLogger("de.iftm.dcm4che.sc.QueryRetrieveServiceClass").setLevel(Level.DEBUG);
+<A NAME="69"></A></FONT>        
+<A NAME="70"></A>        <FONT ID="SingleLineComment">// Set logging level of dcm4che to WARN
+<A NAME="71"></A></FONT>        Logger.getLogger(<FONT ID="StringLiteral">"org.dcm4cheri.net.FsmImpl"</FONT>).setLevel(Level.WARN);
+<A NAME="72"></A>        Logger.getLogger(<FONT ID="StringLiteral">"org.dcm4cheri.server.ServerImpl"</FONT>).setLevel(Level.WARN);
+<A NAME="73"></A>        
+<A NAME="74"></A>        setLookAndFeel();
+<A NAME="75"></A>        initComponents();
+<A NAME="76"></A>        postInitComponents();
+<A NAME="77"></A>    }
+<A NAME="78"></A>    
+<A NAME="79"></A>    
+<A NAME="80"></A>    <FONT ID="FormalComment">/**
+<A NAME="81"></A>     * Any code that should be executeed after initialization of the GUI.
+<A NAME="82"></A>     */</FONT>
+<A NAME="83"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> postInitComponents() {
+<A NAME="84"></A>    }
+<A NAME="85"></A>    
+<A NAME="86"></A>    
+<A NAME="87"></A>    <FONT ID="FormalComment">/**
+<A NAME="88"></A>     * Sets the Look-And-Feel of the program.
+<A NAME="89"></A>     */</FONT>
+<A NAME="90"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setLookAndFeel() {
+<A NAME="91"></A>        <FONT ID="SingleLineComment">// Look and Feel
+<A NAME="92"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="93"></A>            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+<A NAME="94"></A>            <FONT ID="SingleLineComment">// UIManager.setLookAndFeel("com.sun.java.swing.plaf.motif.MotifLookAndFeel");
+<A NAME="95"></A></FONT>            <FONT ID="SingleLineComment">// UIManager.setLookAndFeel("javax.swing.plaf.metal.MetalLookAndFeel");
+<A NAME="96"></A></FONT>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="97"></A>            e.printStackTrace();
+<A NAME="98"></A>        }
+<A NAME="99"></A>    }
+<A NAME="100"></A>    
+<A NAME="101"></A>    
+<A NAME="102"></A>    <FONT ID="FormalComment">/**
+<A NAME="103"></A>     * Centers the frame on the screen.
+<A NAME="104"></A>     */</FONT>
+<A NAME="105"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> showCentered() {
+<A NAME="106"></A>        Dimension frameSize;
+<A NAME="107"></A>        Dimension scrSize;
+<A NAME="108"></A>        
+<A NAME="109"></A>        <FONT ID="SingleLineComment">// Frame validieren, die er eine voreingestellte Groeﬂe besitzen.
+<A NAME="110"></A></FONT>        <FONT ID="This">this</FONT>.validate();
+<A NAME="111"></A>        
+<A NAME="112"></A>        <FONT ID="SingleLineComment">// Frame zentriert zeigen
+<A NAME="113"></A></FONT>        frameSize = <FONT ID="This">this</FONT>.getSize();
+<A NAME="114"></A>        scrSize = Toolkit.getDefaultToolkit().getScreenSize();
+<A NAME="115"></A>        <FONT ID="This">this</FONT>.setLocation((scrSize.width - frameSize.width) / <FONT ID="IntegerLiteral">2</FONT>, (scrSize.height - frameSize.height) / <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="116"></A>        <FONT ID="This">this</FONT>.setVisible(<FONT ID="True">true</FONT>);
+<A NAME="117"></A>        <FONT ID="This">this</FONT>.toFront();
+<A NAME="118"></A>    }
+<A NAME="119"></A>    
+<A NAME="120"></A>    
+<A NAME="121"></A>    <FONT ID="FormalComment">/** This method is called from within the constructor to
+<A NAME="122"></A>     * initialize the form.
+<A NAME="123"></A>     * WARNING: Do NOT modify this code. The content of this method is
+<A NAME="124"></A>     * always regenerated by the Form Editor.
+<A NAME="125"></A>     */</FONT>
+<A NAME="126"></A>    <FONT ID="SingleLineComment">// &lt;editor-fold defaultstate="collapsed" desc=" Generated Code "&gt;//GEN-BEGIN:initComponents
+<A NAME="127"></A></FONT>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> initComponents() {
+<A NAME="128"></A>        java.awt.GridBagConstraints gridBagConstraints;
+<A NAME="129"></A>
+<A NAME="130"></A>        testPanel = <FONT ID="New">new</FONT> javax.swing.JPanel();
+<A NAME="131"></A>        scrollPane = <FONT ID="New">new</FONT> javax.swing.JScrollPane();
+<A NAME="132"></A>        textArea = <FONT ID="New">new</FONT> javax.swing.JTextArea();
+<A NAME="133"></A>        cFindBtn = <FONT ID="New">new</FONT> javax.swing.JButton();
+<A NAME="134"></A>        cEchoBtn = <FONT ID="New">new</FONT> javax.swing.JButton();
+<A NAME="135"></A>        cStoreBtn = <FONT ID="New">new</FONT> javax.swing.JButton();
+<A NAME="136"></A>        menuBar = <FONT ID="New">new</FONT> javax.swing.JMenuBar();
+<A NAME="137"></A>        fileMenu = <FONT ID="New">new</FONT> javax.swing.JMenu();
+<A NAME="138"></A>        openMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="139"></A>        saveMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="140"></A>        saveAsMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="141"></A>        exitMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="142"></A>        editMenu = <FONT ID="New">new</FONT> javax.swing.JMenu();
+<A NAME="143"></A>        cutMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="144"></A>        copyMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="145"></A>        pasteMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="146"></A>        deleteMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="147"></A>        helpMenu = <FONT ID="New">new</FONT> javax.swing.JMenu();
+<A NAME="148"></A>        contentsMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="149"></A>        aboutMenuItem = <FONT ID="New">new</FONT> javax.swing.JMenuItem();
+<A NAME="150"></A>
+<A NAME="151"></A>        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
+<A NAME="152"></A>        testPanel.setLayout(<FONT ID="New">new</FONT> java.awt.GridBagLayout());
+<A NAME="153"></A>
+<A NAME="154"></A>        testPanel.setMinimumSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">640</FONT>, <FONT ID="IntegerLiteral">320</FONT>));
+<A NAME="155"></A>        testPanel.setOpaque(<FONT ID="False">false</FONT>);
+<A NAME="156"></A>        testPanel.setPreferredSize(<FONT ID="New">new</FONT> java.awt.Dimension(<FONT ID="IntegerLiteral">640</FONT>, <FONT ID="IntegerLiteral">320</FONT>));
+<A NAME="157"></A>        textArea.setColumns(<FONT ID="IntegerLiteral">20</FONT>);
+<A NAME="158"></A>        textArea.setRows(<FONT ID="IntegerLiteral">5</FONT>);
+<A NAME="159"></A>        scrollPane.setViewportView(textArea);
+<A NAME="160"></A>
+<A NAME="161"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="162"></A>        gridBagConstraints.fill = java.awt.GridBagConstraints.BOTH;
+<A NAME="163"></A>        gridBagConstraints.weightx = <FONT ID="FloatPointLiteral">100.0</FONT>;
+<A NAME="164"></A>        gridBagConstraints.weighty = <FONT ID="FloatPointLiteral">100.0</FONT>;
+<A NAME="165"></A>        testPanel.add(scrollPane, gridBagConstraints);
+<A NAME="166"></A>
+<A NAME="167"></A>        cFindBtn.setText(<FONT ID="StringLiteral">"C-FIND/C-MOVE"</FONT>);
+<A NAME="168"></A>        cFindBtn.addActionListener(<FONT ID="New">new</FONT> java.awt.event.ActionListener() {
+<A NAME="169"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> actionPerformed(java.awt.event.ActionEvent evt) {
+<A NAME="170"></A>                cFindMoveBtnActionPerformed(evt);
+<A NAME="171"></A>            }
+<A NAME="172"></A>        });
+<A NAME="173"></A>
+<A NAME="174"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="175"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="176"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="177"></A>        gridBagConstraints.weighty = <FONT ID="FloatPointLiteral">10.0</FONT>;
+<A NAME="178"></A>        testPanel.add(cFindBtn, gridBagConstraints);
+<A NAME="179"></A>
+<A NAME="180"></A>        cEchoBtn.setText(<FONT ID="StringLiteral">"C-ECHO"</FONT>);
+<A NAME="181"></A>        cEchoBtn.addActionListener(<FONT ID="New">new</FONT> java.awt.event.ActionListener() {
+<A NAME="182"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> actionPerformed(java.awt.event.ActionEvent evt) {
+<A NAME="183"></A>                cEchoBtnActionPerformed(evt);
+<A NAME="184"></A>            }
+<A NAME="185"></A>        });
+<A NAME="186"></A>
+<A NAME="187"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="188"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="189"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="190"></A>        gridBagConstraints.weighty = <FONT ID="FloatPointLiteral">10.0</FONT>;
+<A NAME="191"></A>        testPanel.add(cEchoBtn, gridBagConstraints);
+<A NAME="192"></A>
+<A NAME="193"></A>        cStoreBtn.setText(<FONT ID="StringLiteral">"C-STORE"</FONT>);
+<A NAME="194"></A>        cStoreBtn.addActionListener(<FONT ID="New">new</FONT> java.awt.event.ActionListener() {
+<A NAME="195"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> actionPerformed(java.awt.event.ActionEvent evt) {
+<A NAME="196"></A>                cStoreBtnActionPerformed(evt);
+<A NAME="197"></A>            }
+<A NAME="198"></A>        });
+<A NAME="199"></A>
+<A NAME="200"></A>        gridBagConstraints = <FONT ID="New">new</FONT> java.awt.GridBagConstraints();
+<A NAME="201"></A>        gridBagConstraints.gridx = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="202"></A>        gridBagConstraints.gridy = <FONT ID="IntegerLiteral">3</FONT>;
+<A NAME="203"></A>        gridBagConstraints.weighty = <FONT ID="FloatPointLiteral">10.0</FONT>;
+<A NAME="204"></A>        testPanel.add(cStoreBtn, gridBagConstraints);
+<A NAME="205"></A>
+<A NAME="206"></A>        getContentPane().add(testPanel, java.awt.BorderLayout.CENTER);
+<A NAME="207"></A>
+<A NAME="208"></A>        fileMenu.setText(<FONT ID="StringLiteral">"File"</FONT>);
+<A NAME="209"></A>        openMenuItem.setText(<FONT ID="StringLiteral">"Open"</FONT>);
+<A NAME="210"></A>        fileMenu.add(openMenuItem);
+<A NAME="211"></A>
+<A NAME="212"></A>        saveMenuItem.setText(<FONT ID="StringLiteral">"Save"</FONT>);
+<A NAME="213"></A>        fileMenu.add(saveMenuItem);
+<A NAME="214"></A>
+<A NAME="215"></A>        saveAsMenuItem.setText(<FONT ID="StringLiteral">"Save As ..."</FONT>);
+<A NAME="216"></A>        fileMenu.add(saveAsMenuItem);
+<A NAME="217"></A>
+<A NAME="218"></A>        exitMenuItem.setText(<FONT ID="StringLiteral">"Exit"</FONT>);
+<A NAME="219"></A>        exitMenuItem.addActionListener(<FONT ID="New">new</FONT> java.awt.event.ActionListener() {
+<A NAME="220"></A>            <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> actionPerformed(java.awt.event.ActionEvent evt) {
+<A NAME="221"></A>                exitMenuItemActionPerformed(evt);
+<A NAME="222"></A>            }
+<A NAME="223"></A>        });
+<A NAME="224"></A>
+<A NAME="225"></A>        fileMenu.add(exitMenuItem);
+<A NAME="226"></A>
+<A NAME="227"></A>        menuBar.add(fileMenu);
+<A NAME="228"></A>
+<A NAME="229"></A>        editMenu.setText(<FONT ID="StringLiteral">"Edit"</FONT>);
+<A NAME="230"></A>        cutMenuItem.setText(<FONT ID="StringLiteral">"Cut"</FONT>);
+<A NAME="231"></A>        editMenu.add(cutMenuItem);
+<A NAME="232"></A>
+<A NAME="233"></A>        copyMenuItem.setText(<FONT ID="StringLiteral">"Copy"</FONT>);
+<A NAME="234"></A>        editMenu.add(copyMenuItem);
+<A NAME="235"></A>
+<A NAME="236"></A>        pasteMenuItem.setText(<FONT ID="StringLiteral">"Paste"</FONT>);
+<A NAME="237"></A>        editMenu.add(pasteMenuItem);
+<A NAME="238"></A>
+<A NAME="239"></A>        deleteMenuItem.setText(<FONT ID="StringLiteral">"Delete"</FONT>);
+<A NAME="240"></A>        editMenu.add(deleteMenuItem);
+<A NAME="241"></A>
+<A NAME="242"></A>        menuBar.add(editMenu);
+<A NAME="243"></A>
+<A NAME="244"></A>        helpMenu.setText(<FONT ID="StringLiteral">"Help"</FONT>);
+<A NAME="245"></A>        contentsMenuItem.setText(<FONT ID="StringLiteral">"Contents"</FONT>);
+<A NAME="246"></A>        helpMenu.add(contentsMenuItem);
+<A NAME="247"></A>
+<A NAME="248"></A>        aboutMenuItem.setText(<FONT ID="StringLiteral">"About"</FONT>);
+<A NAME="249"></A>        helpMenu.add(aboutMenuItem);
+<A NAME="250"></A>
+<A NAME="251"></A>        menuBar.add(helpMenu);
+<A NAME="252"></A>
+<A NAME="253"></A>        setJMenuBar(menuBar);
+<A NAME="254"></A>
+<A NAME="255"></A>        pack();
+<A NAME="256"></A>    }<FONT ID="SingleLineComment">// &lt;/editor-fold&gt;//GEN-END:initComponents
+<A NAME="257"></A></FONT>    
+<A NAME="258"></A>    
+<A NAME="259"></A>    <FONT ID="FormalComment">/**
+<A NAME="260"></A>     * Code to when pressing the cSTORE button.
+<A NAME="261"></A>     *&lt;p&gt;This test expects a server running on "localhost", listening at port 104, AET = "ARCHIVE".
+<A NAME="262"></A>     */</FONT>
+<A NAME="263"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> cStoreBtnActionPerformed(java.awt.event.ActionEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_cStoreBtnActionPerformed
+<A NAME="264"></A></FONT>        <A HREF="../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A> cfgCDimseService;
+<A NAME="265"></A>        <FONT ID="Boolean">boolean</FONT> isOpen;
+<A NAME="266"></A>        File imageFile;
+<A NAME="267"></A>        Dataset imageDataset;
+<A NAME="268"></A>        
+<A NAME="269"></A>        <FONT ID="SingleLineComment">// Load configuration properties of the server
+<A NAME="270"></A></FONT>        cfgCDimseService = <FONT ID="New">new</FONT> <A HREF="../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A>(<A HREF="../../../de/iftm/dcm4che/services/StorageService.java.html">StorageService</A>.<FONT ID="Class">class</FONT>.getResource(<FONT ID="StringLiteral">"./resources/CDimseService.cfg"</FONT>));
+<A NAME="271"></A>        
+<A NAME="272"></A>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Load sample image
+<A NAME="273"></A></FONT>        
+<A NAME="274"></A>        imageFile = <FONT ID="New">new</FONT> File(<FONT ID="StringLiteral">"./samples/mr_t2.dcm"</FONT>);
+<A NAME="275"></A>        imageDataset = fileToDataset(imageFile);
+<A NAME="276"></A>        
+<A NAME="277"></A>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Set new IDs to make the image unique
+<A NAME="278"></A></FONT>        
+<A NAME="279"></A>        <FONT ID="SingleLineComment">// Set Patient Name to date and time
+<A NAME="280"></A></FONT>        imageDataset.putPN(Tags.PatientName, <FONT ID="StringLiteral">"N"</FONT> + (<FONT ID="New">new</FONT> SimpleDateFormat(<FONT ID="StringLiteral">"HHmmssss"</FONT>)).format(<FONT ID="New">new</FONT> java.util.Date()));
+<A NAME="281"></A>        
+<A NAME="282"></A>        <FONT ID="SingleLineComment">// Set Patient ID
+<A NAME="283"></A></FONT>        imageDataset.putSH(Tags.PatientID, <FONT ID="StringLiteral">"ID"</FONT> + (<FONT ID="New">new</FONT> SimpleDateFormat(<FONT ID="StringLiteral">"HHmmssss"</FONT>)).format(<FONT ID="New">new</FONT> java.util.Date()));
+<A NAME="284"></A>        
+<A NAME="285"></A>        <FONT ID="SingleLineComment">// Set Accession Number
+<A NAME="286"></A></FONT>        imageDataset.putSH(Tags.AccessionNumber, <FONT ID="StringLiteral">"NO"</FONT> + (<FONT ID="New">new</FONT> SimpleDateFormat(<FONT ID="StringLiteral">"HHmmssss"</FONT>)).format(<FONT ID="New">new</FONT> java.util.Date()));
+<A NAME="287"></A>        
+<A NAME="288"></A>        <FONT ID="SingleLineComment">// SOP Study UID to new value
+<A NAME="289"></A></FONT>        imageDataset.putUI(Tags.StudyInstanceUID, UIDGenerator.getInstance().createUID());
+<A NAME="290"></A>        
+<A NAME="291"></A>        <FONT ID="SingleLineComment">// SOP Series UID to new value
+<A NAME="292"></A></FONT>        imageDataset.putUI(Tags.SeriesInstanceUID, UIDGenerator.getInstance().createUID());
+<A NAME="293"></A>        
+<A NAME="294"></A>        <FONT ID="SingleLineComment">// SOP Instance UID to new value
+<A NAME="295"></A></FONT>        imageDataset.putUI(Tags.SOPInstanceUID, UIDGenerator.getInstance().createUID());
+<A NAME="296"></A>        
+<A NAME="297"></A>        
+<A NAME="298"></A>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Modify the configuration properties of the server
+<A NAME="299"></A></FONT>        
+<A NAME="300"></A>        <FONT ID="SingleLineComment">// DcmURL url = new DcmURL("dicom-tls://ARCHIVE@localhost:104");
+<A NAME="301"></A></FONT>        <FONT ID="SingleLineComment">// DcmURL url = new DcmURL("dicom", "ARCHIVE", null, "localhost", 104);
+<A NAME="302"></A></FONT>        <FONT ID="SingleLineComment">// Normally the 'dicom' protocol is used. The data are send unencrypted.
+<A NAME="303"></A></FONT>        <FONT ID="SingleLineComment">// If you would like to use the encrypted transmission, use the 'dicom-tls'
+<A NAME="304"></A></FONT>        <FONT ID="SingleLineComment">// protocol. If you use it, you have to define some other properties, named 'tls_xxx'.
+<A NAME="305"></A></FONT>        <FONT ID="SingleLineComment">// dicom-tls: accept TLS connection (offer AES and DES encryption)
+<A NAME="306"></A></FONT>        <FONT ID="SingleLineComment">// dicom-tls.aes : accept TLS connection (force AES or DES encryption)
+<A NAME="307"></A></FONT>        <FONT ID="SingleLineComment">// dicom-tls.3des: accept TLS connection (force DES encryption)
+<A NAME="308"></A></FONT>        <FONT ID="SingleLineComment">// dicom-tls.nodes : accept TLS connection (no encryption)
+<A NAME="309"></A></FONT>        DcmURL url = <FONT ID="New">new</FONT> DcmURL(<FONT ID="StringLiteral">"dicom://ARCHIVE@localhost:104"</FONT>);
+<A NAME="310"></A>        <FONT ID="SingleLineComment">// DcmURL url = new DcmURL("dicom-tls://ARCHIVE@localhost:104");
+<A NAME="311"></A></FONT>        <FONT ID="SingleLineComment">// DcmURL url = new DcmURL("dicom", "ARCHIVE", null, "localhost", 104);
+<A NAME="312"></A></FONT>        
+<A NAME="313"></A>        <FONT ID="SingleLineComment">// cfgCDimseService.put("tls-key", tls_key);
+<A NAME="314"></A></FONT>        <FONT ID="SingleLineComment">// cfgCDimseService.put("tls-key-passwd", tls_key_passwd);
+<A NAME="315"></A></FONT>        <FONT ID="SingleLineComment">// cfgCDimseService.put("tls-cacerts", tls_cacerts);
+<A NAME="316"></A></FONT>        <FONT ID="SingleLineComment">// cfgCDimseService.put("tls-cacerts_passwd", tls_cacerts_passwd);
+<A NAME="317"></A></FONT>        
+<A NAME="318"></A>        <A HREF="../../../de/iftm/dcm4che/services/CDimseService.java.html">CDimseService</A> cDimseService = <FONT ID="New">new</FONT> <A HREF="../../../de/iftm/dcm4che/services/CDimseService.java.html">CDimseService</A>(cfgCDimseService, url);
+<A NAME="319"></A>        
+<A NAME="320"></A>        <FONT ID="SingleLineComment">// Open association
+<A NAME="321"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="322"></A>            isOpen = cDimseService.aASSOCIATE();
+<A NAME="323"></A>            <FONT ID="If">if</FONT> (! isOpen) {
+<A NAME="324"></A>                <FONT ID="Return">return</FONT>;
+<A NAME="325"></A>            }
+<A NAME="326"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="327"></A>            log.error(e.getMessage());
+<A NAME="328"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="329"></A>        } <FONT ID="Catch">catch</FONT> (GeneralSecurityException e) {
+<A NAME="330"></A>            log.error(e.getMessage());
+<A NAME="331"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="332"></A>        }
+<A NAME="333"></A>        
+<A NAME="334"></A>        <FONT ID="SingleLineComment">// Store
+<A NAME="335"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="336"></A>            cDimseService.cSTORE(imageDataset);
+<A NAME="337"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="338"></A>            log.error(e.getMessage());
+<A NAME="339"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="340"></A>        }
+<A NAME="341"></A>        
+<A NAME="342"></A>        <FONT ID="SingleLineComment">// Release association
+<A NAME="343"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="344"></A>            cDimseService.aRELEASE();
+<A NAME="345"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="346"></A>            log.error(e.getMessage());
+<A NAME="347"></A>        } <FONT ID="Catch">catch</FONT> (InterruptedException e) {
+<A NAME="348"></A>            log.error(e.getMessage());
+<A NAME="349"></A>        }
+<A NAME="350"></A>        
+<A NAME="351"></A>        log.info(<FONT ID="StringLiteral">"&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; C-STORE finished. &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;"</FONT>);
+<A NAME="352"></A>    }<FONT ID="SingleLineComment">//GEN-LAST:event_cStoreBtnActionPerformed
+<A NAME="353"></A></FONT> 
+<A NAME="354"></A>    
+<A NAME="355"></A>    <FONT ID="FormalComment">/**
+<A NAME="356"></A>     * Code to when pressing the cECHO button.
+<A NAME="357"></A>     *&lt;p&gt;This test expects a server running on "localhost", listening at port 104, AET = "ARCHIVE".
+<A NAME="358"></A>     */</FONT>
+<A NAME="359"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> cEchoBtnActionPerformed(java.awt.event.ActionEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_cEchoBtnActionPerformed
+<A NAME="360"></A></FONT>        <A HREF="../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A> cfgCDimseService;
+<A NAME="361"></A>        <FONT ID="Boolean">boolean</FONT> isOpen;
+<A NAME="362"></A>        <FONT ID="Long">long</FONT> delay;
+<A NAME="363"></A>        
+<A NAME="364"></A>        <FONT ID="SingleLineComment">// Load configuration properties of the server
+<A NAME="365"></A></FONT>        cfgCDimseService = <FONT ID="New">new</FONT> <A HREF="../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A>(<A HREF="../../../de/iftm/dcm4che/services/StorageService.java.html">StorageService</A>.<FONT ID="Class">class</FONT>.getResource(<FONT ID="StringLiteral">"./resources/CDimseService.cfg"</FONT>));
+<A NAME="366"></A>        <FONT ID="SingleLineComment">//cfgCDimseService = new ConfigProperties(StorageService.class.getResource("./resources/CEcho_CDimseService.cfg"));
+<A NAME="367"></A></FONT>        
+<A NAME="368"></A>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Modify the configuration properties of the server
+<A NAME="369"></A></FONT>        
+<A NAME="370"></A>        <FONT ID="SingleLineComment">// The AE title of this computer. By default this property is not defined, so the receiver accepts connections with any AET set.
+<A NAME="371"></A></FONT>        <FONT ID="SingleLineComment">// cfgCDimseService.put("called-aets", "SERVER");
+<A NAME="372"></A></FONT>        <FONT ID="SingleLineComment">// The AE titles of computers which are allowed to call this receiver. By default this property is not defined, which allows any computer to call this receiver.
+<A NAME="373"></A></FONT>        <FONT ID="SingleLineComment">// cfgCDimseService.put("calling-aets", "CLIENT");
+<A NAME="374"></A></FONT>        
+<A NAME="375"></A>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Begin of test routines for query/retrieve &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="376"></A></FONT>        
+<A NAME="377"></A>        <FONT ID="SingleLineComment">// Normally the 'dicom' protocol is used. The data are send unencrypted.
+<A NAME="378"></A></FONT>        <FONT ID="SingleLineComment">// If you would like to use the encrypted transmission, use the 'dicom-tls'
+<A NAME="379"></A></FONT>        <FONT ID="SingleLineComment">// protocol. If you use it, you have to define some other properties, named 'tls_xxx'.
+<A NAME="380"></A></FONT>        <FONT ID="SingleLineComment">// dicom-tls: accept TLS connection (offer AES and DES encryption)
+<A NAME="381"></A></FONT>        <FONT ID="SingleLineComment">// dicom-tls.aes : accept TLS connection (force AES or DES encryption)
+<A NAME="382"></A></FONT>        <FONT ID="SingleLineComment">// dicom-tls.3des: accept TLS connection (force DES encryption)
+<A NAME="383"></A></FONT>        <FONT ID="SingleLineComment">// dicom-tls.nodes : accept TLS connection (no encryption)
+<A NAME="384"></A></FONT>        DcmURL url = <FONT ID="New">new</FONT> DcmURL(<FONT ID="StringLiteral">"dicom://ARCHIVE@localhost:104"</FONT>);
+<A NAME="385"></A>        <FONT ID="SingleLineComment">// DcmURL url = new DcmURL("dicom-tls://ARCHIVE@localhost:104");
+<A NAME="386"></A></FONT>        <FONT ID="SingleLineComment">// DcmURL url = new DcmURL("dicom", "ARCHIVE", null, "localhost", 104);
+<A NAME="387"></A></FONT>        
+<A NAME="388"></A>        <FONT ID="SingleLineComment">// cfgCDimseService.put("tls-key", tls_key);
+<A NAME="389"></A></FONT>        <FONT ID="SingleLineComment">// cfgCDimseService.put("tls-key-passwd", tls_key_passwd);
+<A NAME="390"></A></FONT>        <FONT ID="SingleLineComment">// cfgCDimseService.put("tls-cacerts", tls_cacerts);
+<A NAME="391"></A></FONT>        <FONT ID="SingleLineComment">// cfgCDimseService.put("tls-cacerts_passwd", tls_cacerts_passwd);
+<A NAME="392"></A></FONT>        
+<A NAME="393"></A>        <A HREF="../../../de/iftm/dcm4che/services/CDimseService.java.html">CDimseService</A> cDimseService = <FONT ID="New">new</FONT> <A HREF="../../../de/iftm/dcm4che/services/CDimseService.java.html">CDimseService</A>(cfgCDimseService, url);
+<A NAME="394"></A>        
+<A NAME="395"></A>        <FONT ID="SingleLineComment">// Open association
+<A NAME="396"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="397"></A>            isOpen = cDimseService.aASSOCIATE();
+<A NAME="398"></A>            <FONT ID="If">if</FONT> (! isOpen) {
+<A NAME="399"></A>                <FONT ID="Return">return</FONT>;
+<A NAME="400"></A>            }
+<A NAME="401"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="402"></A>            log.error(e.getMessage());
+<A NAME="403"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="404"></A>        } <FONT ID="Catch">catch</FONT> (GeneralSecurityException e) {
+<A NAME="405"></A>            log.error(e.getMessage());
+<A NAME="406"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="407"></A>        }
+<A NAME="408"></A>        
+<A NAME="409"></A>        <FONT ID="SingleLineComment">// Echo
+<A NAME="410"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="411"></A>            delay = cDimseService.cECHO();
+<A NAME="412"></A>            log.info(<FONT ID="StringLiteral">"C-ECHO delay: "</FONT> + String.valueOf(delay));
+<A NAME="413"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="414"></A>            log.error(e.getMessage());
+<A NAME="415"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="416"></A>        }
+<A NAME="417"></A>        
+<A NAME="418"></A>        <FONT ID="SingleLineComment">// Release association
+<A NAME="419"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="420"></A>            cDimseService.aRELEASE();
+<A NAME="421"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="422"></A>            log.error(e.getMessage());
+<A NAME="423"></A>        } <FONT ID="Catch">catch</FONT> (InterruptedException e) {
+<A NAME="424"></A>            log.error(e.getMessage());
+<A NAME="425"></A>        }
+<A NAME="426"></A>        
+<A NAME="427"></A>        log.info(<FONT ID="StringLiteral">"&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; C-ECHO finished. &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;"</FONT>);
+<A NAME="428"></A>    }<FONT ID="SingleLineComment">//GEN-LAST:event_cEchoBtnActionPerformed
+<A NAME="429"></A></FONT>
+<A NAME="430"></A>    
+<A NAME="431"></A>    <FONT ID="FormalComment">/**
+<A NAME="432"></A>     * Code to when pressing the cFIND/cMOVE button.
+<A NAME="433"></A>     *&lt;p&gt;This test expects a archive running on "localhost", listening at port 104, AET = "ARCHIVE".
+<A NAME="434"></A>     *&lt;p&gt;On the archive a C-MOVE destination must be defined: AET = "SERVER", "localhost", port 5104.
+<A NAME="435"></A>     *&lt;p&gt;This sample program implements the server with AET = "SERVER", "localhost", port 5104. When
+<A NAME="436"></A>     * using the build-in configuration file the received DICOM objects are stored in the directory "./tmp".
+<A NAME="437"></A>     */</FONT>
+<A NAME="438"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> cFindMoveBtnActionPerformed(java.awt.event.ActionEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_cFindMoveBtnActionPerformed
+<A NAME="439"></A></FONT>        <A HREF="../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A> cfgStorageSCP;
+<A NAME="440"></A>        <A HREF="../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A> cfgSaveFilesystem;
+<A NAME="441"></A>        <A HREF="../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A> cfgCDimseService;
+<A NAME="442"></A>        <FONT ID="Boolean">boolean</FONT> isOpen;
+<A NAME="443"></A>        Vector datasetVector;
+<A NAME="444"></A>        
+<A NAME="445"></A>        <FONT ID="SingleLineComment">// Load configuration properties of the server
+<A NAME="446"></A></FONT>        cfgStorageSCP = <FONT ID="New">new</FONT> <A HREF="../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A>(<A HREF="../../../de/iftm/dcm4che/services/StorageService.java.html">StorageService</A>.<FONT ID="Class">class</FONT>.getResource(<FONT ID="StringLiteral">"./resources/StorageService.cfg"</FONT>));
+<A NAME="447"></A>        
+<A NAME="448"></A>        <FONT ID="SingleLineComment">// Load configuration properties for saving the DICOM objects to the filesystem
+<A NAME="449"></A></FONT>        cfgSaveFilesystem = <FONT ID="New">new</FONT> <A HREF="../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A>(<A HREF="../../../de/iftm/dcm4che/services/StorageService.java.html">StorageService</A>.<FONT ID="Class">class</FONT>.getResource(<FONT ID="StringLiteral">"./resources/SaveFilesystem.cfg"</FONT>));
+<A NAME="450"></A>        
+<A NAME="451"></A>        <FONT ID="SingleLineComment">// Load configuration properties for query/retrieve
+<A NAME="452"></A></FONT>        cfgCDimseService = <FONT ID="New">new</FONT> <A HREF="../../../de/iftm/dcm4che/services/ConfigProperties.java.html">ConfigProperties</A>(<A HREF="../../../de/iftm/dcm4che/services/StorageService.java.html">StorageService</A>.<FONT ID="Class">class</FONT>.getResource(<FONT ID="StringLiteral">"resources/CDimseService.cfg"</FONT>));
+<A NAME="453"></A>        
+<A NAME="454"></A>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Modify the configuration properties of the server
+<A NAME="455"></A></FONT>        
+<A NAME="456"></A>        <FONT ID="SingleLineComment">// Normally the 'dicom' protocol is used. The data are send unencrypted.
+<A NAME="457"></A></FONT>        <FONT ID="SingleLineComment">// If you would like to use the encrypted transmission, use the 'dicom-tls'
+<A NAME="458"></A></FONT>        <FONT ID="SingleLineComment">// protocol. If you use it, you have to define some other properties, named 'tls_xxx'.
+<A NAME="459"></A></FONT>        <FONT ID="SingleLineComment">// dicom-tls: accept TLS connection (offer AES and DES encryption)
+<A NAME="460"></A></FONT>        <FONT ID="SingleLineComment">// dicom-tls.aes : accept TLS connection (force AES or DES encryption)
+<A NAME="461"></A></FONT>        <FONT ID="SingleLineComment">// dicom-tls.3des: accept TLS connection (force DES encryption)
+<A NAME="462"></A></FONT>        <FONT ID="SingleLineComment">// dicom-tls.nodes : accept TLS connection (no encryption)
+<A NAME="463"></A></FONT>        cfgStorageSCP.put(<FONT ID="StringLiteral">"protocol"</FONT>, <FONT ID="StringLiteral">"dicom"</FONT>);
+<A NAME="464"></A>        <FONT ID="SingleLineComment">// cfgStorageSCP.put("tls-key", tls_key);
+<A NAME="465"></A></FONT>        <FONT ID="SingleLineComment">// cfgStorageSCP.put("tls-key-passwd", tls_key_passwd);
+<A NAME="466"></A></FONT>        <FONT ID="SingleLineComment">// cfgStorageSCP.put("tls-cacerts", tls_cacerts);
+<A NAME="467"></A></FONT>        <FONT ID="SingleLineComment">// cfgStorageSCP.put("tls-cacerts_passwd", tls_cacerts_passwd);
+<A NAME="468"></A></FONT>        
+<A NAME="469"></A>        <FONT ID="SingleLineComment">// The port number of this computer used to receive DICOM objects.
+<A NAME="470"></A></FONT>        cfgStorageSCP.put(<FONT ID="StringLiteral">"port"</FONT>, <FONT ID="StringLiteral">"5104"</FONT>);
+<A NAME="471"></A>        
+<A NAME="472"></A>        <FONT ID="SingleLineComment">// The AE title of this computer. By default this property is not defined, so the receiver accepts connections with any AET set.
+<A NAME="473"></A></FONT>        <FONT ID="SingleLineComment">// cfgStorageSCP.put("called-aets", "SERVER");
+<A NAME="474"></A></FONT>        <FONT ID="SingleLineComment">// The AE titles of computers which are allowed to call this receiver. By default this property is not defined, which allows any computer to call this receiver.
+<A NAME="475"></A></FONT>        <FONT ID="SingleLineComment">// cfgStorageSCP.put("calling-aets", "CLIENT");
+<A NAME="476"></A></FONT>        
+<A NAME="477"></A>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="478"></A></FONT>        
+<A NAME="479"></A>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Modify the configuration properties for saving the DICOM objects to the filesystem
+<A NAME="480"></A></FONT>        
+<A NAME="481"></A>        cfgSaveFilesystem.put(<FONT ID="StringLiteral">"directory"</FONT>, <FONT ID="StringLiteral">"./tmp"</FONT>);
+<A NAME="482"></A>        
+<A NAME="483"></A>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="484"></A></FONT>        
+<A NAME="485"></A>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Modify the configuration properties for C-FIND / C-MOVE
+<A NAME="486"></A></FONT>        
+<A NAME="487"></A>        <FONT ID="SingleLineComment">// Normally the 'dicom' protocol is used. The data are send unencrypted.
+<A NAME="488"></A></FONT>        <FONT ID="SingleLineComment">// If you would like to use the encrypted transmission, use the 'dicom-tls'
+<A NAME="489"></A></FONT>        <FONT ID="SingleLineComment">// protocol. If you use it, you have to define some other properties, named 'tls_xxx'.
+<A NAME="490"></A></FONT>        <FONT ID="SingleLineComment">// dicom-tls: accept TLS connection (offer AES and DES encryption)
+<A NAME="491"></A></FONT>        <FONT ID="SingleLineComment">// dicom-tls.aes : accept TLS connection (force AES or DES encryption)
+<A NAME="492"></A></FONT>        <FONT ID="SingleLineComment">// dicom-tls.3des: accept TLS connection (force DES encryption)
+<A NAME="493"></A></FONT>        <FONT ID="SingleLineComment">// dicom-tls.nodes : accept TLS connection (no encryption)
+<A NAME="494"></A></FONT>        DcmURL url = <FONT ID="New">new</FONT> DcmURL(<FONT ID="StringLiteral">"dicom://ARCHIVE@localhost:104"</FONT>);
+<A NAME="495"></A>        <FONT ID="SingleLineComment">// DcmURL url = new DcmURL("dicom-tls://ARCHIVE@localhost:104");
+<A NAME="496"></A></FONT>        <FONT ID="SingleLineComment">// DcmURL url = new DcmURL("dicom", "ARCHIVE", null, "localhost", 104);
+<A NAME="497"></A></FONT>        
+<A NAME="498"></A>        cfgCDimseService.put(<FONT ID="StringLiteral">"dest"</FONT>, <FONT ID="StringLiteral">"SERVER"</FONT>);
+<A NAME="499"></A>        
+<A NAME="500"></A>        <FONT ID="SingleLineComment">// "XXX*" gives no results
+<A NAME="501"></A></FONT>        <FONT ID="SingleLineComment">//cfgCDimseService.put("key.PatientName", "X*");
+<A NAME="502"></A></FONT>        
+<A NAME="503"></A>        <FONT ID="SingleLineComment">// "N*" gives some results
+<A NAME="504"></A></FONT>        cfgCDimseService.put(<FONT ID="StringLiteral">"key.PatientName"</FONT>, <FONT ID="StringLiteral">"N*"</FONT>);
+<A NAME="505"></A>        
+<A NAME="506"></A>        <FONT ID="SingleLineComment">// "*" gives maximum results
+<A NAME="507"></A></FONT>        <FONT ID="SingleLineComment">//cfgCDimseService.put("key.PatientName", "*");
+<A NAME="508"></A></FONT>        
+<A NAME="509"></A>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="510"></A></FONT>        
+<A NAME="511"></A>        <FONT ID="SingleLineComment">// Create and start the server
+<A NAME="512"></A></FONT>        <A HREF="../../../de/iftm/dcm4che/services/StorageServiceAdapter.java.html">StorageServiceAdapter</A> sc = <FONT ID="New">new</FONT> <A HREF="../../../de/iftm/dcm4che/services/StorageServiceAdapter.java.html">StorageServiceAdapter</A>(cfgStorageSCP, cfgSaveFilesystem);
+<A NAME="513"></A>        sc.start();
+<A NAME="514"></A>        
+<A NAME="515"></A>        <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Start Find / Move &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="516"></A></FONT>        
+<A NAME="517"></A>        <A HREF="../../../de/iftm/dcm4che/services/CDimseService.java.html">CDimseService</A> cDimseService = <FONT ID="New">new</FONT> <A HREF="../../../de/iftm/dcm4che/services/CDimseService.java.html">CDimseService</A>(cfgCDimseService, url);
+<A NAME="518"></A>        
+<A NAME="519"></A>        <FONT ID="SingleLineComment">// Open association
+<A NAME="520"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="521"></A>            isOpen = cDimseService.aASSOCIATE();
+<A NAME="522"></A>            <FONT ID="If">if</FONT> (! isOpen) {
+<A NAME="523"></A>                <FONT ID="Return">return</FONT>;
+<A NAME="524"></A>            }
+<A NAME="525"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="526"></A>            log.error(e.getMessage());
+<A NAME="527"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="528"></A>        } <FONT ID="Catch">catch</FONT> (GeneralSecurityException e) {
+<A NAME="529"></A>            log.error(e.getMessage());
+<A NAME="530"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="531"></A>        }
+<A NAME="532"></A>        
+<A NAME="533"></A>        <FONT ID="SingleLineComment">// Query
+<A NAME="534"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="535"></A>            datasetVector = cDimseService.cFIND();
+<A NAME="536"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="537"></A>            log.error(e.getMessage());
+<A NAME="538"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="539"></A>        }
+<A NAME="540"></A>        
+<A NAME="541"></A>        <FONT ID="SingleLineComment">// Output query results
+<A NAME="542"></A></FONT>        String text = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="543"></A>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; datasetVector.size(); i++) {
+<A NAME="544"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="545"></A>                String s = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="546"></A>                Dataset ds = (Dataset) datasetVector.elementAt(i);
+<A NAME="547"></A>                s += ds.getString(Tags.PatientName) + <FONT ID="StringLiteral">", "</FONT>;
+<A NAME="548"></A>                s += ds.getString(Tags.PatientBirthDate) + <FONT ID="StringLiteral">", "</FONT>;
+<A NAME="549"></A>                s += ds.getString(Tags.StudyID) + <FONT ID="StringLiteral">", "</FONT>;
+<A NAME="550"></A>                s += ds.getString(Tags.StudyDescription) + <FONT ID="StringLiteral">", "</FONT>;
+<A NAME="551"></A>                s += ds.getString(Tags.SeriesNumber) + <FONT ID="StringLiteral">", "</FONT>;
+<A NAME="552"></A>                s += ds.getString(Tags.InstanceNumber);
+<A NAME="553"></A>                text += s + <FONT ID="StringLiteral">"\n"</FONT>;
+<A NAME="554"></A>            } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="555"></A>                log.error(e.getMessage());
+<A NAME="556"></A>            }
+<A NAME="557"></A>        }
+<A NAME="558"></A>        textArea.setText(text);
+<A NAME="559"></A>        
+<A NAME="560"></A>        <FONT ID="SingleLineComment">// Ask archive to move objects to destination (local server)
+<A NAME="561"></A></FONT>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; datasetVector.size(); i++) {
+<A NAME="562"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="563"></A>                Dataset ds = (Dataset) datasetVector.elementAt(i);
+<A NAME="564"></A>                cDimseService.cMOVE(ds);
+<A NAME="565"></A>            } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="566"></A>                log.error(e.getMessage());
+<A NAME="567"></A>                <FONT ID="Return">return</FONT>;
+<A NAME="568"></A>            }
+<A NAME="569"></A>        }
+<A NAME="570"></A>        
+<A NAME="571"></A>        <FONT ID="SingleLineComment">// Release association
+<A NAME="572"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="573"></A>            cDimseService.aRELEASE();
+<A NAME="574"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="575"></A>            log.error(e.getMessage());
+<A NAME="576"></A>        } <FONT ID="Catch">catch</FONT> (InterruptedException e) {
+<A NAME="577"></A>            log.error(e.getMessage());
+<A NAME="578"></A>        }
+<A NAME="579"></A>        
+<A NAME="580"></A>        log.info(<FONT ID="StringLiteral">"&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; C-FIND/C-MOVE finished. &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;"</FONT>);
+<A NAME="581"></A>    }<FONT ID="SingleLineComment">//GEN-LAST:event_cFindMoveBtnActionPerformed
+<A NAME="582"></A></FONT>    
+<A NAME="583"></A>    
+<A NAME="584"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> exitMenuItemActionPerformed(java.awt.event.ActionEvent evt) {<FONT ID="SingleLineComment">//GEN-FIRST:event_exitMenuItemActionPerformed
+<A NAME="585"></A></FONT>        System.exit(<FONT ID="IntegerLiteral">0</FONT>);
+<A NAME="586"></A>    }<FONT ID="SingleLineComment">//GEN-LAST:event_exitMenuItemActionPerformed
+<A NAME="587"></A></FONT>    
+<A NAME="588"></A>    <FONT ID="FormalComment">/**
+<A NAME="589"></A>     * The main method exectuted when starting as an application.
+<A NAME="590"></A>     * @param args the command line arguments
+<A NAME="591"></A>     */</FONT>
+<A NAME="592"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Void">void</FONT> main(String args[]) {
+<A NAME="593"></A>        <A HREF="../../../de/iftm/sample/QueryRetrieveSampleApplication.java.html">QueryRetrieveSampleApplication</A> app = <FONT ID="New">new</FONT> <A HREF="../../../de/iftm/sample/QueryRetrieveSampleApplication.java.html">QueryRetrieveSampleApplication</A>();
+<A NAME="594"></A>        app.showCentered();
+<A NAME="595"></A>    }
+<A NAME="596"></A>    
+<A NAME="597"></A>    <FONT ID="SingleLineComment">// Variables declaration - do not modify//GEN-BEGIN:variables
+<A NAME="598"></A></FONT>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem aboutMenuItem;
+<A NAME="599"></A>    <FONT ID="Private">private</FONT> javax.swing.JButton cEchoBtn;
+<A NAME="600"></A>    <FONT ID="Private">private</FONT> javax.swing.JButton cFindBtn;
+<A NAME="601"></A>    <FONT ID="Private">private</FONT> javax.swing.JButton cStoreBtn;
+<A NAME="602"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem contentsMenuItem;
+<A NAME="603"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem copyMenuItem;
+<A NAME="604"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem cutMenuItem;
+<A NAME="605"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem deleteMenuItem;
+<A NAME="606"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenu editMenu;
+<A NAME="607"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem exitMenuItem;
+<A NAME="608"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenu fileMenu;
+<A NAME="609"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenu helpMenu;
+<A NAME="610"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuBar menuBar;
+<A NAME="611"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem openMenuItem;
+<A NAME="612"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem pasteMenuItem;
+<A NAME="613"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem saveAsMenuItem;
+<A NAME="614"></A>    <FONT ID="Private">private</FONT> javax.swing.JMenuItem saveMenuItem;
+<A NAME="615"></A>    <FONT ID="Private">private</FONT> javax.swing.JScrollPane scrollPane;
+<A NAME="616"></A>    <FONT ID="Private">private</FONT> javax.swing.JPanel testPanel;
+<A NAME="617"></A>    <FONT ID="Private">private</FONT> javax.swing.JTextArea textArea;
+<A NAME="618"></A>    <FONT ID="SingleLineComment">// End of variables declaration//GEN-END:variables
+<A NAME="619"></A></FONT>    
+<A NAME="620"></A>    
+<A NAME="621"></A>    <FONT ID="FormalComment">/**
+<A NAME="622"></A>     * Loads a Dataset object from a file.
+<A NAME="623"></A>     *
+<A NAME="624"></A>     * @param the file containing teh Dataset.
+<A NAME="625"></A>     * @result the read in Dataset.
+<A NAME="626"></A>     */</FONT>
+<A NAME="627"></A>    <FONT ID="Private">private</FONT> Dataset fileToDataset(File f) {
+<A NAME="628"></A>        BufferedInputStream in = <FONT ID="Null">null</FONT>;
+<A NAME="629"></A>        FileFormat          ff = <FONT ID="Null">null</FONT>;
+<A NAME="630"></A>        DcmParser           parser = <FONT ID="Null">null</FONT>;
+<A NAME="631"></A>        Dataset             ds = <FONT ID="Null">null</FONT>;
+<A NAME="632"></A>        
+<A NAME="633"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="634"></A>            in = <FONT ID="New">new</FONT> BufferedInputStream(<FONT ID="New">new</FONT> FileInputStream(f));
+<A NAME="635"></A>        } <FONT ID="Catch">catch</FONT> (IOException ioe) {
+<A NAME="636"></A>            log.error(<FONT ID="StringLiteral">"Can't read file: "</FONT> + f.getPath());
+<A NAME="637"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="638"></A>        }
+<A NAME="639"></A>        
+<A NAME="640"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="641"></A>            parser = DcmParserFactory.getInstance().newDcmParser(in);
+<A NAME="642"></A>            
+<A NAME="643"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="644"></A>                ff = parser.detectFileFormat();
+<A NAME="645"></A>            } <FONT ID="Catch">catch</FONT> (Exception ioe) {
+<A NAME="646"></A>                log.error(<FONT ID="StringLiteral">"Can't detect DICOM file format for file: "</FONT> + f.getPath());
+<A NAME="647"></A>                <FONT ID="SingleLineComment">// Try next file
+<A NAME="648"></A></FONT>                <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="649"></A>            }
+<A NAME="650"></A>            
+<A NAME="651"></A>            ds = DcmObjectFactory.getInstance().newDataset();
+<A NAME="652"></A>            
+<A NAME="653"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="654"></A>                ds.readFile(in, ff, -<FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="655"></A>            } <FONT ID="Catch">catch</FONT> (IOException ioe) {
+<A NAME="656"></A>                log.error(<FONT ID="StringLiteral">"Can't create Dataset for file: "</FONT> + f.getPath());
+<A NAME="657"></A>                <FONT ID="SingleLineComment">// Try next file
+<A NAME="658"></A></FONT>                <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="659"></A>            }
+<A NAME="660"></A>        } <FONT ID="Finally">finally</FONT> {
+<A NAME="661"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="662"></A>                in.close();
+<A NAME="663"></A>            } <FONT ID="Catch">catch</FONT> (IOException e) {}
+<A NAME="664"></A>        }
+<A NAME="665"></A>        
+<A NAME="666"></A>        <FONT ID="Return">return</FONT> ds;
+<A NAME="667"></A>    }
+<A NAME="668"></A>    
+<A NAME="669"></A>}
+<A NAME="670"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">QueryRetrieveSampleApplication</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

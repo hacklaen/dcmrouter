@@ -1,0 +1,262 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.services.ConfigProperties (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">ConfigProperties</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/* ***** BEGIN LICENSE BLOCK *****
+<A NAME="2"></A> * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+<A NAME="3"></A> *
+<A NAME="4"></A> * The contents of this file are subject to the Mozilla Public License Version
+<A NAME="5"></A> * 1.1 (the "License"); you may not use this file except in compliance with
+<A NAME="6"></A> * the License. You may obtain a copy of the License at
+<A NAME="7"></A> * http://www.mozilla.org/MPL/
+<A NAME="8"></A> *
+<A NAME="9"></A> * Software distributed under the License is distributed on an "AS IS" basis,
+<A NAME="10"></A> * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+<A NAME="11"></A> * for the specific language governing rights and limitations under the
+<A NAME="12"></A> * License.
+<A NAME="13"></A> *
+<A NAME="14"></A> * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+<A NAME="15"></A> * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+<A NAME="16"></A> *
+<A NAME="17"></A> * The Initial Developer of the Original Code is
+<A NAME="18"></A> * TIANI Medgraph AG.
+<A NAME="19"></A> * Portions created by the Initial Developer are Copyright (C) 2002-2005
+<A NAME="20"></A> * the Initial Developer. All Rights Reserved.
+<A NAME="21"></A> *
+<A NAME="22"></A> * Contributor(s):
+<A NAME="23"></A> * Gunter Zeilinger &lt;gunter.zeilinger@tiani.com&gt;
+<A NAME="24"></A> *
+<A NAME="25"></A> * Alternatively, the contents of this file may be used under the terms of
+<A NAME="26"></A> * either the GNU General Public License Version 2 or later (the "GPL"), or
+<A NAME="27"></A> * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+<A NAME="28"></A> * in which case the provisions of the GPL or the LGPL are applicable instead
+<A NAME="29"></A> * of those above. If you wish to allow use of your version of this file only
+<A NAME="30"></A> * under the terms of either the GPL or the LGPL, and not to allow others to
+<A NAME="31"></A> * use your version of this file under the terms of the MPL, indicate your
+<A NAME="32"></A> * decision by deleting the provisions above and replace them with the notice
+<A NAME="33"></A> * and other provisions required by the GPL or the LGPL. If you do not delete
+<A NAME="34"></A> * the provisions above, a recipient may use your version of this file under
+<A NAME="35"></A> * the terms of any one of the MPL, the GPL or the LGPL.
+<A NAME="36"></A> *
+<A NAME="37"></A> * ***** END LICENSE BLOCK ***** */</FONT>
+<A NAME="38"></A><FONT ID="Package">package</FONT> <A HREF="../../../../de.iftm.dcm4che.services.index.html" target="packageFrame">de.iftm.dcm4che.services</A>;
+<A NAME="39"></A>
+<A NAME="40"></A><FONT ID="Import">import</FONT> java.io.File;
+<A NAME="41"></A><FONT ID="Import">import</FONT> java.io.InputStream;
+<A NAME="42"></A><FONT ID="Import">import</FONT> java.io.IOException;
+<A NAME="43"></A><FONT ID="Import">import</FONT> java.net.URL;
+<A NAME="44"></A><FONT ID="Import">import</FONT> java.net.URI;
+<A NAME="45"></A><FONT ID="Import">import</FONT> java.net.URISyntaxException;
+<A NAME="46"></A><FONT ID="Import">import</FONT> java.net.MalformedURLException;
+<A NAME="47"></A><FONT ID="Import">import</FONT> java.util.LinkedList;
+<A NAME="48"></A><FONT ID="Import">import</FONT> java.util.List;
+<A NAME="49"></A><FONT ID="Import">import</FONT> java.util.Properties;
+<A NAME="50"></A><FONT ID="Import">import</FONT> java.util.StringTokenizer;
+<A NAME="51"></A>
+<A NAME="52"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="53"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.*;
+<A NAME="54"></A>
+<A NAME="55"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="56"></A>
+<A NAME="57"></A>
+<A NAME="58"></A><FONT ID="FormalComment">/**
+<A NAME="59"></A> * Extension of the Properties class.
+<A NAME="60"></A> * &lt;p&gt;Based on dcm4che 1.4.0 sample: Configuration.java revision date 2005-10-05
+<A NAME="61"></A> * &lt;p&gt;Method uriToFile added.
+<A NAME="62"></A> * &lt;p&gt;No modifications.
+<A NAME="63"></A> *
+<A NAME="64"></A> * @author Thomas Hacklaender
+<A NAME="65"></A> * @version 2006-08-24
+<A NAME="66"></A> */</FONT>
+<A NAME="67"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> ConfigProperties <FONT ID="Extends">extends</FONT> Properties {
+<A NAME="68"></A>    
+<A NAME="69"></A>    <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger log = Logger.getLogger(<FONT ID="StringLiteral">"ConfigProperties"</FONT>);
+<A NAME="70"></A>    
+<A NAME="71"></A>    <FONT ID="SingleLineComment">// Static --------------------------------------------------------
+<A NAME="72"></A></FONT>    
+<A NAME="73"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> String replace(String val, String from, String to) {
+<A NAME="74"></A>        <FONT ID="Return">return</FONT> from.equals(val) ? to : val;
+<A NAME="75"></A>    }
+<A NAME="76"></A>    
+<A NAME="77"></A>    
+<A NAME="78"></A>    <FONT ID="SingleLineComment">// Constructors --------------------------------------------------
+<A NAME="79"></A></FONT>    
+<A NAME="80"></A>    <FONT ID="FormalComment">/**
+<A NAME="81"></A>     * Create an ConfigurationProperty object (extension of Propreties) without 
+<A NAME="82"></A>     * any Properties included.
+<A NAME="83"></A>     */</FONT>
+<A NAME="84"></A>    <FONT ID="Public">public</FONT> ConfigProperties() {
+<A NAME="85"></A>    }
+<A NAME="86"></A>
+<A NAME="87"></A>    
+<A NAME="88"></A>    <FONT ID="FormalComment">/**
+<A NAME="89"></A>     * Create an ConfigurationProperty object (extension of Propreties) and load 
+<A NAME="90"></A>     * Properties from given URL.
+<A NAME="91"></A>     *
+<A NAME="92"></A>     * @param url the URL containing the Properties.
+<A NAME="93"></A>     */</FONT>
+<A NAME="94"></A>    <FONT ID="Public">public</FONT> ConfigProperties(URL url) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="95"></A>        
+<A NAME="96"></A>        InputStream in = <FONT ID="Null">null</FONT>;
+<A NAME="97"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="98"></A>            load(in = url.openStream());
+<A NAME="99"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="100"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> IOException(<FONT ID="StringLiteral">"Could not load configuration from "</FONT> + url);
+<A NAME="101"></A>        } <FONT ID="Finally">finally</FONT> {
+<A NAME="102"></A>            <FONT ID="If">if</FONT> (in != <FONT ID="Null">null</FONT>) {
+<A NAME="103"></A>                <FONT ID="Try">try</FONT> { in.close(); } <FONT ID="Catch">catch</FONT> (IOException ignore) {}
+<A NAME="104"></A>            }
+<A NAME="105"></A>        }
+<A NAME="106"></A>    }
+<A NAME="107"></A>    
+<A NAME="108"></A>    
+<A NAME="109"></A>    <FONT ID="SingleLineComment">// Public --------------------------------------------------------
+<A NAME="110"></A></FONT>    
+<A NAME="111"></A>    <FONT ID="Public">public</FONT> String getProperty(String key, String defaultValue, String replace, String to) {
+<A NAME="112"></A>        <FONT ID="Return">return</FONT> replace(getProperty(key, defaultValue), replace, to);
+<A NAME="113"></A>    }
+<A NAME="114"></A>    
+<A NAME="115"></A>    
+<A NAME="116"></A>    <FONT ID="Public">public</FONT> List tokenize(String s, List result) {
+<A NAME="117"></A>        StringTokenizer stk = <FONT ID="New">new</FONT> StringTokenizer(s, <FONT ID="StringLiteral">", "</FONT>);
+<A NAME="118"></A>        <FONT ID="While">while</FONT> (stk.hasMoreTokens()) {
+<A NAME="119"></A>            String tk = stk.nextToken();
+<A NAME="120"></A>            <FONT ID="If">if</FONT> (tk.startsWith(<FONT ID="StringLiteral">"$"</FONT>)) {
+<A NAME="121"></A>                tokenize(getProperty(tk.substring(<FONT ID="IntegerLiteral">1</FONT>),<FONT ID="StringLiteral">""</FONT>), result);
+<A NAME="122"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="123"></A>                result.add(tk);
+<A NAME="124"></A>            }
+<A NAME="125"></A>        }
+<A NAME="126"></A>        <FONT ID="Return">return</FONT> result;
+<A NAME="127"></A>    }
+<A NAME="128"></A>    
+<A NAME="129"></A>    
+<A NAME="130"></A>    <FONT ID="Public">public</FONT> String[] tokenize(String s) {
+<A NAME="131"></A>        <FONT ID="If">if</FONT> (s == <FONT ID="Null">null</FONT>)
+<A NAME="132"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="133"></A>        
+<A NAME="134"></A>        List l = tokenize(s, <FONT ID="New">new</FONT> LinkedList());
+<A NAME="135"></A>        <FONT ID="Return">return</FONT> (String[])l.toArray(<FONT ID="New">new</FONT> String[l.size()]);
+<A NAME="136"></A>    }
+<A NAME="137"></A>    
+<A NAME="138"></A>    
+<A NAME="139"></A>    <FONT ID="FormalComment">/**
+<A NAME="140"></A>     * Create a File from an URI.
+<A NAME="141"></A>     * &lt;span style="font-style: italic;"&gt;file-uri&lt;/span&gt;
+<A NAME="142"></A>     * &lt;p&gt;See the API-Doc of the URI class. For Windows-OS the absolute URI
+<A NAME="143"></A>     * "file:/c:/user/tom/foo.txt" describes the file
+<A NAME="144"></A>     * "C:\\user\\tom\\foo.txt". Relative URI's, e.g. without the "file:"
+<A NAME="145"></A>     * schema-prefix, are relativ to the user-directory, given by the system
+<A NAME="146"></A>     * property user.dir.
+<A NAME="147"></A>     * &lt;p&gt;For example: If the user.dir is "C:\\user\\tom\\"
+<A NAME="148"></A>     * and the relative URI is "/abc/foo.txt" the referenced file is
+<A NAME="149"></A>     * "C:\\user\\tom\\abc\\foo.txt". The abbreviations "." for the current
+<A NAME="150"></A>     * and ".." for the upper directory are valid to form a relative URI.
+<A NAME="151"></A>     *
+<A NAME="152"></A>     * @param uriString The string-description of an absolute or relative URI.
+<A NAME="153"></A>     * @return the file which is described by the uriString. Returns null, if
+<A NAME="154"></A>     *         uriString is null or "". Returns null also, if a conversion error occures.
+<A NAME="155"></A>     */</FONT>
+<A NAME="156"></A>    <FONT ID="Static">static</FONT> <FONT ID="Public">public</FONT> File uriToFile(String uriString) {
+<A NAME="157"></A>        URI baseURI;
+<A NAME="158"></A>        URI uri;
+<A NAME="159"></A>        
+<A NAME="160"></A>        <FONT ID="If">if</FONT> (uriString == <FONT ID="Null">null</FONT>) {
+<A NAME="161"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="162"></A>        }
+<A NAME="163"></A>        
+<A NAME="164"></A>        <FONT ID="If">if</FONT> (uriString.equals(<FONT ID="StringLiteral">""</FONT>)) {
+<A NAME="165"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="166"></A>        }
+<A NAME="167"></A>        
+<A NAME="168"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="169"></A>            uri = <FONT ID="New">new</FONT> URI(uriString);
+<A NAME="170"></A>            
+<A NAME="171"></A>            <FONT ID="SingleLineComment">// Remove redundend elements:
+<A NAME="172"></A></FONT>            <FONT ID="SingleLineComment">// Auakommentiert, weil eine URI der  Form "./a.b" (nicht "./a/b.c") zu
+<A NAME="173"></A></FONT>            <FONT ID="SingleLineComment">// einer ArrayIndexOutOfBoundsException fuehrt. Grund unklar. Interner Fehler?
+<A NAME="174"></A></FONT>            <FONT ID="SingleLineComment">// uri = uri.normalize();
+<A NAME="175"></A></FONT>            
+<A NAME="176"></A>            <FONT ID="SingleLineComment">// Example of an absolute URI: file://de.iftm/abc/def/g.txt
+<A NAME="177"></A></FONT>            <FONT ID="SingleLineComment">// Relative URI do not have a "schema". Example: ./abc/def/g.txt
+<A NAME="178"></A></FONT>            <FONT ID="If">if</FONT> (!uri.isAbsolute()) {
+<A NAME="179"></A>                <FONT ID="SingleLineComment">// Relative URI's werden auf das user.dir bezogen.
+<A NAME="180"></A></FONT>                baseURI = (<FONT ID="New">new</FONT> File(System.getProperty(<FONT ID="StringLiteral">"user.dir"</FONT>))).toURI();
+<A NAME="181"></A>                uri = baseURI.resolve(uri);
+<A NAME="182"></A>            }
+<A NAME="183"></A>            
+<A NAME="184"></A>            <FONT ID="Return">return</FONT> <FONT ID="New">new</FONT> File(uri);
+<A NAME="185"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="186"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="187"></A>        }
+<A NAME="188"></A>    }
+<A NAME="189"></A>    
+<A NAME="190"></A>    
+<A NAME="191"></A>    <FONT ID="FormalComment">/**
+<A NAME="192"></A>     * Returns a URL of a reference to a file. If the file reference is a valid
+<A NAME="193"></A>     * absolute URI, this URI is converted directly to a URL. If the file reference
+<A NAME="194"></A>     * is a relative URI this is resolved relative to a given base URL.
+<A NAME="195"></A>     * &lt;p&gt;Example: For a class de.iftm.dcm4che.servicesCDimseService the method call
+<A NAME="196"></A>     * fileRefToURL(CDimseService.class.getResource(""), "resources/identity.p12")
+<A NAME="197"></A>     * results to the URL "file:/D:/DcmServices/build/classes/de/iftm/dcm4che/services/resources/identity.p12"
+<A NAME="198"></A>     *
+<A NAME="199"></A>     * @param baseURL the base URL to which relative file references are resolved.
+<A NAME="200"></A>     *                May be null, if the fileRef is a absolute reference.
+<A NAME="201"></A>     * @param fileRef the reference to file file. May be an absolute reference
+<A NAME="202"></A>     *                (file:/C:/a/b/c.cfg) or relative reference (b/c.cfg).
+<A NAME="203"></A>     * @return the URL of a file reference. The String representation is of the form "file:/a/b/c.cfg".
+<A NAME="204"></A>     * @throws URISyntaxException if the fileRef is not formed as a URI.
+<A NAME="205"></A>     * @throws MalformedURLException if the fileRef is not a reference to a file or
+<A NAME="206"></A>     *                               baseURL is null for relative file references.
+<A NAME="207"></A>     */</FONT>
+<A NAME="208"></A>    <FONT ID="Static">static</FONT> <FONT ID="Public">public</FONT> URL fileRefToURL(URL baseURL, String fileRef) <FONT ID="Throws">throws</FONT> URISyntaxException, MalformedURLException {
+<A NAME="209"></A>        URL resultURL = <FONT ID="Null">null</FONT>;
+<A NAME="210"></A>        URI fileRefURI;
+<A NAME="211"></A>        URI baseURI;
+<A NAME="212"></A>        
+<A NAME="213"></A>        <FONT ID="SingleLineComment">// log.info("baseURL: " + baseURL.toString());
+<A NAME="214"></A></FONT>        <FONT ID="SingleLineComment">// log.info("fileRef: " + fileRef);
+<A NAME="215"></A></FONT>        
+<A NAME="216"></A>        fileRefURI = <FONT ID="New">new</FONT> URI(fileRef);
+<A NAME="217"></A>        
+<A NAME="218"></A>        <FONT ID="If">if</FONT> (fileRefURI.isAbsolute()) {
+<A NAME="219"></A>            
+<A NAME="220"></A>            <FONT ID="SingleLineComment">// Absolute URI (file:/C:/a/b/c.cfg):
+<A NAME="221"></A></FONT>            resultURL = fileRefURI.toURL();
+<A NAME="222"></A>            
+<A NAME="223"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="224"></A>            
+<A NAME="225"></A>            <FONT ID="SingleLineComment">// Relativ URI (b/c.cfg):
+<A NAME="226"></A></FONT>            resultURL = <FONT ID="New">new</FONT> URL(baseURL, fileRef);
+<A NAME="227"></A>        }
+<A NAME="228"></A>        
+<A NAME="229"></A>        <FONT ID="SingleLineComment">// log.info("result URL: " + resultURL.toString());
+<A NAME="230"></A></FONT>        <FONT ID="Return">return</FONT> resultURL;
+<A NAME="231"></A>    }
+<A NAME="232"></A>    
+<A NAME="233"></A>}
+<A NAME="234"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">ConfigProperties</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

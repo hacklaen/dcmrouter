@@ -1,0 +1,280 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.property.DicomRouterProperties (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DicomRouterProperties</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  DicomRouterProperties.java
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Copyright (c) 2003 by
+<A NAME="5"></A> *
+<A NAME="6"></A> *  VISUS Technology Transfer GmbH
+<A NAME="7"></A> *  IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="8"></A> *
+<A NAME="9"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="10"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="11"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="12"></A> *  (at your option) any later version.
+<A NAME="13"></A> *
+<A NAME="14"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="15"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="16"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="17"></A> *  Lesser General Public License for more details.
+<A NAME="18"></A> *
+<A NAME="19"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="20"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="21"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="22"></A> *
+<A NAME="23"></A> *
+<A NAME="24"></A> *****************************************************************************/</FONT>
+<A NAME="25"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.property.index.html" target="packageFrame">de.iftm.dcm4che.router.property</A>;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="28"></A>
+<A NAME="29"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="30"></A>
+<A NAME="31"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.util.index.html" target="packageFrame">de.iftm.dcm4che.router.util.*</A>;
+<A NAME="32"></A>
+<A NAME="33"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="34"></A><FONT ID="Import">import</FONT> java.io.*;
+<A NAME="35"></A><FONT ID="Import">import</FONT> java.net.*;
+<A NAME="36"></A>
+<A NAME="37"></A>
+<A NAME="38"></A><FONT ID="FormalComment">/**
+<A NAME="39"></A> * This class has utilitie methods to access properties.
+<A NAME="40"></A> *
+<A NAME="41"></A> * @author Thomas Hacklaender
+<A NAME="42"></A> * @version 2003.11.16
+<A NAME="43"></A> */</FONT>
+<A NAME="44"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> DicomRouterProperties <FONT ID="Extends">extends</FONT> Properties {
+<A NAME="45"></A>    <FONT ID="FormalComment">/** The logger for this plugin. */</FONT>
+<A NAME="46"></A>    <FONT ID="Static">static</FONT> Logger log = Logger.getLogger(<A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">DicomRouterProperties</A>.<FONT ID="Class">class</FONT>);
+<A NAME="47"></A>    
+<A NAME="48"></A>    <FONT ID="FormalComment">/** Array holding indices of defined plugins*/</FONT>
+<A NAME="49"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT>[]   pluginIndices = <FONT ID="Null">null</FONT>;
+<A NAME="50"></A>
+<A NAME="51"></A>    
+<A NAME="52"></A>    <FONT ID="FormalComment">/**
+<A NAME="53"></A>     * Creates a new empty instance of DicomRouterProperties.
+<A NAME="54"></A>     */</FONT>
+<A NAME="55"></A>    <FONT ID="Public">public</FONT> DicomRouterProperties() {
+<A NAME="56"></A>    }
+<A NAME="57"></A>    
+<A NAME="58"></A>    
+<A NAME="59"></A>    <FONT ID="FormalComment">/**
+<A NAME="60"></A>     * Creates a new instance of DicomRouterProperties from other properties.
+<A NAME="61"></A>     * @param props the Properties to use.
+<A NAME="62"></A>     */</FONT>
+<A NAME="63"></A>    <FONT ID="Public">public</FONT> DicomRouterProperties(Properties props) {
+<A NAME="64"></A>        setProperties(props);
+<A NAME="65"></A>    }
+<A NAME="66"></A>    
+<A NAME="67"></A>    
+<A NAME="68"></A>    <FONT ID="FormalComment">/**
+<A NAME="69"></A>     * Creates a new instance of DicomRouterProperties from a URI.
+<A NAME="70"></A>     *
+<A NAME="71"></A>     * @param uri the URI of file to load given as a string.
+<A NAME="72"></A>     */</FONT>
+<A NAME="73"></A>    <FONT ID="Public">public</FONT> DicomRouterProperties(String uri) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="74"></A>        <FONT ID="This">this</FONT>(Util.uriToFile(uri));
+<A NAME="75"></A>    }
+<A NAME="76"></A>    
+<A NAME="77"></A>    
+<A NAME="78"></A>    <FONT ID="FormalComment">/**
+<A NAME="79"></A>     * Creates a new instance of DicomRouterProperties from a file.
+<A NAME="80"></A>     *
+<A NAME="81"></A>     * @param f the file to load.
+<A NAME="82"></A>     */</FONT>
+<A NAME="83"></A>    <FONT ID="Public">public</FONT> DicomRouterProperties(File f) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="84"></A>        <FONT ID="This">this</FONT>(<FONT ID="New">new</FONT> FileInputStream(f));
+<A NAME="85"></A>    }
+<A NAME="86"></A>    
+<A NAME="87"></A>    
+<A NAME="88"></A>    <FONT ID="FormalComment">/**
+<A NAME="89"></A>     * Creates a new instance of DicomRouterProperties from a resource.
+<A NAME="90"></A>     * @param in stream of the resource to load.
+<A NAME="91"></A>     */</FONT>
+<A NAME="92"></A>    <FONT ID="Public">public</FONT> DicomRouterProperties(InputStream in) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="93"></A>        <FONT ID="This">this</FONT>.load(in);
+<A NAME="94"></A>    }
+<A NAME="95"></A>    
+<A NAME="96"></A>    
+<A NAME="97"></A>    <FONT ID="FormalComment">/**
+<A NAME="98"></A>     * Sets the properties.
+<A NAME="99"></A>     *
+<A NAME="100"></A>     * @param props the properties to use.
+<A NAME="101"></A>     */</FONT>
+<A NAME="102"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setProperties(Properties props) {
+<A NAME="103"></A>        <FONT ID="This">this</FONT>.putAll(props);
+<A NAME="104"></A>        extractPluginIndices();
+<A NAME="105"></A>    }
+<A NAME="106"></A>    
+<A NAME="107"></A>    
+<A NAME="108"></A>    <FONT ID="FormalComment">/**
+<A NAME="109"></A>     * Returns the properties of the receiver.
+<A NAME="110"></A>     *
+<A NAME="111"></A>     * @return the properties of the receiver.
+<A NAME="112"></A>     */</FONT>
+<A NAME="113"></A>    <FONT ID="Public">public</FONT> Properties extractReceiverProperties() {
+<A NAME="114"></A>        String leadin = <FONT ID="StringLiteral">"receiver."</FONT>;
+<A NAME="115"></A>        <FONT ID="Return">return</FONT> extractProperties(leadin);
+<A NAME="116"></A>    }
+<A NAME="117"></A>    
+<A NAME="118"></A>    
+<A NAME="119"></A>    <FONT ID="FormalComment">/**
+<A NAME="120"></A>     * Returns the properties of a plugin.
+<A NAME="121"></A>     *
+<A NAME="122"></A>     * @param pluginNumber the number of the plugin.
+<A NAME="123"></A>     * @return the properties of the plugin.
+<A NAME="124"></A>     */</FONT>
+<A NAME="125"></A>    <FONT ID="Public">public</FONT> Properties extractPluginProperties(<FONT ID="Int">int</FONT> pluginNumber) {
+<A NAME="126"></A>        String leadin = <FONT ID="StringLiteral">"plugin."</FONT> + String.valueOf(pluginNumber) + <FONT ID="StringLiteral">"."</FONT>;
+<A NAME="127"></A>        <FONT ID="Return">return</FONT> extractProperties(leadin);
+<A NAME="128"></A>    }
+<A NAME="129"></A>    
+<A NAME="130"></A>    
+<A NAME="131"></A>    <FONT ID="FormalComment">/**
+<A NAME="132"></A>     * Returns the properties whose keys start with leadin string
+<A NAME="133"></A>     *
+<A NAME="134"></A>     * @param leadin the lead in string.
+<A NAME="135"></A>     * @return the properties whose keys start with leadin string.
+<A NAME="136"></A>     */</FONT>
+<A NAME="137"></A>    <FONT ID="Protected">protected</FONT> Properties extractProperties(String leadin) {
+<A NAME="138"></A>        Enumeration e = <FONT ID="Null">null</FONT>;
+<A NAME="139"></A>        Properties  props = <FONT ID="New">new</FONT> Properties();
+<A NAME="140"></A>        String      key;
+<A NAME="141"></A>        String      value;
+<A NAME="142"></A>        String      newKey;
+<A NAME="143"></A>        
+<A NAME="144"></A>        e = <FONT ID="This">this</FONT>.keys();
+<A NAME="145"></A>        <FONT ID="If">if</FONT> ( e == <FONT ID="Null">null</FONT>) <FONT ID="Return">return</FONT> props;
+<A NAME="146"></A>        
+<A NAME="147"></A>        <FONT ID="While">while</FONT> (e.hasMoreElements()) {
+<A NAME="148"></A>            key = (String) e.nextElement();
+<A NAME="149"></A>            <FONT ID="If">if</FONT> (key.startsWith(leadin)) {
+<A NAME="150"></A>                newKey = key.substring(leadin.length());
+<A NAME="151"></A>                value = (String) <FONT ID="This">this</FONT>.get(key);
+<A NAME="152"></A>                props.setProperty(newKey, value);
+<A NAME="153"></A>            }
+<A NAME="154"></A>        }
+<A NAME="155"></A>        
+<A NAME="156"></A>        <FONT ID="Return">return</FONT> props;
+<A NAME="157"></A>    }
+<A NAME="158"></A>    
+<A NAME="159"></A>    
+<A NAME="160"></A>    <FONT ID="FormalComment">/**
+<A NAME="161"></A>     * Returns the number of plugins in the chain.
+<A NAME="162"></A>     * @return number of plugins.
+<A NAME="163"></A>     */</FONT>
+<A NAME="164"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getNumberOfPlugins() {
+<A NAME="165"></A>        <FONT ID="If">if</FONT> (pluginIndices == <FONT ID="Null">null</FONT>) {
+<A NAME="166"></A>            <FONT ID="Return">return</FONT> <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="167"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="168"></A>            <FONT ID="Return">return</FONT> pluginIndices.length;
+<A NAME="169"></A>        }
+<A NAME="170"></A>    }
+<A NAME="171"></A>    
+<A NAME="172"></A>    
+<A NAME="173"></A>    <FONT ID="FormalComment">/**
+<A NAME="174"></A>     * Returns the index number of the first Plugin.
+<A NAME="175"></A>     * @return the index number of the plugin or -1 in the case of error.
+<A NAME="176"></A>     */</FONT>
+<A NAME="177"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getIndexNumberOfFirstPlugin() {
+<A NAME="178"></A>        <FONT ID="If">if</FONT> (pluginIndices == <FONT ID="Null">null</FONT>) {
+<A NAME="179"></A>            <FONT ID="Return">return</FONT> -<FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="180"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="181"></A>            <FONT ID="Return">return</FONT> pluginIndices[<FONT ID="IntegerLiteral">0</FONT>];
+<A NAME="182"></A>        }
+<A NAME="183"></A>    }
+<A NAME="184"></A>    
+<A NAME="185"></A>    
+<A NAME="186"></A>    <FONT ID="FormalComment">/**
+<A NAME="187"></A>     * Returns the index number of the last Plugin.
+<A NAME="188"></A>     * @return the index number of the plugin or -1 in the case of error.
+<A NAME="189"></A>     */</FONT>
+<A NAME="190"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getIndexNumberOfLastPlugin() {
+<A NAME="191"></A>        <FONT ID="If">if</FONT> (pluginIndices == <FONT ID="Null">null</FONT>) {
+<A NAME="192"></A>            <FONT ID="Return">return</FONT> -<FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="193"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="194"></A>            <FONT ID="Return">return</FONT> pluginIndices[pluginIndices.length -<FONT ID="IntegerLiteral">1</FONT>];
+<A NAME="195"></A>        }
+<A NAME="196"></A>    }
+<A NAME="197"></A>     
+<A NAME="198"></A>    <FONT ID="FormalComment">/**
+<A NAME="199"></A>     * Get the array holding the ascending sorted indices of defined plugins.
+<A NAME="200"></A>     */</FONT>
+<A NAME="201"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT>[] getPluginIndexNumbers() {
+<A NAME="202"></A>        <FONT ID="Return">return</FONT> pluginIndices;
+<A NAME="203"></A>    }
+<A NAME="204"></A>   
+<A NAME="205"></A>    
+<A NAME="206"></A>    <FONT ID="FormalComment">/**
+<A NAME="207"></A>     *
+<A NAME="208"></A>     */</FONT>
+<A NAME="209"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> extractPluginIndices() {
+<A NAME="210"></A>        String          key;
+<A NAME="211"></A>        StringTokenizer st;
+<A NAME="212"></A>        String          token;
+<A NAME="213"></A>        Enumeration     en = <FONT ID="This">this</FONT>.keys();
+<A NAME="214"></A>        Vector          vectorOfIndices = <FONT ID="New">new</FONT> Vector();
+<A NAME="215"></A>        
+<A NAME="216"></A>        <FONT ID="While">while</FONT> (en.hasMoreElements()) {
+<A NAME="217"></A>            key = (String) en.nextElement();
+<A NAME="218"></A>            <FONT ID="If">if</FONT> (key.startsWith(<FONT ID="StringLiteral">"plugin."</FONT>) &amp;&amp; key.endsWith(<FONT ID="StringLiteral">".name"</FONT>)) {
+<A NAME="219"></A>                st = <FONT ID="New">new</FONT> StringTokenizer(key, <FONT ID="StringLiteral">"."</FONT>);
+<A NAME="220"></A>                <FONT ID="If">if</FONT> (st.hasMoreTokens()) {
+<A NAME="221"></A>                    <FONT ID="SingleLineComment">// discharge "plugin"
+<A NAME="222"></A></FONT>                    token = st.nextToken();
+<A NAME="223"></A>                    <FONT ID="If">if</FONT> (st.hasMoreTokens()) {
+<A NAME="224"></A>                        <FONT ID="SingleLineComment">// get plugin index
+<A NAME="225"></A></FONT>                        token = st.nextToken();
+<A NAME="226"></A>                        <FONT ID="Try">try</FONT> {
+<A NAME="227"></A>                            vectorOfIndices.addElement(Integer.valueOf(token));
+<A NAME="228"></A>                        } <FONT ID="Catch">catch</FONT> (NumberFormatException e) {}
+<A NAME="229"></A>                    }
+<A NAME="230"></A>                }
+<A NAME="231"></A>            }
+<A NAME="232"></A>        }
+<A NAME="233"></A>        
+<A NAME="234"></A>        <FONT ID="SingleLineComment">// Vector contains the plugin indices
+<A NAME="235"></A></FONT>        pluginIndices = <FONT ID="New">new</FONT> <FONT ID="Int">int</FONT>[vectorOfIndices.size()];
+<A NAME="236"></A>        <FONT ID="For">for</FONT> (<FONT ID="Int">int</FONT> i = <FONT ID="IntegerLiteral">0</FONT>; i &lt; vectorOfIndices.size(); i++) {
+<A NAME="237"></A>            pluginIndices[i] = ((Integer) vectorOfIndices.elementAt(i)).intValue();
+<A NAME="238"></A>        }
+<A NAME="239"></A>        Arrays.sort(pluginIndices);
+<A NAME="240"></A>    }
+<A NAME="241"></A>    
+<A NAME="242"></A>}
+<A NAME="243"></A>
+<A NAME="244"></A><FONT ID="FormalComment">/**
+<A NAME="245"></A> * Revisions:
+<A NAME="246"></A> *
+<A NAME="247"></A> * 2006.04.24, hacklaender: Clean up.
+<A NAME="248"></A> * 2006.02.23, hacklaender: Several methods added.
+<A NAME="249"></A> * 2005.08.16: Class PropertyUtil renamed to DicomRouterProperties
+<A NAME="250"></A> * 2005.08.16: Class DicomRouterProperties extends Properties
+<A NAME="251"></A> */</FONT>
+<A NAME="252"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DicomRouterProperties</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

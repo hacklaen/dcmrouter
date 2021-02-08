@@ -1,0 +1,495 @@
+<project name="Lumbermill" default="usage" basedir=".">
+  
+  <!-- ==================================================== -->
+  <!-- command line customization parameters                -->
+  <!-- ==================================================== -->
+  
+  <property name="version" value="dev"/>
+  <property name="clean" value="off"/>
+  
+  <!-- ==================================================== -->
+  <!-- fixed parameters (edit these at your own risk)       -->
+  <!-- ==================================================== -->
+  
+  <property name="bin"                  value="bin"/>
+  <property name="doc"                  value="doc"/>
+  <property name="lib"                  value="lib"/>
+  <property name="media"                value="media"/>
+  <property name="src"                  value="src"/>
+  <property name="test"                 value="test"/>
+  
+  <property name="tmp"                  value="tmp"/>
+  <property name="tmp.src"              value="${tmp}/src"/>
+  <property name="tmp.byte"             value="${tmp}/byte"/>
+  <property name="tmp.build"            value="${tmp}/build"/>
+  <property name="tmp.dist"             value="${tmp}/dist"/>
+  <property name="tmp.test"             value="${tmp}/test"/>
+  <property name="tmp.testbyte"         value="${tmp}/dist"/>
+  
+  <property name="tmp.build.version"
+            value="${tmp.build}/lumbermill-${version}"/>
+  <property name="tmp.dist.version"
+            value="${tmp.dist}/lumbermill-${version}"/>
+  
+  <!-- ==================================================== -->
+  <!-- main public targets                                  -->
+  <!-- ==================================================== -->
+  
+  <!-- ============= usage ================================ -->
+  <target name="usage"
+          description="Displays usage tips.">
+    <echo>
+In most cases, there is no need to build Lumbermill.
+You should be able to simply "cd bin" and run the
+appropriate script for your operating system, or
+"java -jar lib/lumbermill.jar".
+
+If you would like to do your own build, use
+"ant -projecthelp" to see the available targets.
+
+Parameters
+    -Dclean=on          Clean before doing the target in question.
+    -Dversion=0.7.14    Label this build/tarball as version 0.7.14.
+    </echo>
+  </target>
+  
+  <!-- ============= compile ================================ -->
+  <target name="compile"
+          description="Performs a compile, cleaning if specified."
+          depends="init,
+                   conditional-clean">
+    <mkdir dir="${tmp.src}"/>
+    <mkdir dir="${tmp.byte}"/>
+    <copy todir="${tmp.src}">
+      <fileset dir="${src}" includes="**/*java"/>
+    </copy>
+    <javac srcdir="${tmp.src}"
+           destdir="${tmp.byte}">
+      <classpath>
+        <fileset dir="${lib}">
+          <include name="**/*.jar"/>
+        </fileset>
+      </classpath>
+    </javac>
+  </target>
+  
+  <!-- ============= jar ================================ -->
+  <target name="jar"
+          description="Performs a compile, build, and jar."
+          depends="init,
+                   build-dirs,
+                   jar-lm,
+                   jar-media,
+                   jar-LogCaster">
+    <copy file="${lib}/log4j.jar"
+          tofile="${tmp.build.version}/${lib}/log4j.jar"/>
+  </target>
+
+  <!-- ============= tar ================================ -->
+  <target name="tar"
+          description="Creates a shippable tarball from source code."
+          depends="dist">
+    <delete file="${tmp.dist.version}.tar"/>
+    <delete file="${tmp.dist.version}.tar.gz"/>
+    <tar tarfile="${tmp.dist.version}.tar"
+         basedir="${tmp.build}"
+         includes="lumbermill-${version}/**/*">
+    </tar>
+    <gzip src="${tmp.dist.version}.tar"
+          zipfile="${tmp.dist.version}.tar.gz"/>
+    <delete file="${tmp.dist.version}.tar"/>
+  </target>
+  
+  <!-- ============= test ============================== -->
+  <target name="test"
+          description="Builds all jars and runs all unit tests."
+          depends="jar-test">
+    <java jar="${tmp.build.version}/${test}/test.jar"
+          fork="true"/>
+  </target>
+
+  <!-- ==================================================== -->
+  <!-- internal targets                                     -->
+  <!-- ==================================================== -->
+  
+  <target name="init">
+  
+    <!-- Create the time stamp -->
+    <tstamp/>
+    
+    <!-- set the do-clean param -->
+    <condition property="do-clean">
+      <or>
+        <equals arg1="${clean}" arg2="true"/>
+        <equals arg1="${clean}" arg2="on"/>
+      </or>
+    </condition>
+  </target>
+  
+  <target name="doc">
+    <mkdir dir="${doc}/api"/>
+    <javadoc sourcepath="${src}"
+             destdir="${doc}/api">
+      <package name="com.traxel.lm"/>
+      <classpath>
+        <fileset dir="${lib}" includes="**/*.jar"/>
+      </classpath>
+    </javadoc>
+  </target>
+  
+  <target name="build-dirs">
+    <mkdir dir="${tmp.build.version}/${lib}"/>
+    <mkdir dir="${tmp.build.version}/${bin}"/>
+  </target>
+  
+  <target name="jar-media" depends="build-dirs">  
+    <mkdir dir="${tmp.build.version}/${lib}"/>
+    <jar jarfile="${tmp.build.version}/${lib}/media.jar">
+      <fileset dir="." includes="${media}/*.png"/>
+    </jar>
+  </target>
+  
+  <target name="dist" depends="build-dirs,
+                               jar,
+                               doc">
+    <copy todir="${tmp.build.version}">
+      <fileset dir="." includes="README,
+                                 build.xml,
+                                 ${bin}/**/*,
+                                 ${doc}/**/*,
+                                 ${src}/**/*.java"/>
+    </copy>
+  </target>
+
+  <target name="clean">
+    <delete dir="${tmp.src}"/>
+    <delete dir="${tmp.test}"/>
+    <delete dir="${tmp.byte}"/>
+    <delete dir="${tmp.build}"/>
+    <delete dir="${tmp.dist.version}"/>
+  </target>
+  
+  <target name="conditional-clean"
+          if="do-clean"
+          depends="init">
+    <ant target="clean"/>
+  </target>
+  
+  <!-- ====================================================== -->
+  <!-- ================= COMPONENT TARGETS ================== -->
+  <!-- ====================================================== -->
+  
+  <!-- ================== LogCaster =========================== -->
+  <target name="compile-LogCaster"
+          depends="init,
+                   conditional-clean">
+    <mkdir dir="${tmp.byte}"/>
+    <copy todir="${tmp}">
+      <fileset dir="."
+               includes="${src}/com/traxel/lm/logcaster/*.java"/>
+    </copy>
+    <javac srcdir="${tmp.src}"
+           destdir="${tmp.byte}">
+      <classpath>
+        <fileset dir="${lib}"
+                 includes="log4j.jar"/>
+      </classpath>
+      <include name="com/traxel/lm/logcaster/*java"/>
+    </javac>
+  </target>
+  
+  <target name="jar-LogCaster"
+          depends="build-dirs,
+                   compile-LogCaster">
+    <mkdir dir="${tmp.build.version}/${lib}"/>
+    <jar jarfile="${tmp.build.version}/${lib}/logcaster.jar"
+         manifest="${doc}/LogCaster-MANIFEST.MF">
+      <fileset dir="${tmp.byte}"
+               includes="com/traxel/lm/logcaster/*.class"/>
+    </jar>
+    <copy file="${lib}/log4j.jar"
+          tofile="${tmp.build.version}/${lib}/log4j.jar"/>
+  </target>
+  
+  <!-- ================= UTIL =============================== -->
+  <target name="compile-util"
+          depends="init,
+                   conditional-clean">
+    <mkdir dir="${tmp.byte}"/>
+    <copy todir="${tmp}">
+      <fileset dir=".">
+        <include name="${src}/com/traxel/lm/util/**/*java"/>
+        <include name="${src}/com/traxel/util/**/*java"/>
+      </fileset>
+    </copy>
+    <javac srcdir="${tmp.src}"
+           destdir="${tmp.byte}">
+      <classpath>
+        <fileset dir="${lib}" includes="log4j.jar"/>
+      </classpath>
+      <include name="com/traxel/lm/util/**/*java"/>
+      <include name="com/traxel/util/**/*java"/>
+    </javac>
+  </target>
+  
+  <target name="jar-util"
+          depends="build-dirs,
+                   compile-util">
+    <mkdir dir="${tmp.build.version}/${lib}"/>
+    <jar jarfile="${tmp.build.version}/${lib}/util.jar">
+      <fileset dir="${tmp.byte}">
+        <include name="com/traxel/lm/util/**/*.class"/>
+        <include name="com/traxel/util/**/*.class"/>
+      </fileset>
+    </jar>
+    <copy file="${lib}/log4j.jar"
+          tofile="${tmp.build.version}/${lib}/log4j.jar"/>
+  </target>
+  
+  <!-- ================= MODEL ============================== -->
+  <target name="compile-model"
+          depends="init,
+                   conditional-clean,
+                   jar-util">
+    <mkdir dir="${tmp.byte}"/>
+    <copy todir="${tmp}">
+      <fileset dir=".">
+        <include name="${src}/com/traxel/lm/model/**/*.java"/>
+      </fileset>
+    </copy>
+    <javac srcdir="${tmp.src}"
+           destdir="${tmp.byte}">
+      <classpath>
+        <fileset dir="${lib}"
+                 includes="log4j.jar"/>
+        <fileset dir="${tmp.build.version}/${lib}"
+                 includes="util.jar"/>
+      </classpath>
+      <include name="com/traxel/lm/model/**/*java"/>
+    </javac>
+  </target>
+  
+  <target name="jar-model"
+          depends="build-dirs,
+                   compile-model">
+    <mkdir dir="${tmp.build.version}/${lib}"/>
+    <jar jarfile="${tmp.build.version}/${lib}/model.jar">
+      <fileset dir="${tmp.byte}"
+               includes="com/traxel/lm/model/**/*.class"/>
+    </jar>
+    <copy file="${lib}/log4j.jar"
+          tofile="${tmp.build.version}/${lib}/log4j.jar"/>
+  </target>
+  
+  <!-- ================== SERVER =========================== -->
+  <target name="compile-server"
+          depends="init,
+                   conditional-clean,
+                   jar-util,
+                   jar-model">
+    <mkdir dir="${tmp.byte}"/>
+    <copy todir="${tmp}">
+      <fileset dir="."
+               includes="${src}/com/traxel/lm/server/**/*.java"/>
+    </copy>
+    <javac srcdir="${tmp.src}"
+           destdir="${tmp.byte}">
+      <classpath>
+        <fileset dir="${lib}"
+                 includes="log4j.jar"/>
+        <fileset dir="${tmp.build.version}/${lib}"
+                 includes="util.jar,
+                           model.jar"/>
+      </classpath>
+      <include name="com/traxel/lm/server/**/*java"/>
+    </javac>
+  </target>
+  
+  <target name="jar-server"
+          depends="build-dirs,
+                   compile-server">
+    <mkdir dir="${tmp.build.version}/${lib}"/>
+    <jar jarfile="${tmp.build.version}/${lib}/server.jar">
+      <fileset dir="${tmp.byte}"
+               includes="com/traxel/lm/server/**/*.class"/>
+    </jar>
+    <copy file="${lib}/log4j.jar"
+          tofile="${tmp.build.version}/${lib}/log4j.jar"/>
+  </target>
+  
+  <!-- ================== VIEW =========================== -->
+  <target name="compile-view"
+          depends="init,
+                   conditional-clean,
+                   jar-util,
+                   jar-model">
+    <mkdir dir="${tmp.byte}"/>
+    <copy todir="${tmp}">
+      <fileset dir="."
+               includes="${src}/com/traxel/lm/view/**/*.java"/>
+    </copy>
+    <replace file="${tmp.src}/com/traxel/lm/view/About.java"
+             token="@@VERSION@@"
+             value="${version}"/>
+    <replace file="${tmp.src}/com/traxel/lm/view/About.java"
+             token="@@COMPILE_TIME@@"
+             value="${TODAY}"/>
+    <javac srcdir="${tmp.src}"
+           destdir="${tmp.byte}">
+      <classpath>
+        <fileset dir="${lib}"
+                 includes="log4j.jar"/>
+        <fileset dir="${tmp.build.version}/${lib}"
+                 includes="util.jar,
+                           model.jar"/>
+      </classpath>
+      <include name="com/traxel/lm/view/**/*java"/>
+    </javac>
+  </target>
+  
+  <target name="jar-view"
+          depends="build-dirs,
+                   compile-view">
+    <mkdir dir="${tmp.build.version}/${lib}"/>
+    <jar jarfile="${tmp.build.version}/${lib}/view.jar">
+      <fileset dir="${tmp.byte}"
+               includes="com/traxel/lm/view/**/*.class"/>
+    </jar>
+    <copy file="${lib}/log4j.jar"
+          tofile="${tmp.build.version}/${lib}/log4j.jar"/>
+  </target>
+  
+  <!-- ================== CONTROL =========================== -->
+  <target name="compile-control"
+          depends="init,
+                   conditional-clean,
+                   jar-util,
+                   jar-model,
+                   jar-server,
+                   jar-view">
+    <mkdir dir="${tmp.byte}"/>
+    <copy todir="${tmp}">
+      <fileset dir="."
+               includes="${src}/com/traxel/lm/control/**/*.java"/>
+    </copy>
+    <javac srcdir="${tmp.src}"
+           destdir="${tmp.byte}">
+      <classpath>
+        <fileset dir="${lib}"
+                 includes="log4j.jar"/>
+        <fileset dir="${tmp.build.version}/${lib}"
+                 includes="util.jar,
+                           model.jar,
+                           server.jar,
+                           view.jar"/>
+      </classpath>
+      <include name="com/traxel/lm/control/**/*java"/>
+    </javac>
+  </target>
+  
+  <target name="jar-control"
+          depends="build-dirs,
+                   compile-control">
+    <mkdir dir="${tmp.build.version}/${lib}"/>
+    <jar jarfile="${tmp.build.version}/${lib}/control.jar">
+      <fileset dir="${tmp.byte}"
+               includes="com/traxel/lm/control/**/*.class"/>
+    </jar>
+    <copy file="${lib}/log4j.jar"
+          tofile="${tmp.build.version}/${lib}/log4j.jar"/>
+  </target>
+  
+  <!-- ================== LM =========================== -->
+  <target name="compile-lm"
+          depends="init,
+                   conditional-clean,
+                   jar-util,
+                   jar-model,
+                   jar-server,
+                   jar-view,
+                   jar-control">
+    <mkdir dir="${tmp.byte}"/>
+    <copy todir="${tmp}">
+      <fileset dir="."
+               includes="${src}/com/traxel/lm/*.java"/>
+    </copy>
+    <javac srcdir="${tmp.src}"
+           destdir="${tmp.byte}">
+      <classpath>
+        <fileset dir="${lib}"
+                 includes="log4j.jar"/>
+        <fileset dir="${tmp.build.version}/${lib}"
+                 includes="util.jar,
+                           model.jar,
+                           server.jar,
+                           view.jar,
+                           control.jar"/>
+      </classpath>
+      <include name="com/traxel/lm/*java"/>
+    </javac>
+  </target>
+  
+  <target name="jar-lm"
+          depends="build-dirs,
+                   compile-lm">
+    <mkdir dir="${tmp.build.version}/${lib}"/>
+    <jar jarfile="${tmp.build.version}/${lib}/lumbermill.jar"
+         manifest="${doc}/MANIFEST.MF">
+      <fileset dir="${tmp.byte}"
+               includes="com/traxel/lm/*.class"/>
+    </jar>
+    <copy file="${lib}/log4j.jar"
+          tofile="${tmp.build.version}/${lib}/log4j.jar"/>
+  </target>
+  
+  <!-- ================= TEST ======================= -->
+  <target name="compile-test"
+          depends="init,
+                   conditional-clean,
+                   jar-util,
+                   jar-model,
+                   jar-server,
+                   jar-view,
+                   jar-control,
+                   jar-lm">
+    <mkdir dir="${tmp.testbyte}"/>
+    <copy todir="${tmp}">
+      <fileset dir="."
+               includes="${test}/com/traxel/**/*.java"/>
+    </copy>
+    <javac srcdir="${tmp.test}"
+           destdir="${tmp.testbyte}">
+      <classpath>
+        <fileset dir="${lib}"
+                 includes="log4j.jar,
+                           junit.jar"/>
+        <fileset dir="${tmp.build.version}/${lib}"
+                 includes="util.jar,
+                           model.jar,
+                           server.jar,
+                           view.jar,
+                           control.jar,
+                           lm.jar"/>
+      </classpath>
+      <include name="com/traxel/**/*java"/>
+    </javac>
+  </target>
+  
+  <target name="jar-test"
+          depends="build-dirs,
+                   compile-test">
+    <mkdir dir="${tmp.build.version}/${lib}"/>
+    <mkdir dir="${tmp.build.version}/${test}"/>
+    <jar jarfile="${tmp.build.version}/${test}/test.jar"
+         manifest="${doc}/test-MANIFEST.MF">
+      <fileset dir="${tmp.testbyte}"
+               includes="com/traxel/**/*.class"/>
+    </jar>
+    <copy file="${lib}/log4j.jar"
+          tofile="${tmp.build.version}/${lib}/log4j.jar"/>
+    <copy file="${lib}/junit.jar"
+          tofile="${tmp.build.version}/${test}/junit.jar"/>
+  </target>
+  
+</project>
+

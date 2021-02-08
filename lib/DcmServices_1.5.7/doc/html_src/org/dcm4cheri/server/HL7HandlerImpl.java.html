@@ -1,0 +1,255 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>org.dcm4cheri.server.HL7HandlerImpl (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">HL7HandlerImpl</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/* ***** BEGIN LICENSE BLOCK *****
+<A NAME="2"></A> * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+<A NAME="3"></A> *
+<A NAME="4"></A> * The contents of this file are subject to the Mozilla Public License Version
+<A NAME="5"></A> * 1.1 (the "License"); you may not use this file except in compliance with
+<A NAME="6"></A> * the License. You may obtain a copy of the License at
+<A NAME="7"></A> * http://www.mozilla.org/MPL/
+<A NAME="8"></A> *
+<A NAME="9"></A> * Software distributed under the License is distributed on an "AS IS" basis,
+<A NAME="10"></A> * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+<A NAME="11"></A> * for the specific language governing rights and limitations under the
+<A NAME="12"></A> * License.
+<A NAME="13"></A> *
+<A NAME="14"></A> * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+<A NAME="15"></A> * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+<A NAME="16"></A> *
+<A NAME="17"></A> * The Initial Developer of the Original Code is
+<A NAME="18"></A> * TIANI Medgraph AG.
+<A NAME="19"></A> * Portions created by the Initial Developer are Copyright (C) 2002-2005
+<A NAME="20"></A> * the Initial Developer. All Rights Reserved.
+<A NAME="21"></A> *
+<A NAME="22"></A> * Contributor(s):
+<A NAME="23"></A> * Gunter Zeilinger &lt;gunter.zeilinger@tiani.com&gt;
+<A NAME="24"></A> *
+<A NAME="25"></A> * Alternatively, the contents of this file may be used under the terms of
+<A NAME="26"></A> * either the GNU General Public License Version 2 or later (the "GPL"), or
+<A NAME="27"></A> * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+<A NAME="28"></A> * in which case the provisions of the GPL or the LGPL are applicable instead
+<A NAME="29"></A> * of those above. If you wish to allow use of your version of this file only
+<A NAME="30"></A> * under the terms of either the GPL or the LGPL, and not to allow others to
+<A NAME="31"></A> * use your version of this file under the terms of the MPL, indicate your
+<A NAME="32"></A> * decision by deleting the provisions above and replace them with the notice
+<A NAME="33"></A> * and other provisions required by the GPL or the LGPL. If you do not delete
+<A NAME="34"></A> * the provisions above, a recipient may use your version of this file under
+<A NAME="35"></A> * the terms of any one of the MPL, the GPL or the LGPL.
+<A NAME="36"></A> *
+<A NAME="37"></A> * ***** END LICENSE BLOCK ***** */</FONT>
+<A NAME="38"></A>
+<A NAME="39"></A><FONT ID="Package">package</FONT> <A HREF="../../../org.dcm4cheri.server.index.html" target="packageFrame">org.dcm4cheri.server</A>;
+<A NAME="40"></A>
+<A NAME="41"></A><FONT ID="Import">import</FONT> org.dcm4che.hl7.HL7Exception;
+<A NAME="42"></A><FONT ID="Import">import</FONT> org.dcm4che.hl7.HL7Factory;
+<A NAME="43"></A><FONT ID="Import">import</FONT> org.dcm4che.hl7.HL7Service;
+<A NAME="44"></A><FONT ID="Import">import</FONT> org.dcm4che.hl7.HL7Message;
+<A NAME="45"></A><FONT ID="Import">import</FONT> org.dcm4che.hl7.MSHSegment;
+<A NAME="46"></A><FONT ID="Import">import</FONT> <A HREF="../../../org/dcm4che/server/HL7Handler.java.html">org.dcm4che.server.HL7Handler</A>;
+<A NAME="47"></A><FONT ID="Import">import</FONT> org.dcm4che.util.MLLPInputStream;
+<A NAME="48"></A><FONT ID="Import">import</FONT> org.dcm4che.util.MLLPOutputStream;
+<A NAME="49"></A>
+<A NAME="50"></A><FONT ID="Import">import</FONT> java.io.BufferedInputStream;
+<A NAME="51"></A><FONT ID="Import">import</FONT> java.io.BufferedOutputStream;
+<A NAME="52"></A><FONT ID="Import">import</FONT> java.io.IOException;
+<A NAME="53"></A><FONT ID="Import">import</FONT> java.net.Socket;
+<A NAME="54"></A><FONT ID="Import">import</FONT> java.util.Arrays;
+<A NAME="55"></A><FONT ID="Import">import</FONT> java.util.HashSet;
+<A NAME="56"></A><FONT ID="Import">import</FONT> java.util.HashMap;
+<A NAME="57"></A>
+<A NAME="58"></A><FONT ID="Import">import</FONT> org.apache.log4j.Logger;
+<A NAME="59"></A>
+<A NAME="60"></A><FONT ID="FormalComment">/**
+<A NAME="61"></A> * &lt;description&gt;
+<A NAME="62"></A> *
+<A NAME="63"></A> * @see &lt;related&gt;
+<A NAME="64"></A> * @author  &lt;a href="mailto:gunter@tiani.com"&gt;gunter zeilinger&lt;/a&gt;
+<A NAME="65"></A> * @version $Revision: 1.4 $ $Date: 2005/10/05 16:26:16 $
+<A NAME="66"></A> * @since August 11, 2002
+<A NAME="67"></A> *
+<A NAME="68"></A> * &lt;p&gt;&lt;b&gt;Revisions:&lt;/b&gt;
+<A NAME="69"></A> *
+<A NAME="70"></A> * &lt;p&gt;&lt;b&gt;yyyymmdd author:&lt;/b&gt;
+<A NAME="71"></A> * &lt;ul&gt;
+<A NAME="72"></A> * &lt;li&gt; explicit fix description (no line numbers but methods) go
+<A NAME="73"></A> *            beyond the cvs commit message
+<A NAME="74"></A> * &lt;/ul&gt;
+<A NAME="75"></A> */</FONT>
+<A NAME="76"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> HL7HandlerImpl <FONT ID="Implements">implements</FONT> <A HREF="../../../org/dcm4che/server/HL7Handler.java.html">HL7Handler</A> {
+<A NAME="77"></A>    
+<A NAME="78"></A>    <FONT ID="SingleLineComment">// Constants -----------------------------------------------------
+<A NAME="79"></A></FONT>    <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> Logger log = Logger.getLogger(<A HREF="../../../org/dcm4cheri/server/HL7HandlerImpl.java.html">HL7HandlerImpl</A>.<FONT ID="Class">class</FONT>);
+<A NAME="80"></A>    
+<A NAME="81"></A>    <FONT ID="SingleLineComment">// Variables -----------------------------------------------------
+<A NAME="82"></A></FONT>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> HL7Factory hl7Fact = HL7Factory.getInstance();
+<A NAME="83"></A>    
+<A NAME="84"></A>    <FONT ID="Private">private</FONT> <FONT ID="Int">int</FONT> soTimeout = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="85"></A>    
+<A NAME="86"></A>    <FONT ID="Private">private</FONT> HashSet receivingApps = <FONT ID="Null">null</FONT>;
+<A NAME="87"></A>    
+<A NAME="88"></A>    <FONT ID="Private">private</FONT> HashSet sendingApps = <FONT ID="Null">null</FONT>;
+<A NAME="89"></A>    
+<A NAME="90"></A>    <FONT ID="Private">private</FONT> HashMap hl7Services = <FONT ID="New">new</FONT> HashMap();
+<A NAME="91"></A>    
+<A NAME="92"></A>    <FONT ID="SingleLineComment">// Constructors --------------------------------------------------
+<A NAME="93"></A></FONT>    
+<A NAME="94"></A>    <FONT ID="SingleLineComment">// Methods -------------------------------------------------------
+<A NAME="95"></A></FONT>    
+<A NAME="96"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getSoTimeout() {
+<A NAME="97"></A>        <FONT ID="Return">return</FONT> soTimeout;
+<A NAME="98"></A>    }
+<A NAME="99"></A>        
+<A NAME="100"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setSoTimeout(<FONT ID="Int">int</FONT> timeout) {
+<A NAME="101"></A>        <FONT ID="This">this</FONT>.soTimeout = timeout;
+<A NAME="102"></A>    }
+<A NAME="103"></A>    
+<A NAME="104"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> addReceivingApp(String app) {
+<A NAME="105"></A>        <FONT ID="If">if</FONT> (receivingApps == <FONT ID="Null">null</FONT>)
+<A NAME="106"></A>            receivingApps = <FONT ID="New">new</FONT> HashSet();
+<A NAME="107"></A>        
+<A NAME="108"></A>        <FONT ID="Return">return</FONT> receivingApps.add(app);
+<A NAME="109"></A>    }
+<A NAME="110"></A>    
+<A NAME="111"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> addSendingApp(String app) {
+<A NAME="112"></A>        <FONT ID="If">if</FONT> (sendingApps == <FONT ID="Null">null</FONT>)
+<A NAME="113"></A>            sendingApps = <FONT ID="New">new</FONT> HashSet();
+<A NAME="114"></A>        
+<A NAME="115"></A>        <FONT ID="Return">return</FONT> sendingApps.add(app);
+<A NAME="116"></A>    }
+<A NAME="117"></A>    
+<A NAME="118"></A>    <FONT ID="Public">public</FONT> String[] getReceivingApps() {
+<A NAME="119"></A>        <FONT ID="Return">return</FONT> receivingApps != <FONT ID="Null">null</FONT>
+<A NAME="120"></A>            ? (String[])receivingApps.toArray(<FONT ID="New">new</FONT> String[receivingApps.size()])
+<A NAME="121"></A>            : <FONT ID="Null">null</FONT>;
+<A NAME="122"></A>    }
+<A NAME="123"></A>    
+<A NAME="124"></A>    <FONT ID="Public">public</FONT> String[] getSendingApps() {
+<A NAME="125"></A>        <FONT ID="Return">return</FONT> sendingApps != <FONT ID="Null">null</FONT>
+<A NAME="126"></A>            ? (String[])sendingApps.toArray(<FONT ID="New">new</FONT> String[sendingApps.size()])
+<A NAME="127"></A>            : <FONT ID="Null">null</FONT>;
+<A NAME="128"></A>    }
+<A NAME="129"></A>    
+<A NAME="130"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> removeReceivingApp(String app) {
+<A NAME="131"></A>        <FONT ID="Return">return</FONT> receivingApps != <FONT ID="Null">null</FONT> &amp;&amp; receivingApps.remove(app);
+<A NAME="132"></A>    }
+<A NAME="133"></A>    
+<A NAME="134"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> removeSendingApp(String app) {
+<A NAME="135"></A>        <FONT ID="Return">return</FONT> sendingApps != <FONT ID="Null">null</FONT> &amp;&amp; sendingApps.remove(app);
+<A NAME="136"></A>    }
+<A NAME="137"></A>    
+<A NAME="138"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setReceivingApps(String[] apps) {
+<A NAME="139"></A>        receivingApps = apps != <FONT ID="Null">null</FONT>
+<A NAME="140"></A>            ? <FONT ID="New">new</FONT> HashSet(Arrays.asList(apps))
+<A NAME="141"></A>            : <FONT ID="Null">null</FONT>;
+<A NAME="142"></A>    }
+<A NAME="143"></A>    
+<A NAME="144"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setSendingApps(String[] apps) {
+<A NAME="145"></A>        sendingApps = apps != <FONT ID="Null">null</FONT>
+<A NAME="146"></A>            ? <FONT ID="New">new</FONT> HashSet(Arrays.asList(apps))
+<A NAME="147"></A>            : <FONT ID="Null">null</FONT>;
+<A NAME="148"></A>    }
+<A NAME="149"></A>    
+<A NAME="150"></A>    <FONT ID="Public">public</FONT> HL7Service putService(String msgTypeEvent,
+<A NAME="151"></A>            HL7Service service) {
+<A NAME="152"></A>        <FONT ID="If">if</FONT> (service != <FONT ID="Null">null</FONT>) {
+<A NAME="153"></A>            <FONT ID="Return">return</FONT> (HL7Service) hl7Services.put(msgTypeEvent, service);
+<A NAME="154"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="155"></A>            <FONT ID="Return">return</FONT> (HL7Service) hl7Services.remove(msgTypeEvent);
+<A NAME="156"></A>        }
+<A NAME="157"></A>    }
+<A NAME="158"></A>
+<A NAME="159"></A>    <FONT ID="Private">private</FONT> String toKey(String msgType, String trEvent) {
+<A NAME="160"></A>        StringBuffer sb =
+<A NAME="161"></A>            <FONT ID="New">new</FONT> StringBuffer(msgType.length() + trEvent.length() + <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="162"></A>        sb.append(msgType).append(<FONT ID="CharacerLiteral">'^'</FONT>).append(trEvent);
+<A NAME="163"></A>        <FONT ID="Return">return</FONT> sb.toString();
+<A NAME="164"></A>    }
+<A NAME="165"></A>    
+<A NAME="166"></A>    <FONT ID="SingleLineComment">// Server.Handler -------------------------------------------
+<A NAME="167"></A></FONT>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> handle(Socket s) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="168"></A>        s.setSoTimeout(soTimeout);
+<A NAME="169"></A>        MLLPInputStream in = <FONT ID="New">new</FONT> MLLPInputStream(
+<A NAME="170"></A>            <FONT ID="New">new</FONT> BufferedInputStream(s.getInputStream()));
+<A NAME="171"></A>        MLLPOutputStream out = <FONT ID="New">new</FONT> MLLPOutputStream(
+<A NAME="172"></A>            <FONT ID="New">new</FONT> BufferedOutputStream(s.getOutputStream()));
+<A NAME="173"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="174"></A>            <FONT ID="Byte">byte</FONT>[] data;
+<A NAME="175"></A>            <FONT ID="While">while</FONT> ((data = in.readMessage()) != <FONT ID="Null">null</FONT>) {
+<A NAME="176"></A>                HL7Message msg = hl7Fact.parse(data);
+<A NAME="177"></A>                log.info(<FONT ID="StringLiteral">"RCV: "</FONT> + msg);
+<A NAME="178"></A>                <FONT ID="Byte">byte</FONT>[] res = execute(msg.header(), data);
+<A NAME="179"></A>                log.info(<FONT ID="StringLiteral">"SND: "</FONT> + hl7Fact.parse(res));
+<A NAME="180"></A>                out.writeMessage(res);
+<A NAME="181"></A>                out.flush();
+<A NAME="182"></A>            }
+<A NAME="183"></A>        } <FONT ID="Catch">catch</FONT> (HL7Exception e) {
+<A NAME="184"></A>            log.error(<FONT ID="StringLiteral">"Could not understand: "</FONT>, e);
+<A NAME="185"></A>        } <FONT ID="Finally">finally</FONT> {
+<A NAME="186"></A>            <FONT ID="Try">try</FONT> { in.close(); } <FONT ID="Catch">catch</FONT> (IOException ignore) {}
+<A NAME="187"></A>            <FONT ID="Try">try</FONT> { out.close(); } <FONT ID="Catch">catch</FONT> (IOException ignore) {}
+<A NAME="188"></A>            <FONT ID="Try">try</FONT> { s.close(); } <FONT ID="Catch">catch</FONT> (IOException ignore) {}
+<A NAME="189"></A>        }
+<A NAME="190"></A>    }
+<A NAME="191"></A>    
+<A NAME="192"></A>    <FONT ID="Public">public</FONT> <FONT ID="Byte">byte</FONT>[] execute(MSHSegment msh, <FONT ID="Byte">byte</FONT>[] data) {
+<A NAME="193"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="194"></A>            <FONT ID="If">if</FONT> (receivingApps != <FONT ID="Null">null</FONT> &amp;&amp; !receivingApps.contains(
+<A NAME="195"></A>                    msh.getReceivingApplication())) {
+<A NAME="196"></A>                <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> HL7Exception.AR(
+<A NAME="197"></A>                    <FONT ID="StringLiteral">"Unrecognized Receiving Application: "</FONT>
+<A NAME="198"></A>                    + msh.getReceivingApplication());   
+<A NAME="199"></A>            }
+<A NAME="200"></A>            <FONT ID="If">if</FONT> (sendingApps != <FONT ID="Null">null</FONT> &amp;&amp; !sendingApps.contains(
+<A NAME="201"></A>                    msh.getSendingApplication())) {
+<A NAME="202"></A>                <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> HL7Exception.AR(
+<A NAME="203"></A>                    <FONT ID="StringLiteral">"Unrecognized Sending Application: "</FONT>
+<A NAME="204"></A>                    + msh.getSendingApplication());   
+<A NAME="205"></A>            }
+<A NAME="206"></A>            HL7Service service = (HL7Service) hl7Services.get(
+<A NAME="207"></A>                toKey(msh.getMessageType(), msh.getTriggerEvent()));
+<A NAME="208"></A>            <FONT ID="If">if</FONT> (service == <FONT ID="Null">null</FONT>) {
+<A NAME="209"></A>                service = (HL7Service) hl7Services.get(msh.getMessageType());
+<A NAME="210"></A>            }
+<A NAME="211"></A>            <FONT ID="If">if</FONT> (service == <FONT ID="Null">null</FONT>) {
+<A NAME="212"></A>                <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> HL7Exception.AR(
+<A NAME="213"></A>                    <FONT ID="StringLiteral">"Unrecognized Message Type^TriggerEvent "</FONT>
+<A NAME="214"></A>                    + toKey(msh.getMessageType(), msh.getTriggerEvent()));   
+<A NAME="215"></A>            }
+<A NAME="216"></A>            <FONT ID="Return">return</FONT> service.execute(data);
+<A NAME="217"></A>        } <FONT ID="Catch">catch</FONT> (HL7Exception e) {
+<A NAME="218"></A>            log.warn(e.getMessage(), e);
+<A NAME="219"></A>            <FONT ID="Return">return</FONT> e.makeACK(msh);
+<A NAME="220"></A>        }
+<A NAME="221"></A>    }
+<A NAME="222"></A>    
+<A NAME="223"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> isSockedClosedByHandler() {
+<A NAME="224"></A>        <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="225"></A>    }
+<A NAME="226"></A>}
+<A NAME="227"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">HL7HandlerImpl</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

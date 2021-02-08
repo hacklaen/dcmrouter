@@ -1,0 +1,201 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.plugin.DicomRouterPlugin (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DicomRouterPlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  DefaultDicomRouterPlugin.java
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Copyright (c) 2003 by
+<A NAME="5"></A> *
+<A NAME="6"></A> *  IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="7"></A> *  VISUS Technology Transfer GmbH
+<A NAME="8"></A> *
+<A NAME="9"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="10"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="11"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="12"></A> *  (at your option) any later version.
+<A NAME="13"></A> *
+<A NAME="14"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="15"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="16"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="17"></A> *  Lesser General Public License for more details.
+<A NAME="18"></A> *
+<A NAME="19"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="20"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="21"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="22"></A> *
+<A NAME="23"></A> *
+<A NAME="24"></A> *****************************************************************************/</FONT>
+<A NAME="25"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.plugin.index.html" target="packageFrame">de.iftm.dcm4che.router.plugin</A>;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> org.apache.log4j.Logger;
+<A NAME="28"></A>
+<A NAME="29"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.property.index.html" target="packageFrame">de.iftm.dcm4che.router.property.*</A>;
+<A NAME="30"></A>
+<A NAME="31"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="32"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.Tags;
+<A NAME="33"></A>
+<A NAME="34"></A><FONT ID="Import">import</FONT> java.util.Properties;
+<A NAME="35"></A><FONT ID="Import">import</FONT> java.lang.reflect.*;
+<A NAME="36"></A>
+<A NAME="37"></A>
+<A NAME="38"></A><FONT ID="FormalComment">/**
+<A NAME="39"></A> * Implements a DicomRouterPlugin.
+<A NAME="40"></A> * The abortion or closing of the plugins have to take place by calling methods close or abort.
+<A NAME="41"></A> * Before a DefaultDicomRouterPlugin can be closed the next plugin in the chain plugin has to be closed.
+<A NAME="42"></A> * A abort of a DefaultDicomRouterPlugin is only possible if the plugin is not closed.
+<A NAME="43"></A> */</FONT>
+<A NAME="44"></A><FONT ID="Public">public</FONT> <FONT ID="Abstract">abstract</FONT> <FONT ID="Class">class</FONT> DicomRouterPlugin {
+<A NAME="45"></A>    
+<A NAME="46"></A>    <FONT ID="FormalComment">/** DOCUMENT ME! */</FONT>
+<A NAME="47"></A>    <FONT ID="Private">private</FONT> <FONT ID="Static">static</FONT> Logger log = Logger.getLogger(<A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">DicomRouterPlugin</A>.<FONT ID="Class">class</FONT>);
+<A NAME="48"></A>
+<A NAME="49"></A>    
+<A NAME="50"></A>    <FONT ID="FormalComment">/** Return value for process. */</FONT>
+<A NAME="51"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> CONTINUE = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="52"></A>    
+<A NAME="53"></A>    <FONT ID="FormalComment">/** Return value for process. */</FONT>
+<A NAME="54"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> REQUEST_ABORT_PLUGIN_CHAIN = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="55"></A>    
+<A NAME="56"></A>    <FONT ID="FormalComment">/** Return value for process. */</FONT>
+<A NAME="57"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> REQUEST_ABORT_RECEIVER = <FONT ID="IntegerLiteral">2</FONT>;
+<A NAME="58"></A>
+<A NAME="59"></A>    <FONT ID="FormalComment">/** Properties of the plugin */</FONT>
+<A NAME="60"></A>    Properties props = <FONT ID="Null">null</FONT>;
+<A NAME="61"></A>    
+<A NAME="62"></A>    <FONT ID="FormalComment">/**Holds value of property nextPluginInChain. */</FONT>
+<A NAME="63"></A>    <FONT ID="Private">private</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">DicomRouterPlugin</A> nextPluginInChain = <FONT ID="Null">null</FONT>;
+<A NAME="64"></A> 
+<A NAME="65"></A>    <FONT ID="FormalComment">/** Holds value of property closed. */</FONT>
+<A NAME="66"></A>    <FONT ID="Private">private</FONT> <FONT ID="Boolean">boolean</FONT> closed = <FONT ID="False">false</FONT>;
+<A NAME="67"></A>    
+<A NAME="68"></A>    
+<A NAME="69"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Abstract methods &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="70"></A></FONT>   
+<A NAME="71"></A>    <FONT ID="FormalComment">/**
+<A NAME="72"></A>     * Inits the DicomRouterPlugin with the specified Properties.
+<A NAME="73"></A>     * @param p  Properties containing the configuration of the plugin
+<A NAME="74"></A>     */</FONT>
+<A NAME="75"></A>    <FONT ID="Public">public</FONT> <FONT ID="Abstract">abstract</FONT> <FONT ID="Void">void</FONT> init(Properties p);
+<A NAME="76"></A>   
+<A NAME="77"></A>    <FONT ID="FormalComment">/**
+<A NAME="78"></A>     * Contains the actualy processing of these DicomRouterPlugin
+<A NAME="79"></A>     * @param dataset Contains Dicom Objec
+<A NAME="80"></A>     * @return CONTINUE, if succesfull, REQUEST_ABORT_RECEIVER if the next plugin
+<A NAME="81"></A>     * in the chain should not be executed, else REQUEST_ABORT_PLUGIN_CHAIN
+<A NAME="82"></A>     */</FONT>
+<A NAME="83"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Abstract">abstract</FONT> <FONT ID="Int">int</FONT> process(Dataset dataset);
+<A NAME="84"></A>    
+<A NAME="85"></A>    <FONT ID="FormalComment">/**
+<A NAME="86"></A>     * Closes plugin
+<A NAME="87"></A>     * @throws Exception  Bei auftreten eines Fehlers
+<A NAME="88"></A>     */</FONT>
+<A NAME="89"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Abstract">abstract</FONT> <FONT ID="Void">void</FONT> close();
+<A NAME="90"></A>    
+<A NAME="91"></A>    <FONT ID="FormalComment">/**
+<A NAME="92"></A>     * Returns a String with the version id of the plugin
+<A NAME="93"></A>     * @return  the version string.
+<A NAME="94"></A>     */</FONT>
+<A NAME="95"></A>    <FONT ID="Public">public</FONT> <FONT ID="Abstract">abstract</FONT> String getVersion();    
+<A NAME="96"></A>
+<A NAME="97"></A>    
+<A NAME="98"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Static methods &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="99"></A></FONT>     
+<A NAME="100"></A>    <FONT ID="FormalComment">/**
+<A NAME="101"></A>     * Creates an instance of the plugin with the name of the plugin given as a
+<A NAME="102"></A>     * String and initializes the plugin with the given prperties.
+<A NAME="103"></A>     * Throws Exception if such plugin doesn´t exist.
+<A NAME="104"></A>     * 
+<A NAME="105"></A>     * @param pluginName the fully qualified name of the plugin as a String
+<A NAME="106"></A>     * @return Instance of {@link DicomRouterPlugin}
+<A NAME="107"></A>     */</FONT>
+<A NAME="108"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">DicomRouterPlugin</A> createByName(String pluginName) {
+<A NAME="109"></A>        Class             theClass;
+<A NAME="110"></A>        Constructor       theClassConstructor;
+<A NAME="111"></A>        Object[]          obj;
+<A NAME="112"></A>        <A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">DicomRouterPlugin</A> plugin;
+<A NAME="113"></A>        
+<A NAME="114"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="115"></A>            theClass = Class.forName(pluginName);
+<A NAME="116"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="117"></A>            log.error(<FONT ID="StringLiteral">"Can't load plugin: "</FONT> + pluginName.toString());
+<A NAME="118"></A>            
+<A NAME="119"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="120"></A>        }
+<A NAME="121"></A>        
+<A NAME="122"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="123"></A>            theClassConstructor = theClass.getConstructor(<FONT ID="New">new</FONT> Class[<FONT ID="IntegerLiteral">0</FONT>]);
+<A NAME="124"></A>        } <FONT ID="Catch">catch</FONT> (NoSuchMethodException e) {
+<A NAME="125"></A>            log.error(<FONT ID="StringLiteral">"Can't get constructor of plugin: "</FONT> + pluginName.toString());
+<A NAME="126"></A>            
+<A NAME="127"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="128"></A>        }
+<A NAME="129"></A>        
+<A NAME="130"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="131"></A>            obj = <FONT ID="New">new</FONT> Object[<FONT ID="IntegerLiteral">0</FONT>];
+<A NAME="132"></A>            plugin = (<A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">DicomRouterPlugin</A>) theClassConstructor.newInstance(obj);
+<A NAME="133"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="134"></A>            log.error(<FONT ID="StringLiteral">"Can't instantiate plugin: "</FONT> + pluginName.toString());
+<A NAME="135"></A>            
+<A NAME="136"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="137"></A>        }
+<A NAME="138"></A>        
+<A NAME="139"></A>        log.info(<FONT ID="StringLiteral">"Plugin "</FONT> + pluginName + <FONT ID="StringLiteral">" successful created"</FONT>);
+<A NAME="140"></A>        
+<A NAME="141"></A>        <FONT ID="Return">return</FONT> plugin;
+<A NAME="142"></A>    }
+<A NAME="143"></A>    
+<A NAME="144"></A>
+<A NAME="145"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Public methods &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="146"></A></FONT>    
+<A NAME="147"></A>    <FONT ID="FormalComment">/**
+<A NAME="148"></A>     * Stores the properties of the plugin inside the instance of the class.
+<A NAME="149"></A>     *@param p the properties.
+<A NAME="150"></A>     */</FONT>
+<A NAME="151"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setProperties(Properties p) {
+<A NAME="152"></A>        props= p;
+<A NAME="153"></A>    }
+<A NAME="154"></A>    
+<A NAME="155"></A>    
+<A NAME="156"></A>    <FONT ID="FormalComment">/**
+<A NAME="157"></A>     * Gets the properties of the plugin stored inside the instance of the class.
+<A NAME="158"></A>     *@return the properties.
+<A NAME="159"></A>     */</FONT>
+<A NAME="160"></A>    <FONT ID="Public">public</FONT> Properties getProperties() {
+<A NAME="161"></A>        <FONT ID="Return">return</FONT> props;
+<A NAME="162"></A>    }
+<A NAME="163"></A>    
+<A NAME="164"></A> }
+<A NAME="165"></A>
+<A NAME="166"></A>
+<A NAME="167"></A><FONT ID="MultiLineComment">/*
+<A NAME="168"></A> * Revisions:
+<A NAME="169"></A> *
+<A NAME="170"></A> * 2006.04.26, hacklaender: Rewritten.
+<A NAME="171"></A> */</FONT>
+<A NAME="172"></A>
+<A NAME="173"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DicomRouterPlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

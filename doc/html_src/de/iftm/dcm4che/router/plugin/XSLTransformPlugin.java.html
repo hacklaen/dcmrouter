@@ -1,0 +1,824 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.plugin.XSLTransformPlugin (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">XSLTransformPlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  XSLTransformPlugin.java
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Copyright (c) 2003 by
+<A NAME="5"></A> *
+<A NAME="6"></A> *  IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="7"></A> *  VISUS Technology Transfer GmbH
+<A NAME="8"></A> *
+<A NAME="9"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="10"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="11"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="12"></A> *  (at your option) any later version.
+<A NAME="13"></A> *
+<A NAME="14"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="15"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="16"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="17"></A> *  Lesser General Public License for more details.
+<A NAME="18"></A> *
+<A NAME="19"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="20"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="21"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="22"></A> *
+<A NAME="23"></A> *
+<A NAME="24"></A> *****************************************************************************/</FONT>
+<A NAME="25"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.plugin.index.html" target="packageFrame">de.iftm.dcm4che.router.plugin</A>;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.property.index.html" target="packageFrame">de.iftm.dcm4che.router.property.*</A>;
+<A NAME="28"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.util.index.html" target="packageFrame">de.iftm.dcm4che.router.util.*</A>;
+<A NAME="29"></A>
+<A NAME="30"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="31"></A>
+<A NAME="32"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="33"></A>
+<A NAME="34"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.*;
+<A NAME="35"></A>
+<A NAME="36"></A><FONT ID="Import">import</FONT> org.xml.sax.SAXException;
+<A NAME="37"></A>
+<A NAME="38"></A><FONT ID="Import">import</FONT> java.io.*;
+<A NAME="39"></A>
+<A NAME="40"></A><FONT ID="Import">import</FONT> java.net.*;
+<A NAME="41"></A>
+<A NAME="42"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="43"></A>
+<A NAME="44"></A><FONT ID="Import">import</FONT> javax.xml.parsers.*;
+<A NAME="45"></A><FONT ID="Import">import</FONT> javax.xml.transform.*;
+<A NAME="46"></A><FONT ID="Import">import</FONT> javax.xml.transform.sax.*;
+<A NAME="47"></A><FONT ID="Import">import</FONT> javax.xml.transform.stream.*;
+<A NAME="48"></A>
+<A NAME="49"></A>
+<A NAME="50"></A><FONT ID="FormalComment">/**
+<A NAME="51"></A> * This plugins transforms the given Dataset using a XSL document.
+<A NAME="52"></A> *
+<A NAME="53"></A> * @author Thomas Hacklaender
+<A NAME="54"></A> * @version 2006.04.24
+<A NAME="55"></A> */</FONT>
+<A NAME="56"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> XSLTransformPlugin <FONT ID="Extends">extends</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">DicomRouterPlugin</A> {
+<A NAME="57"></A>    <FONT ID="FormalComment">/** The version string */</FONT>
+<A NAME="58"></A>    <FONT ID="Final">final</FONT> String VERSION = <FONT ID="StringLiteral">"2006.11.10"</FONT>;
+<A NAME="59"></A>    
+<A NAME="60"></A>    <FONT ID="FormalComment">/** The logger for this plugin */</FONT>
+<A NAME="61"></A>    Logger log = Logger.getLogger(<A HREF="../../../../../de/iftm/dcm4che/router/plugin/XSLTransformPlugin.java.html">XSLTransformPlugin</A>.<FONT ID="Class">class</FONT>);
+<A NAME="62"></A>    
+<A NAME="63"></A>    <FONT ID="FormalComment">/** The properties of this plugin */</FONT>
+<A NAME="64"></A>    Properties props = <FONT ID="Null">null</FONT>;
+<A NAME="65"></A>    
+<A NAME="66"></A>    <FONT ID="SingleLineComment">// Local fields defined by properties:
+<A NAME="67"></A></FONT>    
+<A NAME="68"></A>    <FONT ID="FormalComment">/** True, if the source XML file should be saved */</FONT>
+<A NAME="69"></A>    <FONT ID="Boolean">boolean</FONT> save_source_xml = <FONT ID="False">false</FONT>;
+<A NAME="70"></A>    
+<A NAME="71"></A>    <FONT ID="FormalComment">/** Directory of the source XML file */</FONT>
+<A NAME="72"></A>    File source_xml_directory = Util.uriToFile(<FONT ID="StringLiteral">"./"</FONT>);
+<A NAME="73"></A>    
+<A NAME="74"></A>    <FONT ID="FormalComment">/** Name of the source XML file */</FONT>
+<A NAME="75"></A>    String source_xml_filename = <FONT ID="StringLiteral">"source"</FONT>;
+<A NAME="76"></A>    
+<A NAME="77"></A>    <FONT ID="FormalComment">/** Name of the source XML file */</FONT>
+<A NAME="78"></A>    String source_xml_extension = <FONT ID="StringLiteral">".xml"</FONT>;
+<A NAME="79"></A>    
+<A NAME="80"></A>    <FONT ID="FormalComment">/** Directory of the XSL file */</FONT>
+<A NAME="81"></A>    File xsl_directory = Util.uriToFile(<FONT ID="StringLiteral">"./cfg/xsl/"</FONT>);
+<A NAME="82"></A>    
+<A NAME="83"></A>    <FONT ID="FormalComment">/** Name of the XSL file */</FONT>
+<A NAME="84"></A>    String xsl_filename = <FONT ID="StringLiteral">"Identity.xsl"</FONT>;
+<A NAME="85"></A>    
+<A NAME="86"></A>    <FONT ID="FormalComment">/** True, if the XML representation of the Dataset should be transformed with the XSL file. */</FONT>
+<A NAME="87"></A>    <FONT ID="Boolean">boolean</FONT> transform = <FONT ID="True">true</FONT>;
+<A NAME="88"></A>    
+<A NAME="89"></A>    <FONT ID="FormalComment">/** True, if all data except the pixel data should be modified. */</FONT>
+<A NAME="90"></A>    <FONT ID="Boolean">boolean</FONT> untouch_pixel_data = <FONT ID="True">true</FONT>;
+<A NAME="91"></A>    
+<A NAME="92"></A>    <FONT ID="FormalComment">/** True, if the transformed XML file should be saved */</FONT>
+<A NAME="93"></A>    <FONT ID="Boolean">boolean</FONT> save_transformed_xml = <FONT ID="False">false</FONT>;
+<A NAME="94"></A>    
+<A NAME="95"></A>    <FONT ID="FormalComment">/** True, if the transformed XML file should be reconverted to a Dataset */</FONT>
+<A NAME="96"></A>    <FONT ID="Boolean">boolean</FONT> reconvert_transformed_xml = <FONT ID="True">true</FONT>;
+<A NAME="97"></A>    
+<A NAME="98"></A>    <FONT ID="FormalComment">/** Directory of the transformed XML file */</FONT>
+<A NAME="99"></A>    File transformed_xml_directory = Util.uriToFile(<FONT ID="StringLiteral">"./"</FONT>);
+<A NAME="100"></A>    
+<A NAME="101"></A>    <FONT ID="FormalComment">/** Name of the transformed XML file */</FONT>
+<A NAME="102"></A>    String transformed_xml_filename = <FONT ID="StringLiteral">"transformed"</FONT>;
+<A NAME="103"></A>    
+<A NAME="104"></A>    <FONT ID="FormalComment">/** Name of the transformed XML file */</FONT>
+<A NAME="105"></A>    String transformed_xml_extension = <FONT ID="StringLiteral">".xml"</FONT>;
+<A NAME="106"></A>    
+<A NAME="107"></A>    <FONT ID="FormalComment">/**
+<A NAME="108"></A>     * Constructor.
+<A NAME="109"></A>     */</FONT>
+<A NAME="110"></A>    <FONT ID="Public">public</FONT> XSLTransformPlugin() {
+<A NAME="111"></A>        <FONT ID="SingleLineComment">// Nichts zu tun.
+<A NAME="112"></A></FONT>    }
+<A NAME="113"></A>    
+<A NAME="114"></A>    <FONT ID="FormalComment">/**
+<A NAME="115"></A>     * Inits the TransformXSLPlugin with the specified Properties.
+<A NAME="116"></A>     * @param p  Properties containing the configuration of the plugin
+<A NAME="117"></A>     */</FONT>
+<A NAME="118"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> init(Properties p) {
+<A NAME="119"></A>        String key;
+<A NAME="120"></A>        String value;
+<A NAME="121"></A>        File newDirectory;
+<A NAME="122"></A>        
+<A NAME="123"></A>        <FONT ID="SingleLineComment">// Properties lokal speichern
+<A NAME="124"></A></FONT>        props = p;
+<A NAME="125"></A>        
+<A NAME="126"></A>        <FONT ID="SingleLineComment">// Alle Properties bearbeiten
+<A NAME="127"></A></FONT>        <FONT ID="For">for</FONT> (Enumeration en = props.propertyNames(); en.hasMoreElements();) {
+<A NAME="128"></A>            <FONT ID="SingleLineComment">// Key/Value Paar holen
+<A NAME="129"></A></FONT>            key = (String) en.nextElement();
+<A NAME="130"></A>            value = props.getProperty(key);
+<A NAME="131"></A>            
+<A NAME="132"></A>            <FONT ID="SingleLineComment">// save_source_xml
+<A NAME="133"></A></FONT>            <FONT ID="If">if</FONT> (key.equals(<FONT ID="StringLiteral">"save-source-xml"</FONT>)) {
+<A NAME="134"></A>                <FONT ID="If">if</FONT> (value.toLowerCase().charAt(<FONT ID="IntegerLiteral">0</FONT>) == <FONT ID="CharacerLiteral">'t'</FONT>) {
+<A NAME="135"></A>                    save_source_xml = <FONT ID="True">true</FONT>;
+<A NAME="136"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="137"></A>                    save_source_xml = <FONT ID="False">false</FONT>;
+<A NAME="138"></A>                }
+<A NAME="139"></A>            }
+<A NAME="140"></A>            
+<A NAME="141"></A>            <FONT ID="SingleLineComment">// source_xml_directory
+<A NAME="142"></A></FONT>            <FONT ID="If">if</FONT> (key.equals(<FONT ID="StringLiteral">"source-xml-directory"</FONT>)) {
+<A NAME="143"></A>                <FONT ID="If">if</FONT> ((newDirectory = Util.uriToFile(value)) != <FONT ID="Null">null</FONT>) {
+<A NAME="144"></A>                    source_xml_directory = newDirectory;
+<A NAME="145"></A>                }
+<A NAME="146"></A>            }
+<A NAME="147"></A>            
+<A NAME="148"></A>            <FONT ID="SingleLineComment">// source_xml_extension
+<A NAME="149"></A></FONT>            <FONT ID="If">if</FONT> (key.equals(<FONT ID="StringLiteral">"source-xml-extension"</FONT>)) {
+<A NAME="150"></A>                source_xml_extension = value;
+<A NAME="151"></A>            }
+<A NAME="152"></A>            
+<A NAME="153"></A>            <FONT ID="SingleLineComment">// untouch_pixel_data
+<A NAME="154"></A></FONT>            <FONT ID="If">if</FONT> (key.equals(<FONT ID="StringLiteral">"untouch-pixel-data"</FONT>)) {
+<A NAME="155"></A>                <FONT ID="If">if</FONT> (value.toLowerCase().charAt(<FONT ID="IntegerLiteral">0</FONT>) == <FONT ID="CharacerLiteral">'t'</FONT>) {
+<A NAME="156"></A>                    untouch_pixel_data = <FONT ID="True">true</FONT>;
+<A NAME="157"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="158"></A>                    untouch_pixel_data = <FONT ID="False">false</FONT>;
+<A NAME="159"></A>                }
+<A NAME="160"></A>            }
+<A NAME="161"></A>            
+<A NAME="162"></A>            <FONT ID="SingleLineComment">// transform
+<A NAME="163"></A></FONT>            <FONT ID="If">if</FONT> (key.equals(<FONT ID="StringLiteral">"transform"</FONT>)) {
+<A NAME="164"></A>                <FONT ID="If">if</FONT> (value.toLowerCase().charAt(<FONT ID="IntegerLiteral">0</FONT>) == <FONT ID="CharacerLiteral">'t'</FONT>) {
+<A NAME="165"></A>                    transform = <FONT ID="True">true</FONT>;
+<A NAME="166"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="167"></A>                    transform = <FONT ID="False">false</FONT>;
+<A NAME="168"></A>                }
+<A NAME="169"></A>            }
+<A NAME="170"></A>            
+<A NAME="171"></A>            <FONT ID="SingleLineComment">// xsl_directory
+<A NAME="172"></A></FONT>            <FONT ID="If">if</FONT> (key.equals(<FONT ID="StringLiteral">"xsl-directory"</FONT>)) {
+<A NAME="173"></A>                <FONT ID="If">if</FONT> ((newDirectory = Util.uriToFile(value)) != <FONT ID="Null">null</FONT>) {
+<A NAME="174"></A>                    xsl_directory = newDirectory;
+<A NAME="175"></A>                }
+<A NAME="176"></A>            }
+<A NAME="177"></A>            
+<A NAME="178"></A>            <FONT ID="SingleLineComment">// xsl_filename
+<A NAME="179"></A></FONT>            <FONT ID="If">if</FONT> (key.equals(<FONT ID="StringLiteral">"xsl-filename"</FONT>)) {
+<A NAME="180"></A>                xsl_filename = value;
+<A NAME="181"></A>            }
+<A NAME="182"></A>            
+<A NAME="183"></A>            <FONT ID="SingleLineComment">// save_transformed_xml
+<A NAME="184"></A></FONT>            <FONT ID="If">if</FONT> (key.equals(<FONT ID="StringLiteral">"save-transformed-xml"</FONT>)) {
+<A NAME="185"></A>                <FONT ID="If">if</FONT> (value.toLowerCase().charAt(<FONT ID="IntegerLiteral">0</FONT>) == <FONT ID="CharacerLiteral">'t'</FONT>) {
+<A NAME="186"></A>                    save_transformed_xml = <FONT ID="True">true</FONT>;
+<A NAME="187"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="188"></A>                    save_transformed_xml = <FONT ID="False">false</FONT>;
+<A NAME="189"></A>                }
+<A NAME="190"></A>            }
+<A NAME="191"></A>            
+<A NAME="192"></A>            <FONT ID="SingleLineComment">// reconvert_transformed_xml
+<A NAME="193"></A></FONT>            <FONT ID="If">if</FONT> (key.equals(<FONT ID="StringLiteral">"reconvert-transformed-xml"</FONT>)) {
+<A NAME="194"></A>                <FONT ID="If">if</FONT> (value.toLowerCase().charAt(<FONT ID="IntegerLiteral">0</FONT>) == <FONT ID="CharacerLiteral">'t'</FONT>) {
+<A NAME="195"></A>                    reconvert_transformed_xml = <FONT ID="True">true</FONT>;
+<A NAME="196"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="197"></A>                    reconvert_transformed_xml = <FONT ID="False">false</FONT>;
+<A NAME="198"></A>                }
+<A NAME="199"></A>            }
+<A NAME="200"></A>            
+<A NAME="201"></A>            <FONT ID="SingleLineComment">// transformed_xml_directory
+<A NAME="202"></A></FONT>            <FONT ID="If">if</FONT> (key.equals(<FONT ID="StringLiteral">"transformed-xml-directory"</FONT>)) {
+<A NAME="203"></A>                <FONT ID="If">if</FONT> ((newDirectory = Util.uriToFile(value)) != <FONT ID="Null">null</FONT>) {
+<A NAME="204"></A>                    transformed_xml_directory = newDirectory;
+<A NAME="205"></A>                }
+<A NAME="206"></A>            }
+<A NAME="207"></A>            
+<A NAME="208"></A>            <FONT ID="SingleLineComment">// transformed_xml_extension
+<A NAME="209"></A></FONT>            <FONT ID="If">if</FONT> (key.equals(<FONT ID="StringLiteral">"transformed-xml-extension"</FONT>)) {
+<A NAME="210"></A>                transformed_xml_extension = value;
+<A NAME="211"></A>            }
+<A NAME="212"></A>        }
+<A NAME="213"></A>    }
+<A NAME="214"></A>    
+<A NAME="215"></A>    <FONT ID="FormalComment">/**
+<A NAME="216"></A>     * Sets dynamic properties, which depend on the actual Dataset to process.
+<A NAME="217"></A>     * @param ds  The Dataset to process.
+<A NAME="218"></A>     * @return True, if dynamic property could be set.
+<A NAME="219"></A>     */</FONT>
+<A NAME="220"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Boolean">boolean</FONT> setDynamicProperties(Dataset ds) {
+<A NAME="221"></A>        DcmElement element;
+<A NAME="222"></A>        <FONT ID="Int">int</FONT> tag;
+<A NAME="223"></A>        String tagName;
+<A NAME="224"></A>        String key;
+<A NAME="225"></A>        String value;
+<A NAME="226"></A>        
+<A NAME="227"></A>        <FONT ID="SingleLineComment">// Nur dann weitermachen, wenn ein Datset vorhanden ist
+<A NAME="228"></A></FONT>        <FONT ID="If">if</FONT> (ds == <FONT ID="Null">null</FONT>) {
+<A NAME="229"></A>            log.warn(<FONT ID="StringLiteral">"No Dataset given."</FONT>);
+<A NAME="230"></A>            
+<A NAME="231"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="232"></A>        }
+<A NAME="233"></A>        
+<A NAME="234"></A>        <FONT ID="SingleLineComment">// Alle Properties bearbeiten
+<A NAME="235"></A></FONT>        <FONT ID="For">for</FONT> (Enumeration en = props.propertyNames(); en.hasMoreElements();) {
+<A NAME="236"></A>            <FONT ID="SingleLineComment">// Key/Value Paar holen
+<A NAME="237"></A></FONT>            key = (String) en.nextElement();
+<A NAME="238"></A>            value = props.getProperty(key);
+<A NAME="239"></A>            
+<A NAME="240"></A>            <FONT ID="SingleLineComment">// Source Filename
+<A NAME="241"></A></FONT>            <FONT ID="If">if</FONT> (key.equals(<FONT ID="StringLiteral">"source-xml-filename"</FONT>)) {
+<A NAME="242"></A>                source_xml_filename = Util.getTagStringOrValue(value, ds);
+<A NAME="243"></A>                <FONT ID="If">if</FONT> (source_xml_filename == <FONT ID="Null">null</FONT>) {
+<A NAME="244"></A>                    log.error(<FONT ID="StringLiteral">"Unknown tag in property: "</FONT> + value);
+<A NAME="245"></A>                    <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="246"></A>                }
+<A NAME="247"></A>            }
+<A NAME="248"></A>            
+<A NAME="249"></A>            <FONT ID="SingleLineComment">// Transformed Filename
+<A NAME="250"></A></FONT>            <FONT ID="If">if</FONT> (key.equals(<FONT ID="StringLiteral">"transformed-xml-filename"</FONT>)) {
+<A NAME="251"></A>                transformed_xml_filename = Util.getTagStringOrValue(value, ds);
+<A NAME="252"></A>                <FONT ID="If">if</FONT> (transformed_xml_filename == <FONT ID="Null">null</FONT>) {
+<A NAME="253"></A>                    log.error(<FONT ID="StringLiteral">"Unknown tag in property: "</FONT> + value);
+<A NAME="254"></A>                    <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="255"></A>                }
+<A NAME="256"></A>            }
+<A NAME="257"></A>        }
+<A NAME="258"></A>        
+<A NAME="259"></A>        <FONT ID="SingleLineComment">// Kein schwerwiegender Fehler aufgetreten
+<A NAME="260"></A></FONT>        <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="261"></A>    }
+<A NAME="262"></A>    
+<A NAME="263"></A>    <FONT ID="FormalComment">/**
+<A NAME="264"></A>     * Returns a version string.
+<A NAME="265"></A>     *
+<A NAME="266"></A>     * @return The version string
+<A NAME="267"></A>     */</FONT>
+<A NAME="268"></A>    <FONT ID="Public">public</FONT> String getVersion() {
+<A NAME="269"></A>        <FONT ID="Return">return</FONT> VERSION;
+<A NAME="270"></A>    }
+<A NAME="271"></A>
+<A NAME="272"></A>    
+<A NAME="273"></A>    <FONT ID="FormalComment">/**
+<A NAME="274"></A>     * Closes the Plugin.
+<A NAME="275"></A>     */</FONT>
+<A NAME="276"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> close() {
+<A NAME="277"></A>        <FONT ID="SingleLineComment">// Nichts zu tun.
+<A NAME="278"></A></FONT>    }
+<A NAME="279"></A>    
+<A NAME="280"></A>    <FONT ID="FormalComment">/**
+<A NAME="281"></A>     * Contains the proccesing of this plugin. This implementation handels all
+<A NAME="282"></A>     * exeptions inside the method and sends logging information about the exeption.
+<A NAME="283"></A>     * 
+<A NAME="284"></A>     * 
+<A NAME="285"></A>     * 
+<A NAME="286"></A>     * @param dataset The Dataset to process.
+<A NAME="287"></A>     * @return If succesfull CONTINUE, REQUEST_ABORT_RECEIVER otherwise
+<A NAME="288"></A>     */</FONT>
+<A NAME="289"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> process(Dataset dataset) {
+<A NAME="290"></A>        File sourceXmlFile = <FONT ID="Null">null</FONT>;
+<A NAME="291"></A>        ByteArrayInputStream sourceXmlIS = <FONT ID="Null">null</FONT>;
+<A NAME="292"></A>        ByteArrayOutputStream sourceXmlOS = <FONT ID="Null">null</FONT>;
+<A NAME="293"></A>        FileOutputStream sourceXmlFOS = <FONT ID="Null">null</FONT>;
+<A NAME="294"></A>        File transformedXmlFile = <FONT ID="Null">null</FONT>;
+<A NAME="295"></A>        ByteArrayInputStream transformedXmlIS = <FONT ID="Null">null</FONT>;
+<A NAME="296"></A>        ByteArrayOutputStream transformedXmlOS = <FONT ID="Null">null</FONT>;
+<A NAME="297"></A>        FileOutputStream transformedXmlFOS = <FONT ID="Null">null</FONT>;
+<A NAME="298"></A>        Dataset sourceDS = <FONT ID="Null">null</FONT>;
+<A NAME="299"></A>        Dataset transformedDS = <FONT ID="Null">null</FONT>;
+<A NAME="300"></A>        DcmElement pixelData = <FONT ID="Null">null</FONT>;
+<A NAME="301"></A>        
+<A NAME="302"></A>        <FONT ID="SingleLineComment">// Nur dann weitermachen, wenn ein Datset vorhanden ist
+<A NAME="303"></A></FONT>        <FONT ID="If">if</FONT> (dataset == <FONT ID="Null">null</FONT>) {
+<A NAME="304"></A>            log.warn(<FONT ID="StringLiteral">"No Dataset given."</FONT>);
+<A NAME="305"></A>            
+<A NAME="306"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="307"></A>        }
+<A NAME="308"></A>        
+<A NAME="309"></A>        <FONT ID="SingleLineComment">// Dynamische Properties setzen
+<A NAME="310"></A></FONT>        <FONT ID="If">if</FONT> (!setDynamicProperties(dataset)) {
+<A NAME="311"></A>            log.error(<FONT ID="StringLiteral">"Dataset not processed."</FONT>);
+<A NAME="312"></A>            
+<A NAME="313"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="314"></A>        }
+<A NAME="315"></A>        
+<A NAME="316"></A>        <FONT ID="SingleLineComment">// Zunaechst eine Kopie des Datset anlegen
+<A NAME="317"></A></FONT>        sourceDS = DcmObjectFactory.getInstance().newDataset();
+<A NAME="318"></A>        sourceDS.putAll(dataset);
+<A NAME="319"></A>        
+<A NAME="320"></A>        <FONT ID="SingleLineComment">// Elemente und zugehoerige Gruppenlaengenelemente von solchen Elementen
+<A NAME="321"></A></FONT>        <FONT ID="SingleLineComment">// loeschen, die nur zur Struktiur des gespeicherten Dataset dienen
+<A NAME="322"></A></FONT>        sourceDS.remove(Tags.DataSetTrailingPadding);
+<A NAME="323"></A>        sourceDS.remove(Tags.DataSetTrailingPadding &amp; <FONT ID="IntegerLiteral">0xFFFF0000</FONT>);
+<A NAME="324"></A>        
+<A NAME="325"></A>        sourceDS.remove(Tags.Item);
+<A NAME="326"></A>        sourceDS.remove(Tags.Item &amp; <FONT ID="IntegerLiteral">0xFFFF0000</FONT>);
+<A NAME="327"></A>        sourceDS.remove(Tags.ItemDelimitationItem);
+<A NAME="328"></A>        sourceDS.remove(Tags.SeqDelimitationItem);
+<A NAME="329"></A>        
+<A NAME="330"></A>        <FONT ID="SingleLineComment">// Ggf. Pixeldaten nicht bearbeiten. Pixeldaten sichern
+<A NAME="331"></A></FONT>        <FONT ID="If">if</FONT> (untouch_pixel_data) {
+<A NAME="332"></A>            pixelData = sourceDS.get(Tags.PixelData);
+<A NAME="333"></A>            sourceDS.remove(Tags.PixelData);
+<A NAME="334"></A>        }
+<A NAME="335"></A>        
+<A NAME="336"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="337"></A>            <FONT ID="SingleLineComment">// Dataset in XML konvertieren
+<A NAME="338"></A></FONT>            sourceXmlOS = datasetToXML(sourceDS);
+<A NAME="339"></A>            
+<A NAME="340"></A>            <FONT ID="SingleLineComment">// Bei Fehler Abbruch
+<A NAME="341"></A></FONT>            <FONT ID="If">if</FONT> (sourceXmlOS == <FONT ID="Null">null</FONT>) {
+<A NAME="342"></A>                <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="343"></A>            }
+<A NAME="344"></A>            
+<A NAME="345"></A>            <FONT ID="SingleLineComment">// Die XML Darstellung des unbearbeiteten Dataset als File abspeichern.
+<A NAME="346"></A></FONT>            <FONT ID="If">if</FONT> (save_source_xml) {
+<A NAME="347"></A>                <FONT ID="Try">try</FONT> {
+<A NAME="348"></A>                    <FONT ID="SingleLineComment">// File erzeugen
+<A NAME="349"></A></FONT>                    sourceXmlFile = <FONT ID="New">new</FONT> File(source_xml_directory,
+<A NAME="350"></A>                            source_xml_filename + source_xml_extension);
+<A NAME="351"></A>                    
+<A NAME="352"></A>                    <FONT ID="SingleLineComment">// FileOutputStream erzeugen
+<A NAME="353"></A></FONT>                    sourceXmlFOS = <FONT ID="New">new</FONT> FileOutputStream(sourceXmlFile);
+<A NAME="354"></A>                    
+<A NAME="355"></A>                    <FONT ID="SingleLineComment">// XML file schreiben
+<A NAME="356"></A></FONT>                    sourceXmlFOS.write(sourceXmlOS.toByteArray());
+<A NAME="357"></A>                    
+<A NAME="358"></A>                    <FONT ID="SingleLineComment">// Info-Meldung
+<A NAME="359"></A></FONT>                    <FONT ID="If">if</FONT> (log.isInfoEnabled()) {
+<A NAME="360"></A>                        log.info(<FONT ID="StringLiteral">"Source XML saved as file: "</FONT> + sourceXmlFile);
+<A NAME="361"></A>                    }
+<A NAME="362"></A>                } <FONT ID="Catch">catch</FONT> (IOException ioEx) {
+<A NAME="363"></A>                    log.error(<FONT ID="StringLiteral">"Can't write to source_xml_file : "</FONT> +
+<A NAME="364"></A>                            ioEx.getMessage());
+<A NAME="365"></A>                    
+<A NAME="366"></A>                    <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="367"></A>                }
+<A NAME="368"></A>            }
+<A NAME="369"></A>            
+<A NAME="370"></A>            <FONT ID="SingleLineComment">// Falls keine Transformation gewuenscht wird beenden.
+<A NAME="371"></A></FONT>            <FONT ID="If">if</FONT> (!transform) {
+<A NAME="372"></A>                <FONT ID="SingleLineComment">// Ohne Fehler beendet, Dataset  n i c h t  ersetzt
+<A NAME="373"></A></FONT>                <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="374"></A>            }
+<A NAME="375"></A>            
+<A NAME="376"></A>            <FONT ID="SingleLineComment">// XML Output Stream in einen Input Stream konvertieren
+<A NAME="377"></A></FONT>            sourceXmlIS = <FONT ID="New">new</FONT> ByteArrayInputStream(sourceXmlOS.toByteArray());
+<A NAME="378"></A>            
+<A NAME="379"></A>            <FONT ID="SingleLineComment">// XML mit XSL transformieren
+<A NAME="380"></A></FONT>            transformedXmlOS = transformXML(sourceXmlIS);
+<A NAME="381"></A>            
+<A NAME="382"></A>            <FONT ID="SingleLineComment">// Bei Fehler Abbruch
+<A NAME="383"></A></FONT>            <FONT ID="If">if</FONT> (transformedXmlOS == <FONT ID="Null">null</FONT>) {
+<A NAME="384"></A>                <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="385"></A>            }
+<A NAME="386"></A>            
+<A NAME="387"></A>            <FONT ID="SingleLineComment">// Die XML Darstellung der transformierten XML Darstellung als File abspeichern.
+<A NAME="388"></A></FONT>            <FONT ID="If">if</FONT> (save_transformed_xml) {
+<A NAME="389"></A>                <FONT ID="Try">try</FONT> {
+<A NAME="390"></A>                    <FONT ID="SingleLineComment">// File erzeugen
+<A NAME="391"></A></FONT>                    transformedXmlFile = <FONT ID="New">new</FONT> File(transformed_xml_directory,
+<A NAME="392"></A>                            transformed_xml_filename + transformed_xml_extension);
+<A NAME="393"></A>                    
+<A NAME="394"></A>                    <FONT ID="SingleLineComment">// FileOutputStream erzeugen
+<A NAME="395"></A></FONT>                    transformedXmlFOS = <FONT ID="New">new</FONT> FileOutputStream(transformedXmlFile);
+<A NAME="396"></A>                    
+<A NAME="397"></A>                    <FONT ID="SingleLineComment">// XML file schreiben
+<A NAME="398"></A></FONT>                    transformedXmlFOS.write(transformedXmlOS.toByteArray());
+<A NAME="399"></A>                    
+<A NAME="400"></A>                    <FONT ID="SingleLineComment">// Info-Meldung
+<A NAME="401"></A></FONT>                    <FONT ID="If">if</FONT> (log.isInfoEnabled()) {
+<A NAME="402"></A>                        log.info(<FONT ID="StringLiteral">"Transformed XML saved as file: "</FONT> +
+<A NAME="403"></A>                                transformedXmlFile);
+<A NAME="404"></A>                    }
+<A NAME="405"></A>                } <FONT ID="Catch">catch</FONT> (IOException ioEx) {
+<A NAME="406"></A>                    log.error(<FONT ID="StringLiteral">"Can't write to transformed_xml_file : "</FONT> +
+<A NAME="407"></A>                            ioEx.getMessage());
+<A NAME="408"></A>                    
+<A NAME="409"></A>                    <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="410"></A>                }
+<A NAME="411"></A>            }
+<A NAME="412"></A>            
+<A NAME="413"></A>            <FONT ID="SingleLineComment">//
+<A NAME="414"></A></FONT>            <FONT ID="If">if</FONT> (reconvert_transformed_xml) {
+<A NAME="415"></A>                <FONT ID="SingleLineComment">// XML Output Stream in einen Input Stream konvertieren
+<A NAME="416"></A></FONT>                transformedXmlIS = <FONT ID="New">new</FONT> ByteArrayInputStream(transformedXmlOS.toByteArray());
+<A NAME="417"></A>                
+<A NAME="418"></A>                <FONT ID="SingleLineComment">// XML in Dataset transformieren
+<A NAME="419"></A></FONT>                transformedDS = xmlToDataset(transformedXmlIS);
+<A NAME="420"></A>                
+<A NAME="421"></A>                <FONT ID="If">if</FONT> (transformedDS != <FONT ID="Null">null</FONT>) {
+<A NAME="422"></A>                    
+<A NAME="423"></A>                    <FONT ID="SingleLineComment">// Source Dataset mit neuem Inhalt fuellen
+<A NAME="424"></A></FONT>                    dataset.clear();
+<A NAME="425"></A>                    dataset.putAll(transformedDS);
+<A NAME="426"></A>                    
+<A NAME="427"></A>                    <FONT ID="SingleLineComment">// Falls die Pixeldaten nicht bearbeitet wurden, diese hinzufuegen
+<A NAME="428"></A></FONT>                    <FONT ID="If">if</FONT> (pixelData != <FONT ID="Null">null</FONT>) {
+<A NAME="429"></A>                        dataset.putXX(pixelData.tag(), pixelData.vr(), pixelData.getByteBuffer());
+<A NAME="430"></A>                    }
+<A NAME="431"></A>                    
+<A NAME="432"></A>                    <FONT ID="SingleLineComment">// Info-Meldung
+<A NAME="433"></A></FONT>                    <FONT ID="If">if</FONT> (log.isInfoEnabled()) {
+<A NAME="434"></A>                        log.info(<FONT ID="StringLiteral">"Transformed XML reconverted to dataset."</FONT>);
+<A NAME="435"></A>                    }
+<A NAME="436"></A>                    
+<A NAME="437"></A>                    <FONT ID="SingleLineComment">// Ohne Fehler beendet, Dataset ersetzt
+<A NAME="438"></A></FONT>                    <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="439"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="440"></A>                    <FONT ID="SingleLineComment">// Konvertierungsfehler, Dataset  n i c h t  ersetzt
+<A NAME="441"></A></FONT>                    <FONT ID="SingleLineComment">// Fehlerlog wird in xmlToDataset erzeugt
+<A NAME="442"></A></FONT>                    
+<A NAME="443"></A>                    <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="444"></A>                }
+<A NAME="445"></A>            }
+<A NAME="446"></A>            
+<A NAME="447"></A>            <FONT ID="SingleLineComment">// Ohne Fehler beendet, Dataset  n i c h t  ersetzt
+<A NAME="448"></A></FONT>            <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="449"></A>        } <FONT ID="Finally">finally</FONT> {
+<A NAME="450"></A>            <FONT ID="SingleLineComment">// Alle Streams schliessen
+<A NAME="451"></A></FONT>            <FONT ID="Try">try</FONT> {
+<A NAME="452"></A>                <FONT ID="If">if</FONT> (sourceXmlIS != <FONT ID="Null">null</FONT>) {
+<A NAME="453"></A>                    sourceXmlIS.close();
+<A NAME="454"></A>                }
+<A NAME="455"></A>            } <FONT ID="Catch">catch</FONT> (IOException ignore) {
+<A NAME="456"></A>            }
+<A NAME="457"></A>            
+<A NAME="458"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="459"></A>                <FONT ID="If">if</FONT> (sourceXmlOS != <FONT ID="Null">null</FONT>) {
+<A NAME="460"></A>                    sourceXmlOS.close();
+<A NAME="461"></A>                }
+<A NAME="462"></A>            } <FONT ID="Catch">catch</FONT> (IOException ignore) {
+<A NAME="463"></A>            }
+<A NAME="464"></A>            
+<A NAME="465"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="466"></A>                <FONT ID="If">if</FONT> (sourceXmlFOS != <FONT ID="Null">null</FONT>) {
+<A NAME="467"></A>                    sourceXmlFOS.close();
+<A NAME="468"></A>                }
+<A NAME="469"></A>            } <FONT ID="Catch">catch</FONT> (IOException ignore) {
+<A NAME="470"></A>            }
+<A NAME="471"></A>            
+<A NAME="472"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="473"></A>                <FONT ID="If">if</FONT> (transformedXmlIS != <FONT ID="Null">null</FONT>) {
+<A NAME="474"></A>                    transformedXmlIS.close();
+<A NAME="475"></A>                }
+<A NAME="476"></A>            } <FONT ID="Catch">catch</FONT> (IOException ignore) {
+<A NAME="477"></A>            }
+<A NAME="478"></A>            
+<A NAME="479"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="480"></A>                <FONT ID="If">if</FONT> (transformedXmlOS != <FONT ID="Null">null</FONT>) {
+<A NAME="481"></A>                    transformedXmlOS.close();
+<A NAME="482"></A>                }
+<A NAME="483"></A>            } <FONT ID="Catch">catch</FONT> (IOException ignore) {
+<A NAME="484"></A>            }
+<A NAME="485"></A>            
+<A NAME="486"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="487"></A>                <FONT ID="If">if</FONT> (transformedXmlFOS != <FONT ID="Null">null</FONT>) {
+<A NAME="488"></A>                    transformedXmlFOS.close();
+<A NAME="489"></A>                }
+<A NAME="490"></A>            } <FONT ID="Catch">catch</FONT> (IOException ignore) {
+<A NAME="491"></A>            }
+<A NAME="492"></A>        }
+<A NAME="493"></A>    }
+<A NAME="494"></A>    
+<A NAME="495"></A>    <FONT ID="FormalComment">/**
+<A NAME="496"></A>     * Transforms a given Dataset to a XML byte stream.
+<A NAME="497"></A>     *
+<A NAME="498"></A>     * @param ds The Dataset to convert.
+<A NAME="499"></A>     *
+<A NAME="500"></A>     * @return The XML byte stream. null, if an error occured.
+<A NAME="501"></A>     */</FONT>
+<A NAME="502"></A>    <FONT ID="Protected">protected</FONT> ByteArrayOutputStream datasetToXML(Dataset ds) {
+<A NAME="503"></A>        ByteArrayOutputStream dicomByteArrayOS = <FONT ID="Null">null</FONT>;
+<A NAME="504"></A>        ByteArrayInputStream dicomByteArrayIS = <FONT ID="Null">null</FONT>;
+<A NAME="505"></A>        ByteArrayOutputStream sourceXmlOS = <FONT ID="Null">null</FONT>;
+<A NAME="506"></A>        DcmEncodeParam param = <FONT ID="Null">null</FONT>;
+<A NAME="507"></A>        DcmParser    parser;
+<A NAME="508"></A>        TagDictionary     dict;
+<A NAME="509"></A>        
+<A NAME="510"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="511"></A>            <FONT ID="SingleLineComment">// Encode Parameter fuer das Dataset entsprechend der
+<A NAME="512"></A></FONT>            <FONT ID="SingleLineComment">// ImplicitVRLittleEndian Transfersyntax
+<A NAME="513"></A></FONT>            param = DcmEncodeParam.valueOf(UIDs.ImplicitVRLittleEndian);
+<A NAME="514"></A>            
+<A NAME="515"></A>            <FONT ID="SingleLineComment">// Datset als ByteArray in einen Input und Output Stream schreiben
+<A NAME="516"></A></FONT>            dicomByteArrayOS = <FONT ID="New">new</FONT> ByteArrayOutputStream();
+<A NAME="517"></A>            ds.writeDataset(dicomByteArrayOS, param);
+<A NAME="518"></A>            dicomByteArrayIS = <FONT ID="New">new</FONT> ByteArrayInputStream(dicomByteArrayOS.toByteArray());
+<A NAME="519"></A>            
+<A NAME="520"></A>            <FONT ID="SingleLineComment">// Eine konkrete Instance eines DcmParser generieren
+<A NAME="521"></A></FONT>            parser = DcmParserFactory.getInstance().newDcmParser(dicomByteArrayIS);
+<A NAME="522"></A>            
+<A NAME="523"></A>            <FONT ID="SingleLineComment">// Den Output Stream fuer das unbearbeitete XML Dokument erzeugen
+<A NAME="524"></A></FONT>            sourceXmlOS = <FONT ID="New">new</FONT> ByteArrayOutputStream();
+<A NAME="525"></A>            
+<A NAME="526"></A>            <FONT ID="SingleLineComment">// Das Default Dictionary fuer Tags verwenden
+<A NAME="527"></A></FONT>            dict = DictionaryFactory.getInstance().getDefaultTagDictionary();
+<A NAME="528"></A>            
+<A NAME="529"></A>            <FONT ID="SingleLineComment">// Der DcmParser leitet aus dem SAX-ContentHandler einen DcmHandlerAdapter
+<A NAME="530"></A></FONT>            <FONT ID="SingleLineComment">// ab. Dieser hat den Aufbau eines ContentHandlers. Die Methoden werden
+<A NAME="531"></A></FONT>            <FONT ID="SingleLineComment">// aber nicht von einem SAX-Parser aufgerufen, sondern von der Methode
+<A NAME="532"></A></FONT>            <FONT ID="SingleLineComment">// DcmParser.doParse(). Damit verhaelt sich der DcmParser im XML-Umfeld
+<A NAME="533"></A></FONT>            <FONT ID="SingleLineComment">// wie ein Parser, der ein XML-Dokument parst.
+<A NAME="534"></A></FONT>            <FONT ID="SingleLineComment">// getTransformerHandler(out) liefert den eigentlichen ContentHandler
+<A NAME="535"></A></FONT>            <FONT ID="SingleLineComment">// dict gibt das zu verwendende Dictionary vor
+<A NAME="536"></A></FONT>            <FONT ID="SingleLineComment">// excludeTags null keine Tags ausschliessen
+<A NAME="537"></A></FONT>            <FONT ID="SingleLineComment">// basedir null keine Tags zwischenspeichern
+<A NAME="538"></A></FONT>            
+<A NAME="539"></A>            <FONT ID="SingleLineComment">// In dcm4che 1.3.22 API change:
+<A NAME="540"></A></FONT>            <FONT ID="SingleLineComment">// DcmParser::setSAXHandler2 has additional parameter int excludeValueLengthLimit
+<A NAME="541"></A></FONT>            <FONT ID="SingleLineComment">//   - Exclude values which length exceeds the specified limit from XML output.
+<A NAME="542"></A></FONT>            <FONT ID="SingleLineComment">// We do not exclude values, therefore excludeValueLengthLimit = Integer.MAX_VALUE
+<A NAME="543"></A></FONT>            <FONT ID="SingleLineComment">// for example usage see sample Dcm2Xml.
+<A NAME="544"></A></FONT>            <FONT ID="SingleLineComment">// parser.setSAXHandler2(getTransformerHandler(sourceXmlOS), dict, null, null);
+<A NAME="545"></A></FONT>            parser.setSAXHandler2(getTransformerHandler(sourceXmlOS), dict, <FONT ID="Null">null</FONT>, Integer.MAX_VALUE, <FONT ID="Null">null</FONT>);
+<A NAME="546"></A>            
+<A NAME="547"></A>            <FONT ID="SingleLineComment">// Alle Elemente bearbeiten
+<A NAME="548"></A></FONT>            <FONT ID="Int">int</FONT> stop = -<FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="549"></A>            
+<A NAME="550"></A>            parser.parseDataset(param, stop);
+<A NAME="551"></A>            
+<A NAME="552"></A>        } <FONT ID="Catch">catch</FONT> (TransformerConfigurationException transConfigEx) {
+<A NAME="553"></A>            log.error(<FONT ID="StringLiteral">"Error configuring the parser: "</FONT> +
+<A NAME="554"></A>                    transConfigEx.getMessage());
+<A NAME="555"></A>            
+<A NAME="556"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="557"></A>        } <FONT ID="Catch">catch</FONT> (TransformerException transEx) {
+<A NAME="558"></A>            log.error(<FONT ID="StringLiteral">"Parsing error: "</FONT> + transEx.getMessage());
+<A NAME="559"></A>            
+<A NAME="560"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="561"></A>        } <FONT ID="Catch">catch</FONT> (FileNotFoundException fnfEx) {
+<A NAME="562"></A>            log.error(<FONT ID="StringLiteral">"File not found error: "</FONT> + fnfEx.getMessage());
+<A NAME="563"></A>            
+<A NAME="564"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="565"></A>        } <FONT ID="Catch">catch</FONT> (IOException ioEx) {
+<A NAME="566"></A>            log.error(<FONT ID="StringLiteral">"IO Exception: "</FONT> + ioEx.getMessage());
+<A NAME="567"></A>            
+<A NAME="568"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="569"></A>        } <FONT ID="Finally">finally</FONT> {
+<A NAME="570"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="571"></A>                <FONT ID="If">if</FONT> (sourceXmlOS != <FONT ID="Null">null</FONT>) {
+<A NAME="572"></A>                    sourceXmlOS.close();
+<A NAME="573"></A>                }
+<A NAME="574"></A>            } <FONT ID="Catch">catch</FONT> (IOException ignore) {
+<A NAME="575"></A>            }
+<A NAME="576"></A>            
+<A NAME="577"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="578"></A>                <FONT ID="If">if</FONT> (dicomByteArrayIS != <FONT ID="Null">null</FONT>) {
+<A NAME="579"></A>                    dicomByteArrayIS.close();
+<A NAME="580"></A>                }
+<A NAME="581"></A>            } <FONT ID="Catch">catch</FONT> (IOException ignore) {
+<A NAME="582"></A>            }
+<A NAME="583"></A>            
+<A NAME="584"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="585"></A>                <FONT ID="If">if</FONT> (dicomByteArrayOS != <FONT ID="Null">null</FONT>) {
+<A NAME="586"></A>                    dicomByteArrayOS.close();
+<A NAME="587"></A>                }
+<A NAME="588"></A>            } <FONT ID="Catch">catch</FONT> (IOException ignore) {
+<A NAME="589"></A>            }
+<A NAME="590"></A>        }
+<A NAME="591"></A>        
+<A NAME="592"></A>        <FONT ID="SingleLineComment">// Ohne Fehler beendet
+<A NAME="593"></A></FONT>        <FONT ID="Return">return</FONT> sourceXmlOS;
+<A NAME="594"></A>    }
+<A NAME="595"></A>    
+<A NAME="596"></A>    <FONT ID="FormalComment">/**
+<A NAME="597"></A>     * Transforms a given XML document using a XSL file.
+<A NAME="598"></A>     *
+<A NAME="599"></A>     * @param sourceXmlIS The byte stream of the XML document to transform.
+<A NAME="600"></A>     *
+<A NAME="601"></A>     * @return The transformed XML byte stream. null, if an error occured.
+<A NAME="602"></A>     */</FONT>
+<A NAME="603"></A>    <FONT ID="Protected">protected</FONT> ByteArrayOutputStream transformXML(
+<A NAME="604"></A>            ByteArrayInputStream sourceXmlIS) {
+<A NAME="605"></A>        File xslFile = <FONT ID="Null">null</FONT>;
+<A NAME="606"></A>        Source xslSource = <FONT ID="Null">null</FONT>;
+<A NAME="607"></A>        Source xmlSource = <FONT ID="Null">null</FONT>;
+<A NAME="608"></A>        Result xmlTransformed = <FONT ID="Null">null</FONT>;
+<A NAME="609"></A>        ByteArrayOutputStream transformedXmlOS = <FONT ID="Null">null</FONT>;
+<A NAME="610"></A>        Transformer transformer;
+<A NAME="611"></A>        
+<A NAME="612"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="613"></A>            <FONT ID="SingleLineComment">// XSL File als Source definieren
+<A NAME="614"></A></FONT>            xslFile = <FONT ID="New">new</FONT> File(xsl_directory, xsl_filename);
+<A NAME="615"></A>            xslSource = <FONT ID="New">new</FONT> StreamSource(xslFile);
+<A NAME="616"></A>            
+<A NAME="617"></A>            <FONT ID="SingleLineComment">// Transformer festlegen
+<A NAME="618"></A></FONT>            transformer = TransformerFactory.newInstance().newTransformer(xslSource);
+<A NAME="619"></A>            
+<A NAME="620"></A>            <FONT ID="SingleLineComment">// Source definieren
+<A NAME="621"></A></FONT>            xmlSource = <FONT ID="New">new</FONT> StreamSource(sourceXmlIS);
+<A NAME="622"></A>            
+<A NAME="623"></A>            <FONT ID="SingleLineComment">// Result definieren
+<A NAME="624"></A></FONT>            transformedXmlOS = <FONT ID="New">new</FONT> ByteArrayOutputStream();
+<A NAME="625"></A>            xmlTransformed = <FONT ID="New">new</FONT> StreamResult(transformedXmlOS);
+<A NAME="626"></A>            
+<A NAME="627"></A>            <FONT ID="SingleLineComment">// Set an output property that will be in effect for the transformation:
+<A NAME="628"></A></FONT>            <FONT ID="SingleLineComment">// indent specifies whether the Transformer may add additional whitespace
+<A NAME="629"></A></FONT>            <FONT ID="SingleLineComment">// when outputting the result tree; the value must be yes or no.
+<A NAME="630"></A></FONT>            <FONT ID="SingleLineComment">// transformer.setOutputProperty(OutputKeys.INDENT,"yes");
+<A NAME="631"></A></FONT>            <FONT ID="SingleLineComment">// The method attribute identifies the overall method that should be used
+<A NAME="632"></A></FONT>            <FONT ID="SingleLineComment">// for outputting the result tree; the value must be "xml" or "html" or
+<A NAME="633"></A></FONT>            <FONT ID="SingleLineComment">// "text" or expanded name.
+<A NAME="634"></A></FONT>            <FONT ID="SingleLineComment">// transformer.setOutputProperty(OutputKeys.METHOD,"xml");
+<A NAME="635"></A></FONT>            <FONT ID="SingleLineComment">// Mit XSLT transformieren
+<A NAME="636"></A></FONT>            transformer.transform(xmlSource, xmlTransformed);
+<A NAME="637"></A>            
+<A NAME="638"></A>            <FONT ID="SingleLineComment">// Info-Meldung
+<A NAME="639"></A></FONT>            <FONT ID="If">if</FONT> (log.isInfoEnabled()) {
+<A NAME="640"></A>                log.info(<FONT ID="StringLiteral">"Source XML successful transformed with XSL file: "</FONT> +
+<A NAME="641"></A>                        xslFile);
+<A NAME="642"></A>            }
+<A NAME="643"></A>        } <FONT ID="Catch">catch</FONT> (TransformerConfigurationException tcEx) {
+<A NAME="644"></A>            log.error(<FONT ID="StringLiteral">"Can't find XSL file: "</FONT> + tcEx.getMessage());
+<A NAME="645"></A>            
+<A NAME="646"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="647"></A>        } <FONT ID="Catch">catch</FONT> (TransformerException transEx) {
+<A NAME="648"></A>            log.error(<FONT ID="StringLiteral">"XSL transformation error: "</FONT> + transEx.getMessage());
+<A NAME="649"></A>            
+<A NAME="650"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="651"></A>        } <FONT ID="Finally">finally</FONT> {
+<A NAME="652"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="653"></A>                <FONT ID="If">if</FONT> (transformedXmlOS != <FONT ID="Null">null</FONT>) {
+<A NAME="654"></A>                    transformedXmlOS.close();
+<A NAME="655"></A>                }
+<A NAME="656"></A>            } <FONT ID="Catch">catch</FONT> (IOException ignore) {
+<A NAME="657"></A>            }
+<A NAME="658"></A>        }
+<A NAME="659"></A>        
+<A NAME="660"></A>        <FONT ID="SingleLineComment">// Ohne Fehler beendet
+<A NAME="661"></A></FONT>        <FONT ID="Return">return</FONT> transformedXmlOS;
+<A NAME="662"></A>    }
+<A NAME="663"></A>    
+<A NAME="664"></A>    <FONT ID="FormalComment">/**
+<A NAME="665"></A>     * Converts a XML Stream to a Dataset.
+<A NAME="666"></A>     *
+<A NAME="667"></A>     * @param xmlIS The XML Stream to convert.
+<A NAME="668"></A>     *
+<A NAME="669"></A>     * @return The Dataset. null, if an error occured.
+<A NAME="670"></A>     */</FONT>
+<A NAME="671"></A>    <FONT ID="Protected">protected</FONT> Dataset xmlToDataset(ByteArrayInputStream xmlIS) {
+<A NAME="672"></A>        SAXParser p = <FONT ID="Null">null</FONT>;
+<A NAME="673"></A>        Dataset ds;
+<A NAME="674"></A>        
+<A NAME="675"></A>        <FONT ID="SingleLineComment">// Leeres Dataset erzeugen
+<A NAME="676"></A></FONT>        ds = DcmObjectFactory.getInstance().newDataset();
+<A NAME="677"></A>        
+<A NAME="678"></A>        <FONT ID="SingleLineComment">// Character Set für Westeuropa ISO-8859-1 festlegen
+<A NAME="679"></A></FONT>        <FONT ID="SingleLineComment">// Anderenfalls wuerden deutsche Umlaute zu einer IllegalArgumentException
+<A NAME="680"></A></FONT>        <FONT ID="SingleLineComment">// beim Befuellen des Dataset fuehren
+<A NAME="681"></A></FONT>        ds.putCS(Tags.SpecificCharacterSet, <FONT ID="StringLiteral">"ISO_IR 100"</FONT>);
+<A NAME="682"></A>        
+<A NAME="683"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="684"></A>            <FONT ID="SingleLineComment">// Parser Objekt erzeugen
+<A NAME="685"></A></FONT>            p = SAXParserFactory.newInstance().newSAXParser();
+<A NAME="686"></A>            
+<A NAME="687"></A>            <FONT ID="SingleLineComment">// Den XML Stream mit dem Parser des Dataset parsen
+<A NAME="688"></A></FONT>            p.parse(xmlIS, ds.getSAXHandler2(<FONT ID="Null">null</FONT>));
+<A NAME="689"></A>        } <FONT ID="Catch">catch</FONT> (FactoryConfigurationError fcEx) {
+<A NAME="690"></A>            log.error(<FONT ID="StringLiteral">"Can't convert XML to Dataset"</FONT> + fcEx.getMessage());
+<A NAME="691"></A>            
+<A NAME="692"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="693"></A>        } <FONT ID="Catch">catch</FONT> (ParserConfigurationException pcEx) {
+<A NAME="694"></A>            log.error(<FONT ID="StringLiteral">"Can't convert XML to Dataset"</FONT> + pcEx.getMessage());
+<A NAME="695"></A>            
+<A NAME="696"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="697"></A>        } <FONT ID="Catch">catch</FONT> (DcmValueException dvEx) {
+<A NAME="698"></A>            log.error(<FONT ID="StringLiteral">"Can't convert XML to Dataset"</FONT> + dvEx.getMessage());
+<A NAME="699"></A>            
+<A NAME="700"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="701"></A>        } <FONT ID="Catch">catch</FONT> (SAXException sEx) {
+<A NAME="702"></A>            log.error(<FONT ID="StringLiteral">"Can't convert XML to Dataset"</FONT> + sEx.getMessage());
+<A NAME="703"></A>            
+<A NAME="704"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="705"></A>        } <FONT ID="Catch">catch</FONT> (IOException ioEx) {
+<A NAME="706"></A>            log.error(<FONT ID="StringLiteral">"Can't convert XML to Dataset"</FONT> + ioEx.getMessage());
+<A NAME="707"></A>            
+<A NAME="708"></A>            <FONT ID="Return">return</FONT> <FONT ID="Null">null</FONT>;
+<A NAME="709"></A>        } <FONT ID="Finally">finally</FONT> {
+<A NAME="710"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="711"></A>                <FONT ID="If">if</FONT> (xmlIS != <FONT ID="Null">null</FONT>) {
+<A NAME="712"></A>                    xmlIS.close();
+<A NAME="713"></A>                }
+<A NAME="714"></A>            } <FONT ID="Catch">catch</FONT> (IOException ignore) {
+<A NAME="715"></A>            }
+<A NAME="716"></A>        }
+<A NAME="717"></A>        
+<A NAME="718"></A>        <FONT ID="SingleLineComment">// Ohne Fehler beendet
+<A NAME="719"></A></FONT>        <FONT ID="Return">return</FONT> ds;
+<A NAME="720"></A>    }
+<A NAME="721"></A>    
+<A NAME="722"></A>    <FONT ID="FormalComment">/**
+<A NAME="723"></A>     * This method returns a non-validating ContentHandler. It converts the
+<A NAME="724"></A>     * XML input into a well-formed XML document in the outStream. Each element
+<A NAME="725"></A>     * starts in a new line.
+<A NAME="726"></A>     * A TransformerHandler listens for SAX ContentHandler parse events and
+<A NAME="727"></A>     * transforms them to a Result. [javax.xml.transformer.sax.TransformerHandler
+<A NAME="728"></A>     * extends org.xml.sax.ContentHandler]
+<A NAME="729"></A>     *
+<A NAME="730"></A>     * @param xmlStream The XML stream.
+<A NAME="731"></A>     * @return The content handler.
+<A NAME="732"></A>     */</FONT>
+<A NAME="733"></A>    <FONT ID="Private">private</FONT> TransformerHandler getTransformerHandler(OutputStream xmlStream)
+<A NAME="734"></A>    <FONT ID="Throws">throws</FONT> TransformerConfigurationException {
+<A NAME="735"></A>        SAXTransformerFactory saxTF;
+<A NAME="736"></A>        TransformerHandler transformerHandler;
+<A NAME="737"></A>        Transformer transformer;
+<A NAME="738"></A>        Source xsltSource = <FONT ID="Null">null</FONT>;
+<A NAME="739"></A>        Result result;
+<A NAME="740"></A>        
+<A NAME="741"></A>        <FONT ID="SingleLineComment">// Ergebnis in den Stream outStream schreiben
+<A NAME="742"></A></FONT>        result = <FONT ID="New">new</FONT> StreamResult(xmlStream);
+<A NAME="743"></A>        
+<A NAME="744"></A>        <FONT ID="SingleLineComment">// Eine konkrete Instance einer SAXTransformerFactory erzeugen
+<A NAME="745"></A></FONT>        <FONT ID="SingleLineComment">// [javax.xml.transform.TransformerFactory]
+<A NAME="746"></A></FONT>        <FONT ID="SingleLineComment">// [javax.xml.transform.sax.SAXTransformerFactory]
+<A NAME="747"></A></FONT>        saxTF = (SAXTransformerFactory) TransformerFactory.newInstance();
+<A NAME="748"></A>        
+<A NAME="749"></A>        <FONT ID="If">if</FONT> (xsltSource == <FONT ID="Null">null</FONT>) {
+<A NAME="750"></A>            <FONT ID="SingleLineComment">// Get a TransformerHandler object that can process SAX ContentHandler
+<A NAME="751"></A></FONT>            <FONT ID="SingleLineComment">// events into a Result. The transformation is defined as an identity
+<A NAME="752"></A></FONT>            <FONT ID="SingleLineComment">// (or copy) transformation, for example to copy a series of SAX parse
+<A NAME="753"></A></FONT>            <FONT ID="SingleLineComment">// events into a DOM tree. [javax.xml.transform.sax.SAXTransformerFactory]
+<A NAME="754"></A></FONT>            transformerHandler = saxTF.newTransformerHandler();
+<A NAME="755"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="756"></A>            <FONT ID="SingleLineComment">// Get a TransformerHandler object that can process SAX ContentHandler
+<A NAME="757"></A></FONT>            <FONT ID="SingleLineComment">// events into a Result, based on the transformation instructions
+<A NAME="758"></A></FONT>            <FONT ID="SingleLineComment">// specified by the argument, e.g. a XSLT styleshet.
+<A NAME="759"></A></FONT>            <FONT ID="SingleLineComment">// [javax.xml.transform.sax.SAXTransformerFactory]
+<A NAME="760"></A></FONT>            transformerHandler = saxTF.newTransformerHandler(xsltSource);
+<A NAME="761"></A>        }
+<A NAME="762"></A>        
+<A NAME="763"></A>        <FONT ID="SingleLineComment">// Der transformerHandler ist eine Instanz der Default-Implementation
+<A NAME="764"></A></FONT>        <FONT ID="SingleLineComment">// des org.xml.sax.ContentHandler
+<A NAME="765"></A></FONT>        <FONT ID="SingleLineComment">// Get the Transformer associated with this handler, which is needed in
+<A NAME="766"></A></FONT>        <FONT ID="SingleLineComment">// order to set parameters and output properties.
+<A NAME="767"></A></FONT>        <FONT ID="SingleLineComment">// [javax.xml.transform.Transformer]
+<A NAME="768"></A></FONT>        transformer = transformerHandler.getTransformer();
+<A NAME="769"></A>        
+<A NAME="770"></A>        <FONT ID="SingleLineComment">// Set an output property that will be in effect for the transformation:
+<A NAME="771"></A></FONT>        <FONT ID="SingleLineComment">// indent specifies whether the Transformer may add additional whitespace
+<A NAME="772"></A></FONT>        <FONT ID="SingleLineComment">// when outputting the result tree; the value must be yes or no.
+<A NAME="773"></A></FONT>        transformer.setOutputProperty(OutputKeys.INDENT, <FONT ID="StringLiteral">"yes"</FONT>);
+<A NAME="774"></A>        
+<A NAME="775"></A>        <FONT ID="SingleLineComment">// The method attribute identifies the overall method that should be used
+<A NAME="776"></A></FONT>        <FONT ID="SingleLineComment">// for outputting the result tree; the value must be "xml" or "html" or
+<A NAME="777"></A></FONT>        <FONT ID="SingleLineComment">// "text" or expanded name.
+<A NAME="778"></A></FONT>        transformer.setOutputProperty(OutputKeys.METHOD, <FONT ID="StringLiteral">"xml"</FONT>);
+<A NAME="779"></A>        
+<A NAME="780"></A>        <FONT ID="SingleLineComment">// Enables the user of the TransformerHandler to set the to set the result
+<A NAME="781"></A></FONT>        <FONT ID="SingleLineComment">// Result result) for the transformation.
+<A NAME="782"></A></FONT>        transformerHandler.setResult(result);
+<A NAME="783"></A>        
+<A NAME="784"></A>        <FONT ID="Return">return</FONT> transformerHandler;
+<A NAME="785"></A>    }
+<A NAME="786"></A>}
+<A NAME="787"></A>
+<A NAME="788"></A><FONT ID="FormalComment">/**
+<A NAME="789"></A> * Revisions:
+<A NAME="790"></A> *
+<A NAME="791"></A> * 2006.04.24, hacklaender: Property source_xml_name replaced by source_xml_filename
+<A NAME="792"></A> * 2006.04.24, hacklaender: Property transformed_xml_name replaced by transformed_xml_filename
+<A NAME="793"></A> * 2006.04.24, hacklaender: Property xsl_name replaced by xsl_filename
+<A NAME="794"></A> * 2004.11.17, hacklaender: Adapted to the new XML schema with attribute values as text nodes.
+<A NAME="795"></A> */</FONT>
+<A NAME="796"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">XSLTransformPlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

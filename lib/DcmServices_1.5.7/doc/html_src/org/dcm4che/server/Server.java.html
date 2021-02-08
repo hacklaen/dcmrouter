@@ -1,0 +1,189 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>org.dcm4che.server.Server (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">Server</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/* ***** BEGIN LICENSE BLOCK *****
+<A NAME="2"></A> * Version: MPL 1.1/GPL 2.0/LGPL 2.1
+<A NAME="3"></A> *
+<A NAME="4"></A> * The contents of this file are subject to the Mozilla Public License Version
+<A NAME="5"></A> * 1.1 (the "License"); you may not use this file except in compliance with
+<A NAME="6"></A> * the License. You may obtain a copy of the License at
+<A NAME="7"></A> * http://www.mozilla.org/MPL/
+<A NAME="8"></A> *
+<A NAME="9"></A> * Software distributed under the License is distributed on an "AS IS" basis,
+<A NAME="10"></A> * WITHOUT WARRANTY OF ANY KIND, either express or implied. See the License
+<A NAME="11"></A> * for the specific language governing rights and limitations under the
+<A NAME="12"></A> * License.
+<A NAME="13"></A> *
+<A NAME="14"></A> * The Original Code is part of dcm4che, an implementation of DICOM(TM) in
+<A NAME="15"></A> * Java(TM), hosted at http://sourceforge.net/projects/dcm4che.
+<A NAME="16"></A> *
+<A NAME="17"></A> * The Initial Developer of the Original Code is
+<A NAME="18"></A> * TIANI Medgraph AG.
+<A NAME="19"></A> * Portions created by the Initial Developer are Copyright (C) 2002-2005
+<A NAME="20"></A> * the Initial Developer. All Rights Reserved.
+<A NAME="21"></A> *
+<A NAME="22"></A> * Contributor(s):
+<A NAME="23"></A> * Gunter Zeilinger &lt;gunter.zeilinger@tiani.com&gt;
+<A NAME="24"></A> *
+<A NAME="25"></A> * Alternatively, the contents of this file may be used under the terms of
+<A NAME="26"></A> * either the GNU General Public License Version 2 or later (the "GPL"), or
+<A NAME="27"></A> * the GNU Lesser General Public License Version 2.1 or later (the "LGPL"),
+<A NAME="28"></A> * in which case the provisions of the GPL or the LGPL are applicable instead
+<A NAME="29"></A> * of those above. If you wish to allow use of your version of this file only
+<A NAME="30"></A> * under the terms of either the GPL or the LGPL, and not to allow others to
+<A NAME="31"></A> * use your version of this file under the terms of the MPL, indicate your
+<A NAME="32"></A> * decision by deleting the provisions above and replace them with the notice
+<A NAME="33"></A> * and other provisions required by the GPL or the LGPL. If you do not delete
+<A NAME="34"></A> * the provisions above, a recipient may use your version of this file under
+<A NAME="35"></A> * the terms of any one of the MPL, the GPL or the LGPL.
+<A NAME="36"></A> *
+<A NAME="37"></A> * ***** END LICENSE BLOCK ***** */</FONT>
+<A NAME="38"></A>
+<A NAME="39"></A><FONT ID="Package">package</FONT> <A HREF="../../../org.dcm4che.server.index.html" target="packageFrame">org.dcm4che.server</A>;
+<A NAME="40"></A>
+<A NAME="41"></A><FONT ID="Import">import</FONT> java.io.IOException;
+<A NAME="42"></A><FONT ID="Import">import</FONT> java.net.Socket;
+<A NAME="43"></A><FONT ID="Import">import</FONT> javax.net.ServerSocketFactory;
+<A NAME="44"></A><FONT ID="Import">import</FONT> javax.net.ssl.HandshakeCompletedListener;
+<A NAME="45"></A>
+<A NAME="46"></A><FONT ID="Import">import</FONT> org.dcm4che.util.HandshakeFailedListener;
+<A NAME="47"></A>
+<A NAME="48"></A><FONT ID="FormalComment">/**
+<A NAME="49"></A> * &lt;description&gt;
+<A NAME="50"></A> *
+<A NAME="51"></A> * @author     &lt;a href="mailto:gunter@tiani.com"&gt;Gunter Zeilinger&lt;/a&gt;
+<A NAME="52"></A> * @since    May, 2002
+<A NAME="53"></A> * @version    $Revision: 1.10 $ $Date: 2006/05/26 12:32:38 $
+<A NAME="54"></A> */</FONT>
+<A NAME="55"></A><FONT ID="Public">public</FONT> <FONT ID="Interface">interface</FONT> Server
+<A NAME="56"></A>{
+<A NAME="57"></A>    
+<A NAME="58"></A>    <FONT ID="Int">int</FONT> getReceiveBufferSize();
+<A NAME="59"></A>    
+<A NAME="60"></A>    <FONT ID="Void">void</FONT> setReceiveBufferSize(<FONT ID="Int">int</FONT> size);
+<A NAME="61"></A>
+<A NAME="62"></A>    <FONT ID="Int">int</FONT> getSendBufferSize();
+<A NAME="63"></A>    
+<A NAME="64"></A>    <FONT ID="Void">void</FONT> setSendBufferSize(<FONT ID="Int">int</FONT> size);
+<A NAME="65"></A>        
+<A NAME="66"></A>    <FONT ID="Boolean">boolean</FONT> isTcpNoDelay();
+<A NAME="67"></A>
+<A NAME="68"></A>    <FONT ID="Void">void</FONT> setTcpNoDelay(<FONT ID="Boolean">boolean</FONT> on);
+<A NAME="69"></A>    
+<A NAME="70"></A>    <FONT ID="Interface">interface</FONT> Handler
+<A NAME="71"></A>    {
+<A NAME="72"></A>        <FONT ID="Void">void</FONT> handle(Socket s)
+<A NAME="73"></A>            <FONT ID="Throws">throws</FONT> IOException;
+<A NAME="74"></A>
+<A NAME="75"></A>
+<A NAME="76"></A>        <FONT ID="Boolean">boolean</FONT> isSockedClosedByHandler();
+<A NAME="77"></A>    }
+<A NAME="78"></A>    
+<A NAME="79"></A>    <FONT ID="Void">void</FONT> addHandshakeCompletedListener(HandshakeCompletedListener listener);
+<A NAME="80"></A>
+<A NAME="81"></A>
+<A NAME="82"></A>    <FONT ID="Void">void</FONT> addHandshakeFailedListener(HandshakeFailedListener listener);
+<A NAME="83"></A>
+<A NAME="84"></A>
+<A NAME="85"></A>    <FONT ID="Void">void</FONT> removeHandshakeCompletedListener(HandshakeCompletedListener listener);
+<A NAME="86"></A>
+<A NAME="87"></A>    <FONT ID="Void">void</FONT> removeHandshakeFailedListener(HandshakeFailedListener listener);
+<A NAME="88"></A>
+<A NAME="89"></A>    <FONT ID="Void">void</FONT> setMaxClients(<FONT ID="Int">int</FONT> max);
+<A NAME="90"></A>
+<A NAME="91"></A>    <FONT ID="Int">int</FONT> getMaxClients();
+<A NAME="92"></A>
+<A NAME="93"></A>    <FONT ID="Int">int</FONT> getNumClients();
+<A NAME="94"></A>
+<A NAME="95"></A>    <FONT ID="Void">void</FONT> setMaxIdleThreads(<FONT ID="Int">int</FONT> max);
+<A NAME="96"></A>    
+<A NAME="97"></A>    <FONT ID="Int">int</FONT> getMaxIdleThreads();
+<A NAME="98"></A>    
+<A NAME="99"></A>    <FONT ID="Int">int</FONT> getNumIdleThreads();
+<A NAME="100"></A>    
+<A NAME="101"></A>    <FONT ID="FormalComment">/**
+<A NAME="102"></A>     * @param  port             Description of the Parameter
+<A NAME="103"></A>     * @exception  IOException  Description of the Exception
+<A NAME="104"></A>     * @deprecated              use {@link #setPort}, {@link #start()}
+<A NAME="105"></A>     */</FONT>
+<A NAME="106"></A>    <FONT ID="Void">void</FONT> start(<FONT ID="Int">int</FONT> port)
+<A NAME="107"></A>        <FONT ID="Throws">throws</FONT> IOException;
+<A NAME="108"></A>
+<A NAME="109"></A>
+<A NAME="110"></A>    <FONT ID="FormalComment">/**
+<A NAME="111"></A>     * @param  port             Description of the Parameter
+<A NAME="112"></A>     * @param  ssf              Description of the Parameter
+<A NAME="113"></A>     * @exception  IOException  Description of the Exception
+<A NAME="114"></A>     * @deprecated              use {@link #setPort}, {@link #setServerSocketFactory},
+<A NAME="115"></A>     *                 {@link #start()}
+<A NAME="116"></A>     */</FONT>
+<A NAME="117"></A>    <FONT ID="Void">void</FONT> start(<FONT ID="Int">int</FONT> port, ServerSocketFactory ssf)
+<A NAME="118"></A>        <FONT ID="Throws">throws</FONT> IOException;
+<A NAME="119"></A>
+<A NAME="120"></A>
+<A NAME="121"></A>    <FONT ID="Void">void</FONT> start()
+<A NAME="122"></A>        <FONT ID="Throws">throws</FONT> IOException;
+<A NAME="123"></A>
+<A NAME="124"></A>
+<A NAME="125"></A>    <FONT ID="Void">void</FONT> stop();
+<A NAME="126"></A>
+<A NAME="127"></A>
+<A NAME="128"></A>    <FONT ID="FormalComment">/**
+<A NAME="129"></A>     * Getter for property port.
+<A NAME="130"></A>     *
+<A NAME="131"></A>     * @return    Value of property port.
+<A NAME="132"></A>     */</FONT>
+<A NAME="133"></A>    <FONT ID="Public">public</FONT> <FONT ID="Int">int</FONT> getPort();
+<A NAME="134"></A>
+<A NAME="135"></A>
+<A NAME="136"></A>    <FONT ID="FormalComment">/**
+<A NAME="137"></A>     * Setter for property port.
+<A NAME="138"></A>     *
+<A NAME="139"></A>     * @param  port  New value of property port.
+<A NAME="140"></A>     */</FONT>
+<A NAME="141"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setPort(<FONT ID="Int">int</FONT> port);
+<A NAME="142"></A>
+<A NAME="143"></A>
+<A NAME="144"></A>    <FONT ID="FormalComment">/**
+<A NAME="145"></A>     * Getter for property serverSocketFactory.
+<A NAME="146"></A>     *
+<A NAME="147"></A>     * @return    Value of property serverSocketFactory.
+<A NAME="148"></A>     */</FONT>
+<A NAME="149"></A>    <FONT ID="Public">public</FONT> ServerSocketFactory getServerSocketFactory();
+<A NAME="150"></A>
+<A NAME="151"></A>
+<A NAME="152"></A>    <FONT ID="FormalComment">/**
+<A NAME="153"></A>     * Setter for property serverSocketFactory.
+<A NAME="154"></A>     *
+<A NAME="155"></A>     * @param  serverSocketFactory  New value of property serverSocketFactory.
+<A NAME="156"></A>     */</FONT>
+<A NAME="157"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> setServerSocketFactory(ServerSocketFactory serverSocketFactory);
+<A NAME="158"></A>
+<A NAME="159"></A>}
+<A NAME="160"></A>
+<A NAME="161"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">Server</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

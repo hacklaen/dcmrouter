@@ -1,0 +1,365 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.util.TestReader (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">TestReader</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> * TestReader.java
+<A NAME="3"></A> *
+<A NAME="4"></A> * Created on 28. April 2006, 08:32
+<A NAME="5"></A> *
+<A NAME="6"></A> * To change this template, choose Tools | Template Manager
+<A NAME="7"></A> * and open the template in the editor.
+<A NAME="8"></A> */</FONT>
+<A NAME="9"></A>
+<A NAME="10"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.util.index.html" target="packageFrame">de.iftm.dcm4che.router.util</A>;
+<A NAME="11"></A>
+<A NAME="12"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.property.index.html" target="packageFrame">de.iftm.dcm4che.router.property.*</A>;
+<A NAME="13"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">de.iftm.dcm4che.router.plugin.DicomRouterPlugin</A>;
+<A NAME="14"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/PluginChain.java.html">de.iftm.dcm4che.router.plugin.PluginChain</A>;
+<A NAME="15"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.util.index.html" target="packageFrame">de.iftm.dcm4che.router.util.*</A>;
+<A NAME="16"></A>
+<A NAME="17"></A><FONT ID="Import">import</FONT> gnu.getopt.Getopt;
+<A NAME="18"></A>
+<A NAME="19"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="20"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.*;
+<A NAME="21"></A><FONT ID="Import">import</FONT> org.dcm4che.util.*;
+<A NAME="22"></A><FONT ID="Import">import</FONT> org.dcm4che.imageio.plugins.*;
+<A NAME="23"></A>
+<A NAME="24"></A><FONT ID="Import">import</FONT> java.awt.image.*;
+<A NAME="25"></A><FONT ID="Import">import</FONT> java.awt.*;
+<A NAME="26"></A><FONT ID="Import">import</FONT> java.io.*;
+<A NAME="27"></A><FONT ID="Import">import</FONT> java.net.URI;
+<A NAME="28"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="29"></A><FONT ID="Import">import</FONT> java.security.GeneralSecurityException;
+<A NAME="30"></A><FONT ID="Import">import</FONT> java.text.SimpleDateFormat;
+<A NAME="31"></A>
+<A NAME="32"></A><FONT ID="Import">import</FONT> org.apache.log4j.BasicConfigurator;
+<A NAME="33"></A><FONT ID="Import">import</FONT> org.apache.log4j.Logger;
+<A NAME="34"></A><FONT ID="Import">import</FONT> org.apache.log4j.PropertyConfigurator;
+<A NAME="35"></A>
+<A NAME="36"></A><FONT ID="Import">import</FONT> javax.imageio.*;
+<A NAME="37"></A><FONT ID="Import">import</FONT> javax.imageio.stream.*;
+<A NAME="38"></A><FONT ID="Import">import</FONT> javax.imageio.metadata.*;
+<A NAME="39"></A>
+<A NAME="40"></A>
+<A NAME="41"></A><FONT ID="FormalComment">/**
+<A NAME="42"></A> *
+<A NAME="43"></A> * @author thacklaender
+<A NAME="44"></A> */</FONT>
+<A NAME="45"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> TestReader {
+<A NAME="46"></A>    <FONT ID="FormalComment">/** The logger for this plugin */</FONT>
+<A NAME="47"></A>    Logger log = Logger.getLogger(<A HREF="../../../../../de/iftm/dcm4che/router/util/TestReader.java.html">TestReader</A>.<FONT ID="Class">class</FONT>);
+<A NAME="48"></A>    
+<A NAME="49"></A>    <FONT ID="FormalComment">/** Creates a new instance of TestReader */</FONT>
+<A NAME="50"></A>    <FONT ID="Public">public</FONT> TestReader() {
+<A NAME="51"></A>    }
+<A NAME="52"></A>    
+<A NAME="53"></A>    
+<A NAME="54"></A>    <FONT ID="FormalComment">/**
+<A NAME="55"></A>     * The main method to start the application.
+<A NAME="56"></A>     * @param args the command line arguments
+<A NAME="57"></A>     */</FONT>
+<A NAME="58"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Void">void</FONT> main(String args[]) {
+<A NAME="59"></A>        <FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/util/TestReader.java.html">TestReader</A>().run2();
+<A NAME="60"></A>    }
+<A NAME="61"></A>    
+<A NAME="62"></A>    
+<A NAME="63"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> run() {
+<A NAME="64"></A>        Dataset defaultMetadataDataset;
+<A NAME="65"></A>        IIOMetadata         dummyMetadata = <FONT ID="Null">null</FONT>;
+<A NAME="66"></A>        BufferedImage       theImage = <FONT ID="Null">null</FONT>;
+<A NAME="67"></A>        Iterator            imageWriters;
+<A NAME="68"></A>        File                f = <FONT ID="Null">null</FONT>;
+<A NAME="69"></A>        String              fileName;
+<A NAME="70"></A>        ImageOutputStream   imageOutputStream = <FONT ID="Null">null</FONT>;
+<A NAME="71"></A>        ImageWriter         dcmImageWriter = <FONT ID="Null">null</FONT>;
+<A NAME="72"></A>        
+<A NAME="73"></A>        
+<A NAME="74"></A>        theImage = <FONT ID="Null">null</FONT>;
+<A NAME="75"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="76"></A>            <FONT ID="SingleLineComment">// Read from a file
+<A NAME="77"></A></FONT>            File file = <FONT ID="New">new</FONT> File(<FONT ID="StringLiteral">"./samples/060314_286.png"</FONT>);
+<A NAME="78"></A>            theImage = ImageIO.read(file);
+<A NAME="79"></A>            
+<A NAME="80"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="81"></A>            System.out.println(<FONT ID="StringLiteral">"Can't read file"</FONT>);
+<A NAME="82"></A>        }
+<A NAME="83"></A>        
+<A NAME="84"></A>        <FONT ID="SingleLineComment">// DcmImageWriter holen
+<A NAME="85"></A></FONT>        imageWriters = ImageIO.getImageWritersByFormatName(<FONT ID="StringLiteral">"DICOM"</FONT>);
+<A NAME="86"></A>        dcmImageWriter = (ImageWriter) imageWriters.next();
+<A NAME="87"></A>        <FONT ID="If">if</FONT> (dcmImageWriter == <FONT ID="Null">null</FONT>) {
+<A NAME="88"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> UnsupportedOperationException(<FONT ID="StringLiteral">"No DcmImageWriter found."</FONT>);
+<A NAME="89"></A>        }
+<A NAME="90"></A>        <FONT ID="If">if</FONT> (! (dcmImageWriter.getDefaultStreamMetadata(<FONT ID="Null">null</FONT>) <FONT ID="InstanceOf">instanceof</FONT> DcmMetadata)) {
+<A NAME="91"></A>            <FONT ID="Throw">throw</FONT> <FONT ID="New">new</FONT> UnsupportedOperationException(<FONT ID="StringLiteral">"No DcmImageWriter found."</FONT>);
+<A NAME="92"></A>        }
+<A NAME="93"></A>        
+<A NAME="94"></A>        <FONT ID="SingleLineComment">// Filename festlegen
+<A NAME="95"></A></FONT>        fileName = <FONT ID="StringLiteral">"tmp/test.dcm"</FONT>;
+<A NAME="96"></A>        
+<A NAME="97"></A>        <FONT ID="SingleLineComment">// Bestehenden File erst loeschen, dann neuen erstellen
+<A NAME="98"></A></FONT>        f = <FONT ID="New">new</FONT> File(System.getProperty(<FONT ID="StringLiteral">"user.dir"</FONT>), fileName);
+<A NAME="99"></A>        
+<A NAME="100"></A>        <FONT ID="SingleLineComment">// Neuen ImageOutputStream fuer File oeffnen
+<A NAME="101"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="102"></A>            imageOutputStream = ImageIO.createImageOutputStream(f);
+<A NAME="103"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="104"></A>            System.out.println(<FONT ID="StringLiteral">"Can't create file"</FONT>);
+<A NAME="105"></A>        }
+<A NAME="106"></A>        
+<A NAME="107"></A>        <FONT ID="SingleLineComment">// Den OutputStream des DcmImageWriters setzen
+<A NAME="108"></A></FONT>        dcmImageWriter.setOutput(imageOutputStream);
+<A NAME="109"></A>        
+<A NAME="110"></A>        
+<A NAME="111"></A>        defaultMetadataDataset = getDefaultMetadata();
+<A NAME="112"></A>        
+<A NAME="113"></A>        <FONT ID="SingleLineComment">// Dataset in DcmMetadata speichern
+<A NAME="114"></A></FONT>        dummyMetadata = dcmImageWriter.getDefaultStreamMetadata(<FONT ID="Null">null</FONT>);
+<A NAME="115"></A>        ((DcmMetadata) dummyMetadata).setDataset(defaultMetadataDataset);
+<A NAME="116"></A>        
+<A NAME="117"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="118"></A>            dcmImageWriter.write(dummyMetadata, <FONT ID="New">new</FONT> IIOImage(theImage, <FONT ID="Null">null</FONT>, <FONT ID="Null">null</FONT>), <FONT ID="Null">null</FONT>);
+<A NAME="119"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="120"></A>            System.out.println(e);
+<A NAME="121"></A>        }
+<A NAME="122"></A>        
+<A NAME="123"></A>        <FONT ID="SingleLineComment">// Stream schliessen
+<A NAME="124"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="125"></A>            imageOutputStream.close();
+<A NAME="126"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="127"></A>            System.out.println(<FONT ID="StringLiteral">"Can't create file"</FONT>);
+<A NAME="128"></A>        }
+<A NAME="129"></A>        
+<A NAME="130"></A>    }
+<A NAME="131"></A>    
+<A NAME="132"></A>    
+<A NAME="133"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> run2() {
+<A NAME="134"></A>        Dataset defaultMetadataDataset;
+<A NAME="135"></A>        IIOMetadata         dummyMetadata = <FONT ID="Null">null</FONT>;
+<A NAME="136"></A>        BufferedImage       theImage = <FONT ID="Null">null</FONT>;
+<A NAME="137"></A>        BufferedImage       newImage = <FONT ID="Null">null</FONT>;
+<A NAME="138"></A>        Iterator            imageWriters;
+<A NAME="139"></A>        File                f = <FONT ID="Null">null</FONT>;
+<A NAME="140"></A>        String              fileName;
+<A NAME="141"></A>        ImageOutputStream   imageOutputStream = <FONT ID="Null">null</FONT>;
+<A NAME="142"></A>        ImageWriter         dcmImageWriter = <FONT ID="Null">null</FONT>;
+<A NAME="143"></A>        Dataset              ds = <FONT ID="Null">null</FONT>;
+<A NAME="144"></A>        ImageInputStream         iis;
+<A NAME="145"></A>        ByteArrayOutputStream       bos = <FONT ID="Null">null</FONT>;
+<A NAME="146"></A>        ByteArrayInputStream       bis = <FONT ID="Null">null</FONT>;
+<A NAME="147"></A>        
+<A NAME="148"></A>        
+<A NAME="149"></A>        theImage = <FONT ID="Null">null</FONT>;
+<A NAME="150"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="151"></A>            <FONT ID="SingleLineComment">// Read from a file
+<A NAME="152"></A></FONT>            <FONT ID="SingleLineComment">// File file = new File("./samples/SMPTE.png");
+<A NAME="153"></A></FONT>            File file = <FONT ID="New">new</FONT> File(<FONT ID="StringLiteral">"./samples/060314_286.png"</FONT>);
+<A NAME="154"></A>            theImage = ImageIO.read(file);
+<A NAME="155"></A>            
+<A NAME="156"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="157"></A>            System.out.println(<FONT ID="StringLiteral">"Can't read file"</FONT>);
+<A NAME="158"></A>            <FONT ID="Return">return</FONT>;
+<A NAME="159"></A>        }
+<A NAME="160"></A>        
+<A NAME="161"></A>        <FONT ID="SingleLineComment">// newImage = new BufferedImage(theImage.getWidth(), theImage.getHeight(), BufferedImage.TYPE_INT_RGB);
+<A NAME="162"></A></FONT>        newImage = <FONT ID="New">new</FONT> BufferedImage(theImage.getWidth(), theImage.getHeight(), BufferedImage.TYPE_BYTE_INDEXED);
+<A NAME="163"></A>        <FONT ID="SingleLineComment">// newImage = new BufferedImage(theImage.getWidth(), theImage.getHeight(), BufferedImage.TYPE_BYTE_GRAY);
+<A NAME="164"></A></FONT>        <FONT ID="SingleLineComment">// newImage = new BufferedImage(theImage.getWidth(), theImage.getHeight(), BufferedImage.TYPE_USHORT_GRAY);
+<A NAME="165"></A></FONT>        
+<A NAME="166"></A>        Graphics2D g = newImage.createGraphics();
+<A NAME="167"></A>        g.drawImage(theImage, <FONT ID="Null">null</FONT>, <FONT ID="Null">null</FONT>);
+<A NAME="168"></A>        
+<A NAME="169"></A>        
+<A NAME="170"></A>        ds = DcmObjectFactory.getInstance().newDataset();
+<A NAME="171"></A>        ds.putBufferedImage(newImage);
+<A NAME="172"></A>        
+<A NAME="173"></A>        ds.putAll(getDefaultMetadata());
+<A NAME="174"></A>        
+<A NAME="175"></A>        <FONT ID="SingleLineComment">// Filename festlegen
+<A NAME="176"></A></FONT>        fileName = <FONT ID="StringLiteral">"./tmp/test2.dcm"</FONT>;
+<A NAME="177"></A>        f = <FONT ID="New">new</FONT> File(fileName);
+<A NAME="178"></A>        saveDataset(ds, f);
+<A NAME="179"></A>    }
+<A NAME="180"></A>    
+<A NAME="181"></A>    
+<A NAME="182"></A>    <FONT ID="FormalComment">/**
+<A NAME="183"></A>     * Saves the Dataset to the local filesystem.
+<A NAME="184"></A>     *
+<A NAME="185"></A>     * @param ds the Dataset to save.
+<A NAME="186"></A>     * @param f the File to which the Dataset should be save.
+<A NAME="187"></A>     */</FONT>
+<A NAME="188"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> saveDataset(Dataset ds, File f) {
+<A NAME="189"></A>        FileOutputStream fos = <FONT ID="Null">null</FONT>;
+<A NAME="190"></A>        DcmEncodeParam param = <FONT ID="Null">null</FONT>;
+<A NAME="191"></A>        FileMetaInfo fmi;
+<A NAME="192"></A>        <FONT ID="FormalComment">/** Transfersyntax of the saved file. One of the strings  ImplicitVRLittleEndian,
+<A NAME="193"></A>         * ExplicitVRLittleEndian, ExplicitVRBigEndian. The string may start with
+<A NAME="194"></A>         * the praefix-character '$' */</FONT>
+<A NAME="195"></A>        String transfersyntax = <FONT ID="StringLiteral">"ImplicitVRLittleEndian"</FONT>;
+<A NAME="196"></A>        <FONT ID="FormalComment">/** Include a File Meta Information block to the saved file */</FONT>
+<A NAME="197"></A>        <FONT ID="Boolean">boolean</FONT> write_fmi = <FONT ID="True">true</FONT>;
+<A NAME="198"></A>        
+<A NAME="199"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="200"></A>            <FONT ID="If">if</FONT> (f.exists()) {
+<A NAME="201"></A>                <FONT ID="SingleLineComment">// File besteht bereits. Erst loeschen, dann neu erstellen
+<A NAME="202"></A></FONT>                f.delete();
+<A NAME="203"></A>                f.createNewFile();
+<A NAME="204"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="205"></A>                <FONT ID="If">if</FONT> (!f.getParentFile().exists()) {
+<A NAME="206"></A>                    <FONT ID="SingleLineComment">// Directory Pfad existiert noch nicht
+<A NAME="207"></A></FONT>                    f.getParentFile().mkdirs();
+<A NAME="208"></A>                }
+<A NAME="209"></A>            }
+<A NAME="210"></A>            
+<A NAME="211"></A>            fos = <FONT ID="New">new</FONT> FileOutputStream(f);
+<A NAME="212"></A>            param = DcmEncodeParam.valueOf(UIDs.forName(transfersyntax));
+<A NAME="213"></A>            
+<A NAME="214"></A>            <FONT ID="SingleLineComment">// File mit/ohne File Meta Information Block schreiben
+<A NAME="215"></A></FONT>            <FONT ID="If">if</FONT> (write_fmi) {
+<A NAME="216"></A>                fmi = DcmObjectFactory.getInstance().newFileMetaInfo(ds, UIDs.forName(transfersyntax));
+<A NAME="217"></A>                ds.setFileMetaInfo(fmi);
+<A NAME="218"></A>                
+<A NAME="219"></A>                <FONT ID="SingleLineComment">// Die Methode Dataset#writeFile schreibt -sofern != null- einen
+<A NAME="220"></A></FONT>                <FONT ID="SingleLineComment">// File Meta Information Block und ruft dann Dataset#writeDataset
+<A NAME="221"></A></FONT>                <FONT ID="SingleLineComment">// mit den selben Parametern auf.
+<A NAME="222"></A></FONT>                ds.writeFile(fos, param);
+<A NAME="223"></A>                
+<A NAME="224"></A>                <FONT ID="SingleLineComment">// File Meta Information Block wieder loeschen
+<A NAME="225"></A></FONT>                ds.setFileMetaInfo(<FONT ID="Null">null</FONT>);
+<A NAME="226"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="227"></A>                ds.writeDataset(fos, param);
+<A NAME="228"></A>            }
+<A NAME="229"></A>            
+<A NAME="230"></A>            <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="231"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="232"></A>            log.error(<FONT ID="StringLiteral">"Can't save file - Exception: "</FONT> + e.getMessage());
+<A NAME="233"></A>            
+<A NAME="234"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="235"></A>        } <FONT ID="Finally">finally</FONT> {
+<A NAME="236"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="237"></A>                fos.close();
+<A NAME="238"></A>            } <FONT ID="Catch">catch</FONT> (Exception ignore) {}
+<A NAME="239"></A>        }
+<A NAME="240"></A>    }
+<A NAME="241"></A>    
+<A NAME="242"></A>    
+<A NAME="243"></A>    <FONT ID="FormalComment">/**
+<A NAME="244"></A>     * Creates the default metadata for a Secondary Capture image.
+<A NAME="245"></A>     * @return the Dataset.
+<A NAME="246"></A>     */</FONT>
+<A NAME="247"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> Dataset getDefaultMetadata() {
+<A NAME="248"></A>        Dataset             ds = DcmObjectFactory.getInstance().newDataset();
+<A NAME="249"></A>        UIDGenerator        uidGen = UIDGenerator.getInstance();
+<A NAME="250"></A>        Date                now = <FONT ID="New">new</FONT> Date();
+<A NAME="251"></A>        SimpleDateFormat    dateFormatter = <FONT ID="New">new</FONT> SimpleDateFormat(<FONT ID="StringLiteral">"yyyyMMdd"</FONT>);
+<A NAME="252"></A>        SimpleDateFormat    timeFormatter = <FONT ID="New">new</FONT> SimpleDateFormat(<FONT ID="StringLiteral">"HHmmss.SSS"</FONT>);
+<A NAME="253"></A>        
+<A NAME="254"></A>        <FONT ID="SingleLineComment">// Character Set für Westeuropa ISO-8859-1 festlegen
+<A NAME="255"></A></FONT>        <FONT ID="SingleLineComment">// Anderenfalls wuerden deutsche Umlaute zu einer IllegalArgumentException
+<A NAME="256"></A></FONT>        <FONT ID="SingleLineComment">// beim Befuellen des Dataset fuehren
+<A NAME="257"></A></FONT>        ds.putCS(Tags.SpecificCharacterSet, <FONT ID="StringLiteral">"ISO_IR 100"</FONT>);
+<A NAME="258"></A>        
+<A NAME="259"></A>        <FONT ID="SingleLineComment">// Secondary Capture Image IOD: PS 3.3 - A.8
+<A NAME="260"></A></FONT>        
+<A NAME="261"></A>        <FONT ID="SingleLineComment">// Unique Identifiers (UIDs) PS 3.5 - 9
+<A NAME="262"></A></FONT>        <FONT ID="SingleLineComment">// Each UID is composed of two parts: UID = &lt;org root&gt;.&lt;suffix&gt;
+<A NAME="263"></A></FONT>        
+<A NAME="264"></A>        <FONT ID="SingleLineComment">// Data Element Type:PS 3.5 -7.4
+<A NAME="265"></A></FONT>        <FONT ID="SingleLineComment">// Type 1: Requiered data elements. Must be present. Length may not be zero
+<A NAME="266"></A></FONT>        <FONT ID="SingleLineComment">// Type 2: Requiered data elements. Must be present. Length may be zero
+<A NAME="267"></A></FONT>        <FONT ID="SingleLineComment">// Type 3: Optional data elements. Length may/may not be zero.
+<A NAME="268"></A></FONT>        
+<A NAME="269"></A>        <FONT ID="SingleLineComment">// Patient IE, Patient Module, PS 3.3 - C.7.1.1, M
+<A NAME="270"></A></FONT>        ds.putPN(Tags.PatientName, <FONT ID="StringLiteral">"PatientName"</FONT>);                          <FONT ID="SingleLineComment">// Type 2
+<A NAME="271"></A></FONT>        ds.putLO(Tags.PatientID, <FONT ID="StringLiteral">"PatientID"</FONT>);                              <FONT ID="SingleLineComment">// Type 2
+<A NAME="272"></A></FONT>        ds.putDA(Tags.PatientBirthDate, <FONT ID="StringLiteral">"19501031"</FONT>);                        <FONT ID="SingleLineComment">// Type 2
+<A NAME="273"></A></FONT>        ds.putCS(Tags.PatientSex, <FONT ID="StringLiteral">"O"</FONT>);                                     <FONT ID="SingleLineComment">// Type 2
+<A NAME="274"></A></FONT>        
+<A NAME="275"></A>        <FONT ID="SingleLineComment">// Study IE, General Study Module, PS 3.3 - C.7.2.1, M
+<A NAME="276"></A></FONT>        ds.putUI(Tags.StudyInstanceUID, uidGen.createUID());
+<A NAME="277"></A>        ds.putDA(Tags.StudyDate, dateFormatter.format(now));                <FONT ID="SingleLineComment">// Type 2
+<A NAME="278"></A></FONT>        ds.putTM(Tags.StudyTime, timeFormatter.format(now));                <FONT ID="SingleLineComment">// Type 2
+<A NAME="279"></A></FONT>        ds.putPN(Tags.ReferringPhysicianName, <FONT ID="StringLiteral">"ReferringPhysicianName"</FONT>);    <FONT ID="SingleLineComment">// Type 2
+<A NAME="280"></A></FONT>        ds.putSH(Tags.StudyID, <FONT ID="StringLiteral">"1"</FONT>);                                        <FONT ID="SingleLineComment">// Type 2
+<A NAME="281"></A></FONT>        ds.putSH(Tags.AccessionNumber, <FONT ID="StringLiteral">"0"</FONT>);                                <FONT ID="SingleLineComment">// Type 2
+<A NAME="282"></A></FONT>        
+<A NAME="283"></A>        <FONT ID="SingleLineComment">// Study IE, Patient Study Module, PS 3.3 - C.7.2.2, U
+<A NAME="284"></A></FONT>        
+<A NAME="285"></A>        <FONT ID="SingleLineComment">// Series IE, General Series Module, PS 3.3 - C.7.3.1, M
+<A NAME="286"></A></FONT>        ds.putCS(Tags.Modality, <FONT ID="StringLiteral">"OT"</FONT>);
+<A NAME="287"></A>        ds.putUI(Tags.SeriesInstanceUID, uidGen.createUID());
+<A NAME="288"></A>        ds.putIS(Tags.SeriesNumber, <FONT ID="StringLiteral">"1"</FONT>);                                   <FONT ID="SingleLineComment">// Type 2
+<A NAME="289"></A></FONT>        ds.putCS(Tags.Laterality, <FONT ID="StringLiteral">""</FONT>);                                      <FONT ID="SingleLineComment">// Type 2C; only if ImageLaterality not sent; enumerativ L or R
+<A NAME="290"></A></FONT>        
+<A NAME="291"></A>        <FONT ID="SingleLineComment">// Equipment IE, General Equipment Module, PS 3.3 - C.7.5.1, U
+<A NAME="292"></A></FONT>        
+<A NAME="293"></A>        <FONT ID="SingleLineComment">// Equipment IE, SC Equipment Module, PS 3.3 - C.8.6.1, M
+<A NAME="294"></A></FONT>        ds.putCS(Tags.ConversionType, <FONT ID="StringLiteral">"WSD"</FONT>);                               <FONT ID="SingleLineComment">// Type 1
+<A NAME="295"></A></FONT>        ds.putCS(Tags.Modality, <FONT ID="StringLiteral">"OT"</FONT>);                                      <FONT ID="SingleLineComment">// Type 3; enumerativ see C7.3.1.1.1
+<A NAME="296"></A></FONT>        ds.putLO(Tags.SecondaryCaptureDeviceID, <FONT ID="StringLiteral">""</FONT>);                        <FONT ID="SingleLineComment">// Type 3
+<A NAME="297"></A></FONT>        ds.putLO(Tags.SecondaryCaptureDeviceManufacturer, <FONT ID="StringLiteral">"dcmrouter"</FONT>);     <FONT ID="SingleLineComment">// Type 3
+<A NAME="298"></A></FONT>        ds.putLO(Tags.SecondaryCaptureDeviceManufacturerModelName, <FONT ID="StringLiteral">""</FONT>);     <FONT ID="SingleLineComment">// Type 3
+<A NAME="299"></A></FONT>        ds.putLO(Tags.SecondaryCaptureDeviceSoftwareVersion, Util.VERSION); <FONT ID="SingleLineComment">// Type 3
+<A NAME="300"></A></FONT>        ds.putSH(Tags.VideoImageFormatAcquired, <FONT ID="StringLiteral">""</FONT>);                        <FONT ID="SingleLineComment">// Type 3
+<A NAME="301"></A></FONT>        ds.putLO(Tags.DigitalImageFormatAcquired, <FONT ID="StringLiteral">""</FONT>);                      <FONT ID="SingleLineComment">// Type 3
+<A NAME="302"></A></FONT>        
+<A NAME="303"></A>        <FONT ID="SingleLineComment">// Image IE, General Image Module, PS 3.3 - C.7.6.1, M
+<A NAME="304"></A></FONT>        ds.putIS(Tags.InstanceNumber, <FONT ID="StringLiteral">"1"</FONT>);                                 <FONT ID="SingleLineComment">// Type 2
+<A NAME="305"></A></FONT>        String[] po = {<FONT ID="StringLiteral">""</FONT>, <FONT ID="StringLiteral">""</FONT>};
+<A NAME="306"></A>        ds.putCS(Tags.PatientOrientation, po);                              <FONT ID="SingleLineComment">// Type 2C; see PS 3.3 - C.7.6.1.1.1
+<A NAME="307"></A></FONT>        ds.putDA(Tags.ContentDate, dateFormatter.format(now));              <FONT ID="SingleLineComment">// Type 2C; if image is part of a series. Was Image Date
+<A NAME="308"></A></FONT>        ds.putTM(Tags.ContentTime, timeFormatter.format(now));              <FONT ID="SingleLineComment">// Type 2C; if image is part of a series. Was Image Time
+<A NAME="309"></A></FONT>        
+<A NAME="310"></A>        <FONT ID="SingleLineComment">// Image IE, Image Pixel Module, PS 3.3 - C.7.6.3, M
+<A NAME="311"></A></FONT>        <FONT ID="SingleLineComment">// must be set elsewhere
+<A NAME="312"></A></FONT>        
+<A NAME="313"></A>        <FONT ID="SingleLineComment">// Image IE, SC Image Module, PS 3.3 - C.8.6.2, M
+<A NAME="314"></A></FONT>        ds.putDA(Tags.DateOfSecondaryCapture, dateFormatter.format(now));   <FONT ID="SingleLineComment">// Type 3
+<A NAME="315"></A></FONT>        ds.putTM(Tags.TimeOfSecondaryCapture, timeFormatter.format(now));   <FONT ID="SingleLineComment">// Type 3
+<A NAME="316"></A></FONT>        
+<A NAME="317"></A>        <FONT ID="SingleLineComment">// Image IE, Overlay Plane Module, PS 3.3 - C.9.2, U
+<A NAME="318"></A></FONT>        
+<A NAME="319"></A>        <FONT ID="SingleLineComment">// Image IE, Modality LUT Module, PS 3.3 - C.11.1, U
+<A NAME="320"></A></FONT>        <FONT ID="SingleLineComment">// ds.putDS(Tags.RescaleIntercept);                                    // Type 1C; ModalityLUTSequence is not present
+<A NAME="321"></A></FONT>        <FONT ID="SingleLineComment">// ds.putDS(Tags.RescaleSlope);                                        // Type 1C; ModalityLUTSequence is not present
+<A NAME="322"></A></FONT>        <FONT ID="SingleLineComment">// ds.putLO(Tags.RescaleType);                                         // Type 1C; ModalityLUTSequence is not present; arbitrary text
+<A NAME="323"></A></FONT>        
+<A NAME="324"></A>        <FONT ID="SingleLineComment">// Image IE, VOI LUT Module, PS 3.3 - C.11.2, U
+<A NAME="325"></A></FONT>        <FONT ID="SingleLineComment">// ds.putDS(Tags.WindowCenter);                                        // Type 3
+<A NAME="326"></A></FONT>        <FONT ID="SingleLineComment">// ds.putDS(Tags.WindowWidth);                                         // Type 1C; WindowCenter is present
+<A NAME="327"></A></FONT>        <FONT ID="SingleLineComment">// ds.putLO(Tags.WindowCenterWidthExplanation);                        // Type 3; arbitrary text
+<A NAME="328"></A></FONT>        
+<A NAME="329"></A>        <FONT ID="SingleLineComment">// Image IE, SOP Common Module, PS 3.3 - C.12.1, M
+<A NAME="330"></A></FONT>        ds.putUI(Tags.SOPClassUID, UIDs.SecondaryCaptureImageStorage);      <FONT ID="SingleLineComment">// Type 1
+<A NAME="331"></A></FONT>        ds.putUI(Tags.SOPInstanceUID, uidGen.createUID());                  <FONT ID="SingleLineComment">// Type 1
+<A NAME="332"></A></FONT>        
+<A NAME="333"></A>        <FONT ID="Return">return</FONT> ds;
+<A NAME="334"></A>    }
+<A NAME="335"></A>    
+<A NAME="336"></A>}
+<A NAME="337"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">TestReader</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

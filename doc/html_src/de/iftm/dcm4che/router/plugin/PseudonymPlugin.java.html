@@ -1,0 +1,277 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.plugin.PseudonymPlugin (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">PseudonymPlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  PseudonymPlugin.java
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Copyright (c) 2003 by
+<A NAME="5"></A> *
+<A NAME="6"></A> *  IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="7"></A> *  VISUS Technology Transfer GmbH
+<A NAME="8"></A> *
+<A NAME="9"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="10"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="11"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="12"></A> *  (at your option) any later version.
+<A NAME="13"></A> *
+<A NAME="14"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="15"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="16"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="17"></A> *  Lesser General Public License for more details.
+<A NAME="18"></A> *
+<A NAME="19"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="20"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="21"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="22"></A> *
+<A NAME="23"></A> *
+<A NAME="24"></A> *****************************************************************************/</FONT>
+<A NAME="25"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.plugin.index.html" target="packageFrame">de.iftm.dcm4che.router.plugin</A>;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">de.iftm.dcm4che.router.property.DicomRouterProperties</A>;
+<A NAME="28"></A>
+<A NAME="29"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="30"></A>
+<A NAME="31"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="32"></A>
+<A NAME="33"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.*;
+<A NAME="34"></A>
+<A NAME="35"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="36"></A>
+<A NAME="37"></A>
+<A NAME="38"></A><FONT ID="FormalComment">/**
+<A NAME="39"></A> * This plugin replaces the PatientName with a pseudonym. The plugin supports
+<A NAME="40"></A> * the properties which start with the key PseudonymPlugin and have the subkeys:&lt;br&gt;
+<A NAME="41"></A> * &lt;br&gt;
+<A NAME="42"></A> * type&lt;br&gt;
+<A NAME="43"></A> * The key may have one of the following predefined values:&lt;br&gt;
+<A NAME="44"></A> * #Initials2_Birdat4&lt;br&gt;
+<A NAME="45"></A> * Creates a new Patientname: ii_bbbbbb with&lt;br&gt;
+<A NAME="46"></A> * i the initials of the patient: name surename&lt;br&gt;
+<A NAME="47"></A> * b patient birth date&lt;br&gt;
+<A NAME="48"></A> * &lt;br&gt;
+<A NAME="49"></A> * #Mod2Acqdat8_Birdat8&lt;br&gt;
+<A NAME="50"></A> * Creates a new Patientname: mmaaaaaaaa_bbbbbbbb with&lt;br&gt;
+<A NAME="51"></A> * m modality&lt;br&gt;
+<A NAME="52"></A> * a acquisition date&lt;br&gt;
+<A NAME="53"></A> * b patient birth date&lt;br&gt;
+<A NAME="54"></A> * &lt;br&gt;
+<A NAME="55"></A> * Default value: #Initials2_Birdat4&lt;br&gt;
+<A NAME="56"></A> *
+<A NAME="57"></A> * @author Thomas Hacklaender
+<A NAME="58"></A> * @version 2003.11.14
+<A NAME="59"></A> */</FONT>
+<A NAME="60"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> PseudonymPlugin <FONT ID="Extends">extends</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">DicomRouterPlugin</A> {
+<A NAME="61"></A>    <FONT ID="FormalComment">/** Value of the type of pseudonym. */</FONT>
+<A NAME="62"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> INITIALS2_BIRDAT6 = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="63"></A>    
+<A NAME="64"></A>    <FONT ID="FormalComment">/** Value of the type of pseudonym. */</FONT>
+<A NAME="65"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Final">final</FONT> <FONT ID="Int">int</FONT> MOD2ACQDAT8_BIRDAT8 = <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="66"></A>    
+<A NAME="67"></A>    <FONT ID="FormalComment">/** The version string */</FONT>
+<A NAME="68"></A>    <FONT ID="Final">final</FONT> String VERSION = <FONT ID="StringLiteral">"2006.11.10"</FONT>;
+<A NAME="69"></A>    
+<A NAME="70"></A>    <FONT ID="FormalComment">/** The logger for this plugin */</FONT>
+<A NAME="71"></A>    Logger log = Logger.getLogger(<A HREF="../../../../../de/iftm/dcm4che/router/plugin/PseudonymPlugin.java.html">PseudonymPlugin</A>.<FONT ID="Class">class</FONT>);
+<A NAME="72"></A>    
+<A NAME="73"></A>    <FONT ID="FormalComment">/** The properties of this plugin */</FONT>
+<A NAME="74"></A>    <A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">Properties</A> props = <FONT ID="Null">null</FONT>;
+<A NAME="75"></A>    
+<A NAME="76"></A>    <FONT ID="SingleLineComment">// Local fields defined by properties:
+<A NAME="77"></A></FONT>    
+<A NAME="78"></A>    <FONT ID="FormalComment">/** Type of pseudonym */</FONT>
+<A NAME="79"></A>    <FONT ID="Int">int</FONT> type = INITIALS2_BIRDAT6;
+<A NAME="80"></A>    
+<A NAME="81"></A>    <FONT ID="FormalComment">/**
+<A NAME="82"></A>     * Constructor.
+<A NAME="83"></A>     *
+<A NAME="84"></A>     */</FONT>
+<A NAME="85"></A>    <FONT ID="Public">public</FONT> PseudonymPlugin() {
+<A NAME="86"></A>        <FONT ID="SingleLineComment">// Nichts zu tun.
+<A NAME="87"></A></FONT>    }
+<A NAME="88"></A>    
+<A NAME="89"></A>    <FONT ID="FormalComment">/**
+<A NAME="90"></A>     * Inits the DicomRouterPlugin with the specified Properties.
+<A NAME="91"></A>     * @param p  Properties containing the configuration of the plugin
+<A NAME="92"></A>     */</FONT>
+<A NAME="93"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> init(<A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">Properties</A> p) {
+<A NAME="94"></A>        String s;
+<A NAME="95"></A>        
+<A NAME="96"></A>        <FONT ID="SingleLineComment">// Properties lokal speichern
+<A NAME="97"></A></FONT>        props = p;
+<A NAME="98"></A>        
+<A NAME="99"></A>        <FONT ID="SingleLineComment">// Art der Pseudonymisierung festlegen
+<A NAME="100"></A></FONT>        s = props.getProperty(<FONT ID="StringLiteral">"type"</FONT>);
+<A NAME="101"></A>        
+<A NAME="102"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="103"></A>            <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"#Mod2Acqdat8_Birdat8"</FONT>)) {
+<A NAME="104"></A>                type = MOD2ACQDAT8_BIRDAT8;
+<A NAME="105"></A>            } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (s.equals(<FONT ID="StringLiteral">"#Initials2_Birdat6"</FONT>)) {
+<A NAME="106"></A>                type = INITIALS2_BIRDAT6;
+<A NAME="107"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="108"></A>                log.warn(<FONT ID="StringLiteral">"Unknown pseudonym type in properties: "</FONT> + s +
+<A NAME="109"></A>                        <FONT ID="StringLiteral">". Replaced by #Initials2_Birdat6"</FONT>);
+<A NAME="110"></A>            }
+<A NAME="111"></A>        }
+<A NAME="112"></A>    }
+<A NAME="113"></A>    
+<A NAME="114"></A>    <FONT ID="FormalComment">/**
+<A NAME="115"></A>     * Returns a version string.
+<A NAME="116"></A>     *
+<A NAME="117"></A>     * @return The version string
+<A NAME="118"></A>     */</FONT>
+<A NAME="119"></A>    <FONT ID="Public">public</FONT> String getVersion() {
+<A NAME="120"></A>        <FONT ID="Return">return</FONT> VERSION;
+<A NAME="121"></A>    }
+<A NAME="122"></A>
+<A NAME="123"></A>    
+<A NAME="124"></A>    <FONT ID="FormalComment">/**
+<A NAME="125"></A>     * Closes the Plugin.
+<A NAME="126"></A>     */</FONT>
+<A NAME="127"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> close() {
+<A NAME="128"></A>        <FONT ID="SingleLineComment">// Nichts zu tun.
+<A NAME="129"></A></FONT>    }
+<A NAME="130"></A>    
+<A NAME="131"></A>    <FONT ID="FormalComment">/**
+<A NAME="132"></A>     * Contains the proccesing of this plugin. This implementation handels all
+<A NAME="133"></A>     * exeptions inside the method and sends logging information about the exeption.
+<A NAME="134"></A>     * 
+<A NAME="135"></A>     * 
+<A NAME="136"></A>     * 
+<A NAME="137"></A>     * @param dataset The Dataset to process.
+<A NAME="138"></A>     * @return If succesfull CONTINUE, REQUEST_ABORT_RECEIVER otherwise
+<A NAME="139"></A>     */</FONT>
+<A NAME="140"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> process(Dataset dataset) {
+<A NAME="141"></A>        String originalName;
+<A NAME="142"></A>        String newName = <FONT ID="StringLiteral">"Pseudonym"</FONT>;
+<A NAME="143"></A>        PersonName pn;
+<A NAME="144"></A>        
+<A NAME="145"></A>        <FONT ID="SingleLineComment">// Nur dann weitermachen, wenn ein Datset vorhanden ist
+<A NAME="146"></A></FONT>        <FONT ID="If">if</FONT> (dataset == <FONT ID="Null">null</FONT>) {
+<A NAME="147"></A>            log.warn(<FONT ID="StringLiteral">"No Dataset given."</FONT>);
+<A NAME="148"></A>            
+<A NAME="149"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="150"></A>        }
+<A NAME="151"></A>        
+<A NAME="152"></A>        originalName = dataset.getString(Tags.PatientName);
+<A NAME="153"></A>        
+<A NAME="154"></A>        <FONT ID="Switch">switch</FONT> (type) {
+<A NAME="155"></A>            <FONT ID="Case">case</FONT> INITIALS2_BIRDAT6:
+<A NAME="156"></A>                newName = initials2_Birdat6(dataset);
+<A NAME="157"></A>                
+<A NAME="158"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="159"></A>                
+<A NAME="160"></A>            <FONT ID="Case">case</FONT> MOD2ACQDAT8_BIRDAT8:
+<A NAME="161"></A>                newName = mod2Acqdat8_Birdat8(dataset);
+<A NAME="162"></A>                
+<A NAME="163"></A>                <FONT ID="Break">break</FONT>;
+<A NAME="164"></A>        }
+<A NAME="165"></A>        
+<A NAME="166"></A>        pn = DcmObjectFactory.getInstance().newPersonName(newName);
+<A NAME="167"></A>        dataset.putPN(Tags.PatientName, pn);
+<A NAME="168"></A>        
+<A NAME="169"></A>        <FONT ID="If">if</FONT> (log.isInfoEnabled()) {
+<A NAME="170"></A>            log.info(<FONT ID="StringLiteral">"PatientName "</FONT> + originalName + <FONT ID="StringLiteral">" replaced by: "</FONT> +
+<A NAME="171"></A>                    newName);
+<A NAME="172"></A>        }
+<A NAME="173"></A>        
+<A NAME="174"></A>        <FONT ID="SingleLineComment">// Plugin ohne Fehler beendet
+<A NAME="175"></A></FONT>        <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="176"></A>    }
+<A NAME="177"></A>    
+<A NAME="178"></A>    <FONT ID="FormalComment">/**
+<A NAME="179"></A>     * Creates a new Patientname: ii_bbbbbb with&lt;br&gt;
+<A NAME="180"></A>     * i the initials of the patient: name surename&lt;br&gt;
+<A NAME="181"></A>     * b patient birth date&lt;br&gt;
+<A NAME="182"></A>     * @param ds the Dataset to process
+<A NAME="183"></A>     *
+<A NAME="184"></A>     * @return the patientname
+<A NAME="185"></A>     */</FONT>
+<A NAME="186"></A>    <FONT ID="Protected">protected</FONT> String initials2_Birdat6(Dataset ds) {
+<A NAME="187"></A>        <FONT ID="Int">int</FONT> i;
+<A NAME="188"></A>        String pseudonym = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="189"></A>        String patientName;
+<A NAME="190"></A>        String patientBirthDate;
+<A NAME="191"></A>        
+<A NAME="192"></A>        <FONT ID="SingleLineComment">// C.7.1.1 Patient Module
+<A NAME="193"></A></FONT>        <FONT ID="If">if</FONT> ((patientName = ds.getString(Tags.PatientName)) == <FONT ID="Null">null</FONT>) {
+<A NAME="194"></A>            patientName = <FONT ID="StringLiteral">"X^X"</FONT>;
+<A NAME="195"></A>            log.warn(<FONT ID="StringLiteral">"Can't find PatientName tag. Replaced by: X^X"</FONT>);
+<A NAME="196"></A>        }
+<A NAME="197"></A>        
+<A NAME="198"></A>        <FONT ID="If">if</FONT> ((patientBirthDate = ds.getString(Tags.PatientBirthDate)) == <FONT ID="Null">null</FONT>) {
+<A NAME="199"></A>            patientBirthDate = <FONT ID="StringLiteral">"20000101"</FONT>;
+<A NAME="200"></A>            log.warn(<FONT ID="StringLiteral">"Can't find PatientBirthDate tag. Replaced by: 20000101"</FONT>);
+<A NAME="201"></A>        }
+<A NAME="202"></A>        
+<A NAME="203"></A>        pseudonym += patientName.substring(<FONT ID="IntegerLiteral">0</FONT>, <FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="204"></A>        i = patientName.indexOf(<FONT ID="CharacerLiteral">'^'</FONT>);
+<A NAME="205"></A>        
+<A NAME="206"></A>        <FONT ID="If">if</FONT> ((i != -<FONT ID="IntegerLiteral">1</FONT>) &amp; (patientName.length() &gt; i)) {
+<A NAME="207"></A>            pseudonym += patientName.substring(i + <FONT ID="IntegerLiteral">1</FONT>, i + <FONT ID="IntegerLiteral">2</FONT>);
+<A NAME="208"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="209"></A>            pseudonym += <FONT ID="StringLiteral">"_"</FONT>;
+<A NAME="210"></A>        }
+<A NAME="211"></A>        
+<A NAME="212"></A>        pseudonym += (<FONT ID="StringLiteral">"_"</FONT> + patientBirthDate.substring(<FONT ID="IntegerLiteral">2</FONT>, <FONT ID="IntegerLiteral">8</FONT>));
+<A NAME="213"></A>        
+<A NAME="214"></A>        <FONT ID="Return">return</FONT> pseudonym;
+<A NAME="215"></A>    }
+<A NAME="216"></A>    
+<A NAME="217"></A>    <FONT ID="FormalComment">/**
+<A NAME="218"></A>     * Creates a new Patientname: mmaaaaaaaa_bbbbbbbb with&lt;br&gt;
+<A NAME="219"></A>     * m modality&lt;br&gt;
+<A NAME="220"></A>     * a acquisition date&lt;br&gt;
+<A NAME="221"></A>     * b patient birth date&lt;br&gt;
+<A NAME="222"></A>     * @param ds the Dataset to process
+<A NAME="223"></A>     *
+<A NAME="224"></A>     * @return the patientname
+<A NAME="225"></A>     */</FONT>
+<A NAME="226"></A>    <FONT ID="Protected">protected</FONT> String mod2Acqdat8_Birdat8(Dataset ds) {
+<A NAME="227"></A>        String modality;
+<A NAME="228"></A>        String acquisitionDate;
+<A NAME="229"></A>        String patientBirthDate;
+<A NAME="230"></A>        
+<A NAME="231"></A>        <FONT ID="If">if</FONT> ((modality = ds.getString(Tags.Modality)) == <FONT ID="Null">null</FONT>) {
+<A NAME="232"></A>            modality = <FONT ID="StringLiteral">"XX"</FONT>;
+<A NAME="233"></A>            log.warn(<FONT ID="StringLiteral">"Can't find Modality tag. Replaced by: XX"</FONT>);
+<A NAME="234"></A>        }
+<A NAME="235"></A>        
+<A NAME="236"></A>        <FONT ID="If">if</FONT> ((acquisitionDate = ds.getString(Tags.AcquisitionDate)) == <FONT ID="Null">null</FONT>) {
+<A NAME="237"></A>            acquisitionDate = <FONT ID="StringLiteral">"20030101"</FONT>;
+<A NAME="238"></A>            log.warn(<FONT ID="StringLiteral">"Can't find AcquisitionDate tag. Replaced by: 20030101"</FONT>);
+<A NAME="239"></A>        }
+<A NAME="240"></A>        
+<A NAME="241"></A>        <FONT ID="If">if</FONT> ((patientBirthDate = ds.getString(Tags.PatientBirthDate)) == <FONT ID="Null">null</FONT>) {
+<A NAME="242"></A>            patientBirthDate = <FONT ID="StringLiteral">"20000101"</FONT>;
+<A NAME="243"></A>            log.warn(<FONT ID="StringLiteral">"Can't find PatientBirthDate tag. Replaced by: 20000101"</FONT>);
+<A NAME="244"></A>        }
+<A NAME="245"></A>        
+<A NAME="246"></A>        <FONT ID="Return">return</FONT> modality + acquisitionDate + <FONT ID="StringLiteral">"_"</FONT> + patientBirthDate;
+<A NAME="247"></A>    }
+<A NAME="248"></A>}
+<A NAME="249"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">PseudonymPlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

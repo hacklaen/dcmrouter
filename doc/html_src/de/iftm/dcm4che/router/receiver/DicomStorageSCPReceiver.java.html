@@ -1,0 +1,364 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.receiver.DicomStorageSCPReceiver (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DicomStorageSCPReceiver</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  Copyright (c) 2006 by
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Dr. Thomas Hacklaender @ IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="5"></A> *
+<A NAME="6"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="7"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="8"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="9"></A> *  (at your option) any later version.
+<A NAME="10"></A> *
+<A NAME="11"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="12"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="13"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="14"></A> *  Lesser General Public License for more details.
+<A NAME="15"></A> *
+<A NAME="16"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="17"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="18"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="19"></A> *
+<A NAME="20"></A> *****************************************************************************/</FONT>
+<A NAME="21"></A>
+<A NAME="22"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.receiver.index.html" target="packageFrame">de.iftm.dcm4che.router.receiver</A>;
+<A NAME="23"></A>
+<A NAME="24"></A><FONT ID="Import">import</FONT> java.io.*;
+<A NAME="25"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="26"></A><FONT ID="Import">import</FONT> java.net.*;
+<A NAME="27"></A><FONT ID="Import">import</FONT> java.security.GeneralSecurityException;
+<A NAME="28"></A><FONT ID="Import">import</FONT> java.text.ParseException;
+<A NAME="29"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.property.index.html" target="packageFrame">de.iftm.dcm4che.router.property.*</A>;
+<A NAME="30"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">de.iftm.dcm4che.router.plugin.DicomRouterPlugin</A>;
+<A NAME="31"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/PluginChain.java.html">de.iftm.dcm4che.router.plugin.PluginChain</A>;
+<A NAME="32"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterException.java.html">de.iftm.dcm4che.router.util.DicomRouterException</A>;
+<A NAME="33"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEvent.java.html">de.iftm.dcm4che.router.util.DicomRouterEvent</A>;
+<A NAME="34"></A>
+<A NAME="35"></A><FONT ID="Import">import</FONT> de.iftm.dcm4che.services.ConfigProperties;
+<A NAME="36"></A><FONT ID="Import">import</FONT> de.iftm.dcm4che.services.StorageService;
+<A NAME="37"></A><FONT ID="Import">import</FONT> de.iftm.dcm4che.services.StorageServiceEvent;
+<A NAME="38"></A><FONT ID="Import">import</FONT> de.iftm.dcm4che.services.StorageServiceEventListener;
+<A NAME="39"></A>
+<A NAME="40"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="41"></A><FONT ID="Import">import</FONT> org.dcm4che.net.*;
+<A NAME="42"></A>
+<A NAME="43"></A>
+<A NAME="44"></A><FONT ID="FormalComment">/**
+<A NAME="45"></A> * This class initializes a DICOM serverand receives incoming DICOM objects.
+<A NAME="46"></A> * To be able to adopt this fuctionality to upcoming versions of the dcm4che
+<A NAME="47"></A> * package most of the functionality is done by the sample program &lt;CODE&gt;DcmRcv&lt;/CODE&gt;
+<A NAME="48"></A> * coming with dcm4che.
+<A NAME="49"></A> *
+<A NAME="50"></A> * &lt;p&gt;&lt;CODE&gt;DcmRcv&lt;/CODE&gt; is fully configured by an object of Configuration. It
+<A NAME="51"></A> * creates an instance of &lt;CODE&gt;Server&lt;/CODE&gt; and start the server. Inside the
+<A NAME="52"></A> * &lt;CODE&gt;initPresContext&lt;/CODE&gt; method the instance itself is registerd as a
+<A NAME="53"></A> * &lt;CODE&gt;DcmServiceBase&lt;/CODE&gt; of the server.
+<A NAME="54"></A> *
+<A NAME="55"></A> * &lt;p&gt;The &lt;CODE&gt;Server&lt;/CODE&gt; implements a thread-pool and assigns every association
+<A NAME="56"></A> * with a separat thread. Each thread calls the handlers of the service elements
+<A NAME="57"></A> * defined in the registered &lt;CODE&gt;DcmServiceBase&lt;/CODE&gt; classes.
+<A NAME="58"></A> *
+<A NAME="59"></A> * &lt;p&gt;As the &lt;CODE&gt;DcmRcv&lt;/CODE&gt; overrides the &lt;CODE&gt;doCStore&lt;/CODE&gt; method of the
+<A NAME="60"></A> * default &lt;CODE&gt;DcmServiceBase&lt;/CODE&gt; implementation inside dcm4che all received
+<A NAME="61"></A> * objects are send to the &lt;CODE&gt;doCStore&lt;/CODE&gt; methode of &lt;CODE&gt;DcmRcv&lt;/CODE&gt;.
+<A NAME="62"></A> *
+<A NAME="63"></A> * &lt;p&gt;To avoid modifying DcmRcv to mutch, the functionality of &lt;CODE&gt;doCStore&lt;/CODE&gt;
+<A NAME="64"></A> * methode is replaced by a call to &lt;CODE&gt;DicomStorageSCPReceiver::doCStore()&lt;/CODE&gt;,
+<A NAME="65"></A> * which actually handels the processing.
+<A NAME="66"></A> * @author thacklaender
+<A NAME="67"></A> * @version 2006.04.24
+<A NAME="68"></A> */</FONT>
+<A NAME="69"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> DicomStorageSCPReceiver <FONT ID="Extends">extends</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/receiver/DicomReceiver.java.html">DicomReceiver</A> <FONT ID="Implements">implements</FONT> StorageServiceEventListener {
+<A NAME="70"></A>    
+<A NAME="71"></A>    <FONT ID="FormalComment">/** The version string */</FONT>
+<A NAME="72"></A>    <FONT ID="Public">public</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> String VERSION = <FONT ID="StringLiteral">"2006.11.10"</FONT>;
+<A NAME="73"></A>    
+<A NAME="74"></A>    <FONT ID="FormalComment">/** The working class. */</FONT>
+<A NAME="75"></A>    StorageService storageService = <FONT ID="Null">null</FONT>;
+<A NAME="76"></A>    
+<A NAME="77"></A>    <FONT ID="FormalComment">/** The configuration properties of the StorageService working class. */</FONT>
+<A NAME="78"></A>    ConfigProperties cfg = <FONT ID="Null">null</FONT>;
+<A NAME="79"></A>    
+<A NAME="80"></A>    <FONT ID="FormalComment">/** Holds the chain of plugins. */</FONT>
+<A NAME="81"></A>    <FONT ID="Private">private</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/PluginChain.java.html">PluginChain</A> pluginChain = <FONT ID="Null">null</FONT>;
+<A NAME="82"></A>    
+<A NAME="83"></A>    
+<A NAME="84"></A>    <FONT ID="SingleLineComment">// &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  Local fields defined by properties: &gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="85"></A></FONT>    
+<A NAME="86"></A>    <FONT ID="FormalComment">/** The transmission protocol to use.
+<A NAME="87"></A>     * &lt;p&gt;Normally the 'dicom' protocol is used. The data are send unencrypted.
+<A NAME="88"></A>     * If you would like to use the encrypted transmission, use the 'dicom-tls'
+<A NAME="89"></A>     * protocol. If you use it, you have to define some other properties, named 'tls_xxx'.
+<A NAME="90"></A>     * &lt;p&gt;dicom-tls: accept TLS connection (offer AES and DES encryption)
+<A NAME="91"></A>     * &lt;p&gt;dicom-tls.aes : accept TLS connection (force AES or DES encryption)
+<A NAME="92"></A>     * &lt;p&gt;dicom-tls.3des: accept TLS connection (force DES encryption)
+<A NAME="93"></A>     * &lt;p&gt;dicom-tls.nodes : accept TLS connection (no encryption) */</FONT>
+<A NAME="94"></A>    <FONT ID="Private">private</FONT> String protocol = <FONT ID="StringLiteral">"dicom"</FONT>;
+<A NAME="95"></A>    
+<A NAME="96"></A>    <FONT ID="FormalComment">/** Holds the port number of the server [default=104]. */</FONT>
+<A NAME="97"></A>    <FONT ID="Private">private</FONT> String port = <FONT ID="StringLiteral">"104"</FONT>;
+<A NAME="98"></A>    
+<A NAME="99"></A>    <FONT ID="FormalComment">/** Own AET (Application Entity Title).
+<A NAME="100"></A>     * Default is "&lt;any&gt;", that means association of any AET is accepted.
+<A NAME="101"></A>     * The provided property value should be a comma or space separated list of individual AETs.
+<A NAME="102"></A>     * Providing no value is equivalent to to a value "&lt;any&gt;". */</FONT>
+<A NAME="103"></A>    <FONT ID="Private">private</FONT> String called_aets = <FONT ID="Null">null</FONT>;
+<A NAME="104"></A>    
+<A NAME="105"></A>    <FONT ID="FormalComment">/** AETs  (Application Entity Titles) of the storage service users.
+<A NAME="106"></A>     * Default is "&lt;any&gt;", that means association of any AET is accepted.
+<A NAME="107"></A>     * The provided property value should be a comma or space separated list of individual AETs.
+<A NAME="108"></A>     * Providing no value is equivalent to to a value "&lt;any&gt;". */</FONT>
+<A NAME="109"></A>    <FONT ID="Private">private</FONT> String calling_aets = <FONT ID="Null">null</FONT>;
+<A NAME="110"></A>    
+<A NAME="111"></A>    
+<A NAME="112"></A>    <FONT ID="FormalComment">/**
+<A NAME="113"></A>     * Creates a new instance of DicomStorageSCPReceiver
+<A NAME="114"></A>     * @param props the properties for the receiver and plugins.
+<A NAME="115"></A>     */</FONT>
+<A NAME="116"></A>    <FONT ID="Public">public</FONT> DicomStorageSCPReceiver(Properties props) {
+<A NAME="117"></A>        <FONT ID="Super">super</FONT>(props);
+<A NAME="118"></A>        
+<A NAME="119"></A>        <FONT ID="SingleLineComment">// Initialise
+<A NAME="120"></A></FONT>        init();
+<A NAME="121"></A>    }
+<A NAME="122"></A>    
+<A NAME="123"></A>    
+<A NAME="124"></A>    <FONT ID="FormalComment">/**
+<A NAME="125"></A>     * Creates a new instance of DicomStorageSCPReceiver
+<A NAME="126"></A>     * @param uri the URI of the properties file for the receiver and plugins.
+<A NAME="127"></A>     */</FONT>
+<A NAME="128"></A>    <FONT ID="Public">public</FONT> DicomStorageSCPReceiver(String uri) <FONT ID="Throws">throws</FONT> IOException {
+<A NAME="129"></A>        <FONT ID="Super">super</FONT>(uri);
+<A NAME="130"></A>        
+<A NAME="131"></A>        <FONT ID="SingleLineComment">// Initialise
+<A NAME="132"></A></FONT>        init();
+<A NAME="133"></A>    }
+<A NAME="134"></A>    
+<A NAME="135"></A>    
+<A NAME="136"></A>    <FONT ID="FormalComment">/**
+<A NAME="137"></A>     * Creates a new instance of Class
+<A NAME="138"></A>     * @param argv the arguments passed to the programs main method.
+<A NAME="139"></A>     */</FONT>
+<A NAME="140"></A>    <FONT ID="Public">public</FONT> DicomStorageSCPReceiver(String[] argv) {
+<A NAME="141"></A>        <FONT ID="Super">super</FONT>(argv);
+<A NAME="142"></A>        
+<A NAME="143"></A>        <FONT ID="SingleLineComment">// Initialise
+<A NAME="144"></A></FONT>        init();
+<A NAME="145"></A>        
+<A NAME="146"></A>        <FONT ID="SingleLineComment">// Start automatically
+<A NAME="147"></A></FONT>        start();
+<A NAME="148"></A>    }
+<A NAME="149"></A>    
+<A NAME="150"></A>    
+<A NAME="151"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Static methods &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="152"></A></FONT>    
+<A NAME="153"></A>    <FONT ID="FormalComment">/**
+<A NAME="154"></A>     * @param argv the command line arguments
+<A NAME="155"></A>     */</FONT>
+<A NAME="156"></A>    <FONT ID="Public">public</FONT> <FONT ID="Static">static</FONT> <FONT ID="Void">void</FONT> main(String[] argv) {
+<A NAME="157"></A>        <FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/receiver/DicomStorageSCPReceiver.java.html">DicomStorageSCPReceiver</A>(argv);
+<A NAME="158"></A>    }
+<A NAME="159"></A>    
+<A NAME="160"></A>    
+<A NAME="161"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt; Public methods &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="162"></A></FONT>    
+<A NAME="163"></A>    
+<A NAME="164"></A>    <FONT ID="FormalComment">/**
+<A NAME="165"></A>     * Copies the relevant properties to local fields.
+<A NAME="166"></A>     */</FONT>
+<A NAME="167"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Void">void</FONT> init() {
+<A NAME="168"></A>        String  s;
+<A NAME="169"></A>        File f;
+<A NAME="170"></A>        URL url;
+<A NAME="171"></A>        
+<A NAME="172"></A>        <FONT ID="SingleLineComment">// Use properties set in the parent class DicomReceiver
+<A NAME="173"></A></FONT>        Properties props = drProperties.extractReceiverProperties();
+<A NAME="174"></A>        
+<A NAME="175"></A>        <FONT ID="SingleLineComment">// Read the default configuration properties for the working class StorageService
+<A NAME="176"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="177"></A>            url = StorageService.<FONT ID="Class">class</FONT>.getResource(<FONT ID="StringLiteral">"resources/StorageService.cfg"</FONT>);
+<A NAME="178"></A>            cfg = <FONT ID="New">new</FONT> ConfigProperties(url);
+<A NAME="179"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="180"></A>            log.error(<FONT ID="StringLiteral">"Can't load default configuration file from resource."</FONT>);
+<A NAME="181"></A>        }
+<A NAME="182"></A>        
+<A NAME="183"></A>        <FONT ID="If">if</FONT> (props == <FONT ID="Null">null</FONT>) {
+<A NAME="184"></A>            <FONT ID="SingleLineComment">// nichts zu tun
+<A NAME="185"></A></FONT>            <FONT ID="Return">return</FONT>;
+<A NAME="186"></A>        }
+<A NAME="187"></A>        
+<A NAME="188"></A>        <FONT ID="SingleLineComment">// called_aets
+<A NAME="189"></A></FONT>        s = props.getProperty(<FONT ID="StringLiteral">"called-aets"</FONT>);
+<A NAME="190"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="191"></A>            called_aets = s;
+<A NAME="192"></A>        }
+<A NAME="193"></A>        
+<A NAME="194"></A>        <FONT ID="SingleLineComment">// calling_aets
+<A NAME="195"></A></FONT>        s = props.getProperty(<FONT ID="StringLiteral">"calling-aets"</FONT>);
+<A NAME="196"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="197"></A>            calling_aets = s;
+<A NAME="198"></A>        }
+<A NAME="199"></A>        
+<A NAME="200"></A>        <FONT ID="SingleLineComment">// port
+<A NAME="201"></A></FONT>        s = props.getProperty(<FONT ID="StringLiteral">"port"</FONT>);
+<A NAME="202"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="203"></A>            <FONT ID="SingleLineComment">// port speichern
+<A NAME="204"></A></FONT>            port = s;
+<A NAME="205"></A>        }
+<A NAME="206"></A>        
+<A NAME="207"></A>        <FONT ID="SingleLineComment">// protocol
+<A NAME="208"></A></FONT>        s = props.getProperty(<FONT ID="StringLiteral">"protocol"</FONT>);
+<A NAME="209"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="210"></A>            <FONT ID="SingleLineComment">// protocol speichern
+<A NAME="211"></A></FONT>            protocol = s;
+<A NAME="212"></A>        }
+<A NAME="213"></A>        
+<A NAME="214"></A>        <FONT ID="SingleLineComment">// storage_cfg_uri
+<A NAME="215"></A></FONT>        <FONT ID="SingleLineComment">// Two forms are possible:
+<A NAME="216"></A></FONT>        <FONT ID="SingleLineComment">// 1. Absolute reference (file:/C:/a/b/c.txt): The reference is taken as is.
+<A NAME="217"></A></FONT>        <FONT ID="SingleLineComment">// 2. Relative reference (b/c.txt): The referece is relative to the package of the class de.iftm.dcm4che.services.StorageService
+<A NAME="218"></A></FONT>        s = props.getProperty(<FONT ID="StringLiteral">"storage-cfg-uri"</FONT>);
+<A NAME="219"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="220"></A>            <FONT ID="Try">try</FONT> {
+<A NAME="221"></A>                url = ConfigProperties.fileRefToURL(StorageService.<FONT ID="Class">class</FONT>.getResource(<FONT ID="StringLiteral">""</FONT>), s);
+<A NAME="222"></A>                cfg = <FONT ID="New">new</FONT> ConfigProperties(url);
+<A NAME="223"></A>            } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="224"></A>                log.error(<FONT ID="StringLiteral">"Error in storage-cfg-uri. Default values used."</FONT>);
+<A NAME="225"></A>            }
+<A NAME="226"></A>        }
+<A NAME="227"></A>        
+<A NAME="228"></A>    }
+<A NAME="229"></A>    
+<A NAME="230"></A>    
+<A NAME="231"></A>    <FONT ID="FormalComment">/**
+<A NAME="232"></A>     *
+<A NAME="233"></A>     */</FONT>
+<A NAME="234"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> start() {
+<A NAME="235"></A>        <A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEvent.java.html">DicomRouterEvent</A> dre;
+<A NAME="236"></A>        
+<A NAME="237"></A>        <FONT ID="SingleLineComment">// Info
+<A NAME="238"></A></FONT>        <FONT ID="If">if</FONT> (log.isInfoEnabled()) {
+<A NAME="239"></A>            log.info(<FONT ID="StringLiteral">"Version: "</FONT> + <FONT ID="This">this</FONT>.VERSION);
+<A NAME="240"></A>        }
+<A NAME="241"></A>        
+<A NAME="242"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="243"></A>            pluginChain = <FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/PluginChain.java.html">PluginChain</A>(drProperties);
+<A NAME="244"></A>        } <FONT ID="Catch">catch</FONT> (<A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterException.java.html">DicomRouterException</A> e) {
+<A NAME="245"></A>            log.error(e.getMessage());
+<A NAME="246"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="247"></A>        }
+<A NAME="248"></A>        
+<A NAME="249"></A>        pluginChain.initPlugins();
+<A NAME="250"></A>        
+<A NAME="251"></A>        <FONT ID="SingleLineComment">// Update the configuration properties with properties given to this class
+<A NAME="252"></A></FONT>        cfg.put(<FONT ID="StringLiteral">"protocol"</FONT>, protocol);
+<A NAME="253"></A>        cfg.put(<FONT ID="StringLiteral">"port"</FONT>, port);
+<A NAME="254"></A>        <FONT ID="If">if</FONT> (called_aets != <FONT ID="Null">null</FONT>) cfg.put(<FONT ID="StringLiteral">"called-aets"</FONT>, called_aets);
+<A NAME="255"></A>        <FONT ID="If">if</FONT> (calling_aets != <FONT ID="Null">null</FONT>) cfg.put(<FONT ID="StringLiteral">"calling-aets"</FONT>, calling_aets);
+<A NAME="256"></A>        
+<A NAME="257"></A>        <FONT ID="SingleLineComment">// Initialize the working class with the actual configuration properties.
+<A NAME="258"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="259"></A>            storageService = <FONT ID="New">new</FONT> StorageService(cfg);
+<A NAME="260"></A>        } <FONT ID="Catch">catch</FONT> (ParseException e) {
+<A NAME="261"></A>            log.error(<FONT ID="StringLiteral">"Can't configure Storage SCP."</FONT>);
+<A NAME="262"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="263"></A>        }
+<A NAME="264"></A>        
+<A NAME="265"></A>        <FONT ID="SingleLineComment">// Register to server as a listener for StorageServiceEvents
+<A NAME="266"></A></FONT>        storageService.addStorageServiceClassEventListener(<FONT ID="This">this</FONT>);
+<A NAME="267"></A>        
+<A NAME="268"></A>        <FONT ID="SingleLineComment">// Notify listeners: STARTING_EVENT
+<A NAME="269"></A></FONT>        dre = <FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEvent.java.html">DicomRouterEvent</A>(<FONT ID="This">this</FONT>);
+<A NAME="270"></A>        dre.setStartingEvent();
+<A NAME="271"></A>        fireDicomRouterEvent(dre);
+<A NAME="272"></A>        
+<A NAME="273"></A>        <FONT ID="SingleLineComment">// Start the instance of the working class
+<A NAME="274"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="275"></A>            storageService.start();
+<A NAME="276"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="277"></A>            log.error(<FONT ID="StringLiteral">"Can't start Storage SCP."</FONT>);
+<A NAME="278"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="279"></A>        }
+<A NAME="280"></A>        
+<A NAME="281"></A>        <FONT ID="Return">return</FONT> <FONT ID="True">true</FONT>;
+<A NAME="282"></A>    }
+<A NAME="283"></A>    
+<A NAME="284"></A>    
+<A NAME="285"></A>    <FONT ID="FormalComment">/**
+<A NAME="286"></A>     *
+<A NAME="287"></A>     */</FONT>
+<A NAME="288"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> stop() {
+<A NAME="289"></A>        <A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEvent.java.html">DicomRouterEvent</A> dre;
+<A NAME="290"></A>        
+<A NAME="291"></A>        storageService.stop();
+<A NAME="292"></A>        pluginChain.closePlugins();
+<A NAME="293"></A>        
+<A NAME="294"></A>        <FONT ID="SingleLineComment">// Notify listeners: FINISHED_EVENT
+<A NAME="295"></A></FONT>        dre = <FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEvent.java.html">DicomRouterEvent</A>(<FONT ID="This">this</FONT>);
+<A NAME="296"></A>        dre.setFinishedEvent();
+<A NAME="297"></A>        fireDicomRouterEvent(dre);
+<A NAME="298"></A>    }
+<A NAME="299"></A>    
+<A NAME="300"></A>    
+<A NAME="301"></A>    <FONT ID="FormalComment">/**
+<A NAME="302"></A>     * Handles StorageServiceEvents.
+<A NAME="303"></A>     * @param evt the event to hanle.
+<A NAME="304"></A>     */</FONT>
+<A NAME="305"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> handleStorageServiceEvent(StorageServiceEvent evt) {
+<A NAME="306"></A>        <FONT ID="Int">int</FONT>     chainResultCode;
+<A NAME="307"></A>        Dataset ds;
+<A NAME="308"></A>        <A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEvent.java.html">DicomRouterEvent</A> dre;
+<A NAME="309"></A>        
+<A NAME="310"></A>        ds = evt.getDataset();
+<A NAME="311"></A>        
+<A NAME="312"></A>        <FONT ID="SingleLineComment">// Notify listeners: NEXT_OBJECT_EVENT
+<A NAME="313"></A></FONT>        dre = <FONT ID="New">new</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/util/DicomRouterEvent.java.html">DicomRouterEvent</A>(<FONT ID="This">this</FONT>);
+<A NAME="314"></A>        dre.setNextObjectEvent(ds);
+<A NAME="315"></A>        fireDicomRouterEvent(dre);
+<A NAME="316"></A>        
+<A NAME="317"></A>        <FONT ID="SingleLineComment">// Process Dataset
+<A NAME="318"></A></FONT>        chainResultCode = pluginChain.process(ds);
+<A NAME="319"></A>        
+<A NAME="320"></A>        <FONT ID="If">if</FONT> (chainResultCode != DicomRouterPlugin.CONTINUE) {
+<A NAME="321"></A>            <FONT ID="SingleLineComment">// Abort processingthe DICOM object set
+<A NAME="322"></A></FONT>            stop();
+<A NAME="323"></A>        }
+<A NAME="324"></A>        
+<A NAME="325"></A>    }
+<A NAME="326"></A>    
+<A NAME="327"></A>}
+<A NAME="328"></A>
+<A NAME="329"></A><FONT ID="FormalComment">/**
+<A NAME="330"></A> * Revisions:
+<A NAME="331"></A> *
+<A NAME="332"></A> * 2006.11.10, hacklaender: Added DicomRouterEvent's.
+<A NAME="333"></A> * 2006.06.24, hacklaender: Replaced working class with StorageService.
+<A NAME="334"></A> * 2006.04.24, hacklaender: Added main method.
+<A NAME="335"></A> */</FONT>
+<A NAME="336"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">DicomStorageSCPReceiver</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

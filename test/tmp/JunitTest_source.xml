@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<dataset>
+<attr tag="00080000" vr="UL" pos="0" name="Group Length" vm="1" len="4">452</attr>
+<attr tag="00080005" vr="CS" pos="12" name="Specific Character Set" vm="1" len="10">ISO_IR 100</attr>
+<attr tag="00080008" vr="CS" pos="30" name="Image Type" vm="3" len="22">ORIGINAL\PRIMARY\OTHER</attr>
+<attr tag="00080016" vr="UI" pos="60" name="SOP Class UID" vm="1" len="26">1.2.840.10008.5.1.4.1.1.4</attr>
+<attr tag="00080018" vr="UI" pos="94" name="SOP Instance UID" vm="1" len="48">1.3.12.2.1107.5.2.4.7299.20030527085716000002011</attr>
+<attr tag="00080020" vr="DA" pos="150" name="Study Date" vm="1" len="8">20030527</attr>
+<attr tag="00080021" vr="DA" pos="166" name="Series Date" vm="1" len="8">20030527</attr>
+<attr tag="00080022" vr="DA" pos="182" name="Acquisition Date" vm="1" len="8">20030527</attr>
+<attr tag="00080023" vr="DA" pos="198" name="Content Date" vm="1" len="8">20030527</attr>
+<attr tag="00080030" vr="TM" pos="214" name="Study Time" vm="1" len="10">083342.763</attr>
+<attr tag="00080031" vr="TM" pos="232" name="Series Time" vm="1" len="10">085716.044</attr>
+<attr tag="00080032" vr="TM" pos="250" name="Acquisition Time" vm="1" len="10">085717.250</attr>
+<attr tag="00080033" vr="TM" pos="268" name="Content Time" vm="1" len="10">090058.046</attr>
+<attr tag="00080050" vr="SH" pos="286" name="Accession Number" vm="1" len="6">557656</attr>
+<attr tag="00080060" vr="CS" pos="300" name="Modality" vm="1" len="2">MR</attr>
+<attr tag="00080070" vr="LO" pos="310" name="Manufacturer" vm="1" len="8">SIEMENS </attr>
+<attr tag="00080080" vr="LO" pos="326" name="Institution Name" vm="1" len="22">Krankenhaus Nordstadt </attr>
+<attr tag="00080090" vr="PN" pos="356" name="Referring Physician's Name" vm="1" len="4">NE7 </attr>
+<attr tag="00081010" vr="SH" pos="368" name="Station Name" vm="1" len="4">MR01</attr>
+<attr tag="00081030" vr="LO" pos="380" name="Study Description" vm="1" len="14">MRT des Kopfes</attr>
+<attr tag="0008103E" vr="LO" pos="402" name="Series Description" vm="1" len="18">INFARKT/FLAIR_TRA </attr>
+<attr tag="00081070" vr="PN" pos="428" name="Operator's Name" vm="1" len="4">VGA </attr>
+<attr tag="00081090" vr="LO" pos="440" name="Manufacturer's Model Name" vm="1" len="16">MAGNETOM VISION </attr>
+<attr tag="00090000" vr="UL" pos="464" name="Group Length" vm="1" len="4">78</attr>
+<attr tag="00090010" vr="LO" pos="476" vm="1" len="14">SPI RELEASE 1 </attr>
+<attr tag="00090012" vr="LO" pos="498" vm="1" len="20">SIEMENS CM VA0  CMS </attr>
+<attr tag="00090013" vr="LO" pos="526" vm="1" len="20">SIEMENS CM VA0  LAB </attr>
+<attr tag="00100000" vr="UL" pos="554" name="Group Length" vm="1" len="4">104</attr>
+<attr tag="00100010" vr="PN" pos="566" name="Patient's Name" vm="1" len="30">Mustermann^Hans Werner^von^Dr.</attr>
+<attr tag="00100020" vr="LO" pos="604" name="Patient ID" vm="1" len="8">_365382 </attr>
+<attr tag="00100030" vr="DA" pos="620" name="Patient's Birth Date" vm="1" len="8">19450125</attr>
+<attr tag="00100040" vr="CS" pos="636" name="Patient's Sex" vm="1" len="2">M </attr>
+<attr tag="00101010" vr="AS" pos="646" name="Patient's Age" vm="1" len="4">058Y</attr>
+<attr tag="00101030" vr="DS" pos="658" name="Patient's Weight" vm="1" len="4">90.0</attr>
+<attr tag="00110000" vr="UL" pos="670" name="Group Length" vm="1" len="4">50</attr>
+<attr tag="00110010" vr="LO" pos="682" vm="1" len="14">SPI RELEASE 1 </attr>
+<attr tag="00110011" vr="LO" pos="704" vm="1" len="20">SIEMENS CM VA0  CMS </attr>
+<attr tag="00180000" vr="UL" pos="732" name="Group Length" vm="1" len="4">386</attr>
+<attr tag="00180015" vr="CS" pos="744" name="Body Part Examined" vm="0" len="0"/>
+<attr tag="00180020" vr="CS" pos="752" name="Scanning Sequence" vm="1" len="2">IR</attr>
+<attr tag="00180021" vr="CS" pos="762" name="Seq Variant" vm="1" len="4">OSP </attr>
+<attr tag="00180022" vr="CS" pos="774" name="Scan Options" vm="1" len="2">SP</attr>
+<attr tag="00180023" vr="CS" pos="784" name="MR Acquisition Type" vm="1" len="2">2D</attr>
+<attr tag="00180024" vr="SH" pos="794" name="Sequence Name" vm="1" len="6">tir1m7</attr>
+<attr tag="00180025" vr="CS" pos="808" name="Angio Flag" vm="1" len="2">N </attr>
+<attr tag="00180050" vr="DS" pos="818" name="Slice Thickness" vm="1" len="4">7.0 </attr>
+<attr tag="00180080" vr="DS" pos="830" name="Repetition Time" vm="1" len="6">9000.0</attr>
+<attr tag="00180081" vr="DS" pos="844" name="Echo Time" vm="1" len="6">119.0 </attr>
+<attr tag="00180082" vr="DS" pos="858" name="Inversion Time" vm="1" len="6">2609.0</attr>
+<attr tag="00180083" vr="DS" pos="872" name="Number of Averages" vm="1" len="4">1.0 </attr>
+<attr tag="00180084" vr="DS" pos="884" name="Imaging Frequency" vm="1" len="8">63.56229</attr>
+<attr tag="00180085" vr="SH" pos="900" name="Imaged Nucleus" vm="1" len="2">1H</attr>
+<attr tag="00180086" vr="IS" pos="910" name="Echo Number(s)" vm="1" len="2">1 </attr>
+<attr tag="00180087" vr="DS" pos="920" name="Magnetic Field Strength" vm="1" len="8">1.493806</attr>
+<attr tag="00180088" vr="DS" pos="936" name="Spacing Between Slices" vm="1" len="8">2.799996</attr>
+<attr tag="00180091" vr="IS" pos="952" name="Echo Train Length" vm="1" len="2">1 </attr>
+<attr tag="00180093" vr="DS" pos="962" name="Percent Sampling" vm="1" len="6">100.0 </attr>
+<attr tag="00180094" vr="DS" pos="976" name="Percent Phase Field of View" vm="1" len="4">75.0</attr>
+<attr tag="00181000" vr="LO" pos="988" name="Device Serial Number" vm="1" len="4">7299</attr>
+<attr tag="00181020" vr="LO" pos="1000" name="Software Version(s)" vm="1" len="6">VB33G </attr>
+<attr tag="00181200" vr="DA" pos="1014" name="Date of Last Calibration" vm="1" len="8">20030507</attr>
+<attr tag="00181201" vr="TM" pos="1030" name="Time of Last Calibration" vm="1" len="10">163212.000</attr>
+<attr tag="00181250" vr="SH" pos="1048" name="Receive Coil Name" vm="1" len="8">CP Head </attr>
+<attr tag="00181310" vr="US" pos="1064" name="Acquisition Matrix" vm="4" len="8">0\512\168\0</attr>
+<attr tag="00181312" vr="CS" pos="1080" name="In-plane Phase Encoding Direction" vm="1" len="4">ROW </attr>
+<attr tag="00181314" vr="DS" pos="1092" name="Flip Angle" vm="1" len="6">180.0 </attr>
+<attr tag="00181316" vr="DS" pos="1106" name="SAR" vm="1" len="4">0.0 </attr>
+<attr tag="00185100" vr="CS" pos="1118" name="Patient Position" vm="1" len="4">HFS </attr>
+<attr tag="00190000" vr="UL" pos="1130" name="Group Length" vm="1" len="4">112</attr>
+<attr tag="00190010" vr="LO" pos="1142" vm="1" len="20">SIEMENS CM VA0  CMS </attr>
+<attr tag="00190012" vr="LO" pos="1170" vm="1" len="20">SIEMENS MR VA0  GEN </attr>
+<attr tag="00190014" vr="LO" pos="1198" vm="1" len="20">SIEMENS MR VA0  COAD</attr>
+<attr tag="00190015" vr="LO" pos="1226" vm="1" len="20">SIEMENS CM VA0  ACQU</attr>
+<attr tag="00200000" vr="UL" pos="1254" name="Group Length" vm="1" len="4">412</attr>
+<attr tag="0020000D" vr="UI" pos="1266" name="Study Instance UID" vm="1" len="32">1.2.276.0.14.200.3215.13.557656</attr>
+<attr tag="0020000E" vr="UI" pos="1306" name="Series Instance UID" vm="1" len="46">1.3.12.2.1107.5.2.4.7299.20030527085716000002</attr>
+<attr tag="00200010" vr="SH" pos="1360" name="Study ID" vm="1" len="2">1 </attr>
+<attr tag="00200011" vr="IS" pos="1370" name="Series Number" vm="1" len="2">2 </attr>
+<attr tag="00200012" vr="IS" pos="1380" name="Acquisition Number" vm="1" len="2">1 </attr>
+<attr tag="00200013" vr="IS" pos="1390" name="Instance Number" vm="1" len="2">11</attr>
+<attr tag="00200030" vr="DS" pos="1400" name="Image Position (Retired)" vm="3" len="28">-106.3413\-106.9284\11.04715</attr>
+<attr tag="00200032" vr="DS" pos="1436" name="Image Position (Patient)" vm="3" len="30">-106.77104\-107.35812\11.04715</attr>
+<attr tag="00200035" vr="DS" pos="1474" name="Image Orientation (Retired)" vm="6" len="26">1.0\-0.0\-0.0\0.0\1.0\-0.0</attr>
+<attr tag="00200037" vr="DS" pos="1508" name="Image Orientation (Patient)" vm="6" len="26">1.0\-0.0\-0.0\0.0\1.0\-0.0</attr>
+<attr tag="00200050" vr="UN" pos="1542" name="Location (Retired)" vm="1" len="10">-11.04715 </attr>
+<attr tag="00200052" vr="UI" pos="1560" name="Frame of Reference UID" vm="1" len="42">1.3.12.2.1107.5.2.4.7299.20030527085407000</attr>
+<attr tag="00200070" vr="CS" pos="1610" name="Image Geometry Type (Retired)" vm="1" len="6">PLANAR</attr>
+<attr tag="00200080" vr="CS" pos="1624" name="Masking Image (Retired)" vm="0" len="0"/>
+<attr tag="00201001" vr="IS" pos="1632" name="Acquisitions in Series (Retired)" vm="1" len="4">1.0 </attr>
+<attr tag="00201040" vr="LO" pos="1644" name="Position Reference Indicator" vm="0" len="0"/>
+<attr tag="00201041" vr="DS" pos="1652" name="Slice Location" vm="1" len="10">-11.04715 </attr>
+<attr tag="00204000" vr="LT" pos="1670" name="Image Comments" vm="0" len="0"/>
+<attr tag="00210000" vr="UL" pos="1678" name="Group Length" vm="1" len="4">104</attr>
+<attr tag="00210010" vr="LO" pos="1690" vm="1" len="12">SIEMENS MED </attr>
+<attr tag="00210011" vr="LO" pos="1710" vm="1" len="20">SIEMENS CM VA0  CMS </attr>
+<attr tag="00210013" vr="LO" pos="1738" vm="1" len="20">SIEMENS MR VA0  GEN </attr>
+<attr tag="00210023" vr="LO" pos="1766" vm="1" len="20">SIEMENS MR VA0  RAW </attr>
+<attr tag="00280000" vr="UL" pos="1794" name="Group Length" vm="1" len="4">188</attr>
+<attr tag="00280002" vr="US" pos="1806" name="Samples per Pixel" vm="1" len="2">1</attr>
+<attr tag="00280004" vr="CS" pos="1816" name="Photometric Interpretation" vm="1" len="12">MONOCHROME2 </attr>
+<attr tag="00280005" vr="UN" pos="1836" name="Image Dimensions (Retired)" vm="1" len="2">\02\00</attr>
+<attr tag="00280010" vr="US" pos="1846" name="Rows" vm="1" len="2">256</attr>
+<attr tag="00280011" vr="US" pos="1856" name="Columns" vm="1" len="2">256</attr>
+<attr tag="00280030" vr="DS" pos="1866" name="Pixel Spacing" vm="2" len="18">0.859375\0.859375 </attr>
+<attr tag="00280040" vr="UN" pos="1892" name="Image Format (Retired)" vm="1" len="4">RECT</attr>
+<attr tag="00280100" vr="US" pos="1904" name="Bits Allocated" vm="1" len="2">16</attr>
+<attr tag="00280101" vr="US" pos="1914" name="Bits Stored" vm="1" len="2">12</attr>
+<attr tag="00280102" vr="US" pos="1924" name="High Bit" vm="1" len="2">11</attr>
+<attr tag="00280103" vr="US" pos="1934" name="Pixel Representation" vm="1" len="2">0</attr>
+<attr tag="00280200" vr="UN" pos="1944" name="Image Location (Retired)" vm="1" len="2">\E0</attr>
+<attr tag="00281050" vr="DS" pos="1954" name="Window Center" vm="2" len="12">412.0\412.0 </attr>
+<attr tag="00281051" vr="DS" pos="1974" name="Window Width" vm="2" len="12">888.0\888.0 </attr>
+<attr tag="00290000" vr="UL" pos="1994" name="Group Length" vm="1" len="4">28</attr>
+<attr tag="00290011" vr="LO" pos="2006" vm="1" len="20">SIEMENS CM VA0  CMS </attr>
+<attr tag="00400000" vr="UL" pos="2034" name="Group Length" vm="1" len="4">50</attr>
+<attr tag="00400007" vr="LO" pos="2046" name="Scheduled Procedure Step Description" vm="1" len="14">MRT des Kopfes</attr>
+<attr tag="00400009" vr="SH" pos="2068" name="Scheduled Procedure Step ID" vm="1" len="6">557656</attr>
+<attr tag="00401001" vr="SH" pos="2082" name="Requested Procedure ID" vm="1" len="6">557656</attr>
+<attr tag="00510000" vr="UL" pos="2096" name="Group Length" vm="1" len="4">28</attr>
+<attr tag="00510010" vr="LO" pos="2108" vm="1" len="20">SIEMENS CM VA0  CMS </attr>
+</dataset>

@@ -1,0 +1,228 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.property.PropertyString (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">PropertyString</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  PropertyUtil.java
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Copyright (c) 2003 by
+<A NAME="5"></A> *
+<A NAME="6"></A> *  IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="7"></A> *  VISUS Technology Transfer GmbH
+<A NAME="8"></A> *
+<A NAME="9"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="10"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="11"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="12"></A> *  (at your option) any later version.
+<A NAME="13"></A> *
+<A NAME="14"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="15"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="16"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="17"></A> *  Lesser General Public License for more details.
+<A NAME="18"></A> *
+<A NAME="19"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="20"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="21"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="22"></A> *
+<A NAME="23"></A> *
+<A NAME="24"></A> *****************************************************************************/</FONT>
+<A NAME="25"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.property.index.html" target="packageFrame">de.iftm.dcm4che.router.property</A>;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="28"></A>
+<A NAME="29"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="30"></A>
+<A NAME="31"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.*;
+<A NAME="32"></A>
+<A NAME="33"></A><FONT ID="Import">import</FONT> java.io.*;
+<A NAME="34"></A>
+<A NAME="35"></A><FONT ID="Import">import</FONT> java.net.*;
+<A NAME="36"></A>
+<A NAME="37"></A>
+<A NAME="38"></A><FONT ID="FormalComment">/**
+<A NAME="39"></A> * This class analyses property key and value strings with special meanings.
+<A NAME="40"></A> *
+<A NAME="41"></A> * @author Thomas Hacklaender
+<A NAME="42"></A> * @version 2004.02.15
+<A NAME="43"></A> */</FONT>
+<A NAME="44"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> PropertyString {
+<A NAME="45"></A>    <FONT ID="FormalComment">/** The logger for this plugin. */</FONT>
+<A NAME="46"></A>    <FONT ID="Static">static</FONT> Logger log = Logger.getLogger (<A HREF="../../../../../de/iftm/dcm4che/router/property/PropertyString.java.html">PropertyString</A>.<FONT ID="Class">class</FONT>);
+<A NAME="47"></A>
+<A NAME="48"></A>    <FONT ID="FormalComment">/** The string given in the constructor */</FONT>
+<A NAME="49"></A>    String s;
+<A NAME="50"></A>
+<A NAME="51"></A>    <FONT ID="FormalComment">/**
+<A NAME="52"></A>     * Creates a new PropertyString object.
+<A NAME="53"></A>     *
+<A NAME="54"></A>     * @param str the string to analyse
+<A NAME="55"></A>     */</FONT>
+<A NAME="56"></A>    <FONT ID="Public">public</FONT> PropertyString (String str) {
+<A NAME="57"></A>        s = str;
+<A NAME="58"></A>    }
+<A NAME="59"></A>
+<A NAME="60"></A>    <FONT ID="FormalComment">/**
+<A NAME="61"></A>     * Tests, if the PropertyString starts with a lead in character. A character
+<A NAME="62"></A>     * is lead in characeter, if the PropertyString is not null, its length is
+<A NAME="63"></A>     * graeter than 1 and the first and second character are different.
+<A NAME="64"></A>     *
+<A NAME="65"></A>     * @param c the lead in character to test
+<A NAME="66"></A>     *
+<A NAME="67"></A>     * @return true, if the PropertyString starts with the given lead in character.
+<A NAME="68"></A>     */</FONT>
+<A NAME="69"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Boolean">boolean</FONT> isLeadIn (<FONT ID="Char">char</FONT> c) {
+<A NAME="70"></A>        <FONT ID="SingleLineComment">// Wenn s nicht definiert, false
+<A NAME="71"></A></FONT>        <FONT ID="If">if</FONT> (s == <FONT ID="Null">null</FONT>) {
+<A NAME="72"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="73"></A>        }
+<A NAME="74"></A>        <FONT ID="If">if</FONT> (s.length () == <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="75"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="76"></A>        }
+<A NAME="77"></A>
+<A NAME="78"></A>        <FONT ID="SingleLineComment">// Wenn s nur ein Zeichen lang ist, kann kann nicht auf Leadin enschieden werden
+<A NAME="79"></A></FONT>        <FONT ID="If">if</FONT> (s.length () == <FONT ID="IntegerLiteral">1</FONT>) {
+<A NAME="80"></A>            <FONT ID="Return">return</FONT> <FONT ID="False">false</FONT>;
+<A NAME="81"></A>        }
+<A NAME="82"></A>
+<A NAME="83"></A>        <FONT ID="SingleLineComment">// s ist mindestens 2 Zeichen lang
+<A NAME="84"></A></FONT>        <FONT ID="Return">return</FONT> (s.charAt (<FONT ID="IntegerLiteral">0</FONT>) == c) &amp; (s.charAt (<FONT ID="IntegerLiteral">1</FONT>) != c);
+<A NAME="85"></A>    }
+<A NAME="86"></A>
+<A NAME="87"></A>
+<A NAME="88"></A>    <FONT ID="FormalComment">/**
+<A NAME="89"></A>     * Tests, if the PropertyString starts with the lead in character '#'.
+<A NAME="90"></A>     *
+<A NAME="91"></A>     * @return true, if the PropertyString starts with the lead in character '#'.
+<A NAME="92"></A>     */</FONT>
+<A NAME="93"></A>    <FONT ID="Public">public</FONT> <FONT ID="Boolean">boolean</FONT> isCommand () {
+<A NAME="94"></A>        <FONT ID="Return">return</FONT> isLeadIn (<FONT ID="CharacerLiteral">'#'</FONT>);
+<A NAME="95"></A>    }
+<A NAME="96"></A>
+<A NAME="97"></A>
+<A NAME="98"></A>    <FONT ID="FormalComment">/**
+<A NAME="99"></A>     * Returns the command given in the PropertyString. A command is a PropertyString
+<A NAME="100"></A>     * that starts with the lead in character '#' without the '#' caharcter.
+<A NAME="101"></A>     *
+<A NAME="102"></A>     * @return the command or "" if the PropertyString does not start with the
+<A NAME="103"></A>     *         lead in character '#'.
+<A NAME="104"></A>     */</FONT>
+<A NAME="105"></A>    <FONT ID="Public">public</FONT> String getCommand () {
+<A NAME="106"></A>        <FONT ID="If">if</FONT> (!isCommand ()) {
+<A NAME="107"></A>            <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">""</FONT>;
+<A NAME="108"></A>        }
+<A NAME="109"></A>
+<A NAME="110"></A>        <FONT ID="Return">return</FONT> s.substring (<FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="111"></A>    }
+<A NAME="112"></A>
+<A NAME="113"></A>
+<A NAME="114"></A>    <FONT ID="FormalComment">/**
+<A NAME="115"></A>     * Gets the contents of the PropertyString. If it is a named tag or hexadecimal
+<A NAME="116"></A>     * tag the contents is the contents of the specified tag extracted from the
+<A NAME="117"></A>     * given Dataset. Else it is the String given in the constructor of the 
+<A NAME="118"></A>     * PropertyString.
+<A NAME="119"></A>     *
+<A NAME="120"></A>     * @param ds the Dataset the tag should be extracted from (if needed).
+<A NAME="121"></A>     *
+<A NAME="122"></A>     * @return the contents.
+<A NAME="123"></A>     */</FONT>
+<A NAME="124"></A>    <FONT ID="Public">public</FONT> String getContents (Dataset ds) {
+<A NAME="125"></A>        <FONT ID="SingleLineComment">// Wenn s ein Kommando ist, kein Inhalt.
+<A NAME="126"></A></FONT>        <FONT ID="If">if</FONT> (isCommand ()) {
+<A NAME="127"></A>            <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">""</FONT>;
+<A NAME="128"></A>        }
+<A NAME="129"></A>
+<A NAME="130"></A>        <FONT ID="SingleLineComment">// Named Tag
+<A NAME="131"></A></FONT>        <FONT ID="If">if</FONT> (isLeadIn (<FONT ID="CharacerLiteral">'$'</FONT>)) {
+<A NAME="132"></A>            <FONT ID="Return">return</FONT> getNamedTag (ds);
+<A NAME="133"></A>        }
+<A NAME="134"></A>
+<A NAME="135"></A>        <FONT ID="SingleLineComment">// Hexadecimal Tag
+<A NAME="136"></A></FONT>        <FONT ID="If">if</FONT> (isLeadIn (<FONT ID="CharacerLiteral">'@'</FONT>)) {
+<A NAME="137"></A>            <FONT ID="Return">return</FONT> getHexadecimalTag (ds);
+<A NAME="138"></A>        }
+<A NAME="139"></A>
+<A NAME="140"></A>        <FONT ID="SingleLineComment">// Der String ist selbst der Inhalt
+<A NAME="141"></A></FONT>        <FONT ID="Return">return</FONT> s;
+<A NAME="142"></A>    }
+<A NAME="143"></A>
+<A NAME="144"></A>
+<A NAME="145"></A>    <FONT ID="FormalComment">/**
+<A NAME="146"></A>     * Gets the contents of the named Tag specified in the PropertyString
+<A NAME="147"></A>     * from the given Dataset. A named tag starts with the lead in character
+<A NAME="148"></A>     * '$'. The name is the name of the tag specified in the class
+<A NAME="149"></A>     * org.dcm4che.dict.Tags. (Example: $PatientName)
+<A NAME="150"></A>     *
+<A NAME="151"></A>     * @param ds the Dataset the tag should be extracted from.
+<A NAME="152"></A>     *
+<A NAME="153"></A>     * @return the contens of the tag.
+<A NAME="154"></A>     */</FONT>
+<A NAME="155"></A>    <FONT ID="Protected">protected</FONT> String getNamedTag (Dataset ds) {
+<A NAME="156"></A>        String value;
+<A NAME="157"></A>
+<A NAME="158"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="159"></A>            value = ds.getString (Tags.forName (s.substring (<FONT ID="IntegerLiteral">1</FONT>)));
+<A NAME="160"></A>            <FONT ID="If">if</FONT> (value == <FONT ID="Null">null</FONT>) {
+<A NAME="161"></A>                <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">""</FONT>;
+<A NAME="162"></A>            }
+<A NAME="163"></A>
+<A NAME="164"></A>            <FONT ID="Return">return</FONT> value;
+<A NAME="165"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="166"></A>            log.warn (<FONT ID="StringLiteral">"Illegal property "</FONT> + s + <FONT ID="StringLiteral">" - Exception: "</FONT> + e.getMessage ());
+<A NAME="167"></A>
+<A NAME="168"></A>            <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">""</FONT>;
+<A NAME="169"></A>        }
+<A NAME="170"></A>    }
+<A NAME="171"></A>
+<A NAME="172"></A>
+<A NAME="173"></A>    <FONT ID="FormalComment">/**
+<A NAME="174"></A>     * Gets the contents of the hexadecimal Tag specified in the PropertyString
+<A NAME="175"></A>     * from the given Dataset. A hexadecimal tag starts with the lead in character
+<A NAME="176"></A>     * '@'. It is followed by the 4 character long hexadecimal representation of 
+<A NAME="177"></A>     * the group end the element number (Example: @00080020 for the StudyDate).
+<A NAME="178"></A>     *
+<A NAME="179"></A>     * @param ds the Dataset the tag should be extracted from.
+<A NAME="180"></A>     *
+<A NAME="181"></A>     * @return the contens of the tag.
+<A NAME="182"></A>     */</FONT>
+<A NAME="183"></A>    <FONT ID="Protected">protected</FONT> String getHexadecimalTag (Dataset ds) {
+<A NAME="184"></A>        String value;
+<A NAME="185"></A>
+<A NAME="186"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="187"></A>            value = ds.getString (Integer.parseInt (s.substring (<FONT ID="IntegerLiteral">1</FONT>), <FONT ID="IntegerLiteral">16</FONT>));
+<A NAME="188"></A>            <FONT ID="If">if</FONT> (value == <FONT ID="Null">null</FONT>) {
+<A NAME="189"></A>                <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">""</FONT>;
+<A NAME="190"></A>            }
+<A NAME="191"></A>
+<A NAME="192"></A>            <FONT ID="Return">return</FONT> value;
+<A NAME="193"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="194"></A>            log.warn (<FONT ID="StringLiteral">"Illegal property "</FONT> + s + <FONT ID="StringLiteral">" - Exception: "</FONT> + e.getMessage ());
+<A NAME="195"></A>
+<A NAME="196"></A>            <FONT ID="Return">return</FONT> <FONT ID="StringLiteral">""</FONT>;
+<A NAME="197"></A>        }
+<A NAME="198"></A>    }
+<A NAME="199"></A>}
+<A NAME="200"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">PropertyString</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

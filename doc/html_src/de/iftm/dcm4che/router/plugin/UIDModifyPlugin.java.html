@@ -1,0 +1,279 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.plugin.UIDModifyPlugin (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">UIDModifyPlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  UIDModifyPlugin.java
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Copyright (c) 2003 by
+<A NAME="5"></A> *
+<A NAME="6"></A> *  IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="7"></A> *  VISUS Technology Transfer GmbH
+<A NAME="8"></A> *
+<A NAME="9"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="10"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="11"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="12"></A> *  (at your option) any later version.
+<A NAME="13"></A> *
+<A NAME="14"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="15"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="16"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="17"></A> *  Lesser General Public License for more details.
+<A NAME="18"></A> *
+<A NAME="19"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="20"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="21"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="22"></A> *
+<A NAME="23"></A> *
+<A NAME="24"></A> *****************************************************************************/</FONT>
+<A NAME="25"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.plugin.index.html" target="packageFrame">de.iftm.dcm4che.router.plugin</A>;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">de.iftm.dcm4che.router.property.DicomRouterProperties</A>;
+<A NAME="28"></A>
+<A NAME="29"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="30"></A>
+<A NAME="31"></A><FONT ID="Import">import</FONT> org.dcm4che.*;
+<A NAME="32"></A>
+<A NAME="33"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="34"></A>
+<A NAME="35"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.*;
+<A NAME="36"></A>
+<A NAME="37"></A><FONT ID="Import">import</FONT> org.dcm4che.util.*;
+<A NAME="38"></A>
+<A NAME="39"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="40"></A>
+<A NAME="41"></A>
+<A NAME="42"></A><FONT ID="FormalComment">/**
+<A NAME="43"></A> * This plugin modifies the UID's. The following keys are supported:&lt;br&gt;
+<A NAME="44"></A> * &lt;br&gt;
+<A NAME="45"></A> * &lt;span style="font-style: italic;"&gt;SOPInstanceUID&lt;/span&gt;&lt;br&gt;
+<A NAME="46"></A> * Default value:  #newroot&lt;br&gt;
+<A NAME="47"></A> * &lt;br&gt;
+<A NAME="48"></A> * &lt;span style="font-style: italic;"&gt;StudyInstanceUID&lt;/span&gt;&lt;br&gt;
+<A NAME="49"></A> * Default value:  #newroot&lt;br&gt;
+<A NAME="50"></A> * &lt;br&gt;
+<A NAME="51"></A> * &lt;span style="font-style: italic;"&gt;SeriesInstanceUID&lt;/span&gt;&lt;br&gt;
+<A NAME="52"></A> * Default value:  #newroot&lt;br&gt;
+<A NAME="53"></A> * &lt;br&gt;
+<A NAME="54"></A> * &lt;br&gt;
+<A NAME="55"></A> * The property value describes how to modify the UID. There are three
+<A NAME="56"></A> * commands:&lt;br&gt;
+<A NAME="57"></A> * &lt;br&gt;
+<A NAME="58"></A> * &lt;span style="font-style: italic;"&gt;#original&lt;/span&gt;&lt;br&gt;
+<A NAME="59"></A> * The UID is not changed.&lt;br&gt;
+<A NAME="60"></A> * &lt;br&gt;
+<A NAME="61"></A> * &lt;span style="font-style: italic;"&gt;#new&lt;/span&gt;&lt;br&gt;
+<A NAME="62"></A> * A new UID is generated using  the root UID of the dcm4che library.&lt;br&gt;
+<A NAME="63"></A> * &lt;br&gt;
+<A NAME="64"></A> * &lt;span style="font-style: italic;"&gt;#newroot&lt;/span&gt;&lt;br&gt;
+<A NAME="65"></A> * The new UID is  constructed from the root UID of the dcm4che library as
+<A NAME="66"></A> * a praefix and  the remainder of the original UID as a postfix. The
+<A NAME="67"></A> * length of the  remainder is choosen in that way, that the length of the
+<A NAME="68"></A> * resulting UID  does not exceed 64 characters.&lt;br&gt;
+<A NAME="69"></A> * &lt;br&gt;
+<A NAME="70"></A> * @author Thomas Hacklaender
+<A NAME="71"></A> * @version 2003.11.14
+<A NAME="72"></A> */</FONT>
+<A NAME="73"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> UIDModifyPlugin <FONT ID="Extends">extends</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">DicomRouterPlugin</A> {
+<A NAME="74"></A>    <FONT ID="FormalComment">/** The version string */</FONT>
+<A NAME="75"></A>    <FONT ID="Final">final</FONT> String VERSION = <FONT ID="StringLiteral">"2006.11.10"</FONT>;
+<A NAME="76"></A>    
+<A NAME="77"></A>    <FONT ID="FormalComment">/** The logger for this plugin */</FONT>
+<A NAME="78"></A>    Logger log = Logger.getLogger(<A HREF="../../../../../de/iftm/dcm4che/router/plugin/UIDModifyPlugin.java.html">UIDModifyPlugin</A>.<FONT ID="Class">class</FONT>);
+<A NAME="79"></A>    
+<A NAME="80"></A>    <FONT ID="FormalComment">/** The properties of this plugin */</FONT>
+<A NAME="81"></A>    <A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">Properties</A> props = <FONT ID="Null">null</FONT>;
+<A NAME="82"></A>    
+<A NAME="83"></A>    <FONT ID="FormalComment">/** DOCUMENT ME! */</FONT>
+<A NAME="84"></A>    String sopCommand = <FONT ID="StringLiteral">"#newroot"</FONT>;
+<A NAME="85"></A>    
+<A NAME="86"></A>    <FONT ID="FormalComment">/** DOCUMENT ME! */</FONT>
+<A NAME="87"></A>    String studyCommand = <FONT ID="StringLiteral">"#newroot"</FONT>;
+<A NAME="88"></A>    
+<A NAME="89"></A>    <FONT ID="FormalComment">/** DOCUMENT ME! */</FONT>
+<A NAME="90"></A>    String seriesCommand = <FONT ID="StringLiteral">"#newroot"</FONT>;
+<A NAME="91"></A>    
+<A NAME="92"></A>    <FONT ID="FormalComment">/** The root UID. Default is the root UID of the dcm4che library. */</FONT>
+<A NAME="93"></A>    String rootUID = Implementation.getClassUID();
+<A NAME="94"></A>    
+<A NAME="95"></A>    
+<A NAME="96"></A>    <FONT ID="FormalComment">/**
+<A NAME="97"></A>     * Constructor.
+<A NAME="98"></A>     */</FONT>
+<A NAME="99"></A>    <FONT ID="Public">public</FONT> UIDModifyPlugin() {
+<A NAME="100"></A>        <FONT ID="SingleLineComment">// Nichts zu tun.
+<A NAME="101"></A></FONT>    }
+<A NAME="102"></A>    
+<A NAME="103"></A>    <FONT ID="FormalComment">/**
+<A NAME="104"></A>     * Inits the DicomRouterPlugin with the specified Properties.
+<A NAME="105"></A>     * @param p  Properties containing the configuration of the plugin
+<A NAME="106"></A>     */</FONT>
+<A NAME="107"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> init(<A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">Properties</A> p) {
+<A NAME="108"></A>        String key;
+<A NAME="109"></A>        String value;
+<A NAME="110"></A>        
+<A NAME="111"></A>        <FONT ID="SingleLineComment">// Properties lokal speichern
+<A NAME="112"></A></FONT>        props = p;
+<A NAME="113"></A>        
+<A NAME="114"></A>        <FONT ID="SingleLineComment">// Alle Properties bearbeiten
+<A NAME="115"></A></FONT>        <FONT ID="For">for</FONT> (Enumeration e = props.propertyNames(); e.hasMoreElements();) {
+<A NAME="116"></A>            key = (String) e.nextElement();
+<A NAME="117"></A>            value = props.getProperty(key);
+<A NAME="118"></A>            
+<A NAME="119"></A>            <FONT ID="SingleLineComment">// root-uid
+<A NAME="120"></A></FONT>            <FONT ID="If">if</FONT> (key.equals(<FONT ID="StringLiteral">"root-uid"</FONT>)) {
+<A NAME="121"></A>                rootUID = value;
+<A NAME="122"></A>            }
+<A NAME="123"></A>            
+<A NAME="124"></A>            <FONT ID="SingleLineComment">// Kommandos einlesen
+<A NAME="125"></A></FONT>            <FONT ID="If">if</FONT> (key.equals(<FONT ID="StringLiteral">"$SOPInstanceUID"</FONT>) || key.equals(<FONT ID="StringLiteral">"SOPInstanceUID"</FONT>)) {
+<A NAME="126"></A>                sopCommand = value;
+<A NAME="127"></A>            }
+<A NAME="128"></A>            
+<A NAME="129"></A>            <FONT ID="If">if</FONT> (key.equals(<FONT ID="StringLiteral">"$StudyInstanceUID"</FONT>) || key.equals(<FONT ID="StringLiteral">"StudyInstanceUID"</FONT>)) {
+<A NAME="130"></A>                studyCommand = value;
+<A NAME="131"></A>            }
+<A NAME="132"></A>            
+<A NAME="133"></A>            <FONT ID="If">if</FONT> (key.equals(<FONT ID="StringLiteral">"$SeriesInstanceUID"</FONT>) || key.equals(<FONT ID="StringLiteral">"SeriesInstanceUID"</FONT>)) {
+<A NAME="134"></A>                seriesCommand = value;
+<A NAME="135"></A>            }
+<A NAME="136"></A>        }
+<A NAME="137"></A>    }
+<A NAME="138"></A>    
+<A NAME="139"></A>    <FONT ID="FormalComment">/**
+<A NAME="140"></A>     * Returns a version string.
+<A NAME="141"></A>     *
+<A NAME="142"></A>     * @return The version string
+<A NAME="143"></A>     */</FONT>
+<A NAME="144"></A>    <FONT ID="Public">public</FONT> String getVersion() {
+<A NAME="145"></A>        <FONT ID="Return">return</FONT> VERSION;
+<A NAME="146"></A>    }
+<A NAME="147"></A>    
+<A NAME="148"></A>    
+<A NAME="149"></A>    <FONT ID="FormalComment">/**
+<A NAME="150"></A>     * Closes the Plugin.
+<A NAME="151"></A>     */</FONT>
+<A NAME="152"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> close() {
+<A NAME="153"></A>        <FONT ID="SingleLineComment">// Nichts zu tun.
+<A NAME="154"></A></FONT>    }
+<A NAME="155"></A>    
+<A NAME="156"></A>    <FONT ID="FormalComment">/**
+<A NAME="157"></A>     * Contains the proccesing of this plugin. This implementation handels all
+<A NAME="158"></A>     * exeptions inside the method and sends logging information about the exeption.
+<A NAME="159"></A>     *
+<A NAME="160"></A>     *
+<A NAME="161"></A>     *
+<A NAME="162"></A>     * @param dataset The Dataset to process.
+<A NAME="163"></A>     * @return If succesfullCONTINUEN, REQUEST_ABORT_RECEIVER otherwise
+<A NAME="164"></A>     */</FONT>
+<A NAME="165"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> process(Dataset dataset) {
+<A NAME="166"></A>        String origSOPInstanceUID;
+<A NAME="167"></A>        String origStudyInstanceUID;
+<A NAME="168"></A>        String origSeriesInstanceUID;
+<A NAME="169"></A>        
+<A NAME="170"></A>        <FONT ID="SingleLineComment">// Originale UID's einlesen
+<A NAME="171"></A></FONT>        <FONT ID="Try">try</FONT> {
+<A NAME="172"></A>            origSOPInstanceUID = dataset.getString(Tags.SOPInstanceUID);
+<A NAME="173"></A>            origStudyInstanceUID = dataset.getString(Tags.StudyInstanceUID);
+<A NAME="174"></A>            origSeriesInstanceUID = dataset.getString(Tags.SeriesInstanceUID);
+<A NAME="175"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="176"></A>            log.error(<FONT ID="StringLiteral">"Can't read UID's - Exception: "</FONT> + e.getMessage());
+<A NAME="177"></A>            
+<A NAME="178"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="179"></A>        }
+<A NAME="180"></A>        
+<A NAME="181"></A>        <FONT ID="SingleLineComment">// Neue UID schreiben
+<A NAME="182"></A></FONT>        dataset.putUI(Tags.SOPInstanceUID,
+<A NAME="183"></A>                modifyUID(origSOPInstanceUID, sopCommand));
+<A NAME="184"></A>        
+<A NAME="185"></A>        <FONT ID="If">if</FONT> (log.isInfoEnabled()) {
+<A NAME="186"></A>            log.info(<FONT ID="StringLiteral">"SOPInstanceUID modified. Command: "</FONT> + sopCommand);
+<A NAME="187"></A>        }
+<A NAME="188"></A>        
+<A NAME="189"></A>        dataset.putUI(Tags.StudyInstanceUID,
+<A NAME="190"></A>                modifyUID(origStudyInstanceUID, studyCommand));
+<A NAME="191"></A>        
+<A NAME="192"></A>        <FONT ID="If">if</FONT> (log.isInfoEnabled()) {
+<A NAME="193"></A>            log.info(<FONT ID="StringLiteral">"StudyInstanceUID modified. Command: "</FONT> + studyCommand);
+<A NAME="194"></A>        }
+<A NAME="195"></A>        
+<A NAME="196"></A>        dataset.putUI(Tags.SeriesInstanceUID,
+<A NAME="197"></A>                modifyUID(origSeriesInstanceUID, seriesCommand));
+<A NAME="198"></A>        
+<A NAME="199"></A>        <FONT ID="If">if</FONT> (log.isInfoEnabled()) {
+<A NAME="200"></A>            log.info(<FONT ID="StringLiteral">"SeriesInstanceUID modified. Command: "</FONT> + seriesCommand);
+<A NAME="201"></A>        }
+<A NAME="202"></A>        
+<A NAME="203"></A>        <FONT ID="SingleLineComment">// Plugin ohne Fehler beendet
+<A NAME="204"></A></FONT>        <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="205"></A>    }
+<A NAME="206"></A>    
+<A NAME="207"></A>    <FONT ID="FormalComment">/**
+<A NAME="208"></A>     * Modifies a UID depending on a command.
+<A NAME="209"></A>     * @param origUID The UID found in the Dataset.
+<A NAME="210"></A>     * @param cmd The command for modification. Possible values are "#original"
+<A NAME="211"></A>     *            "#new" and "#newroot".
+<A NAME="212"></A>     * @return the new UID.
+<A NAME="213"></A>     */</FONT>
+<A NAME="214"></A>    <FONT ID="Private">private</FONT> String modifyUID(String origUID, String cmd) {
+<A NAME="215"></A>        String remainder;
+<A NAME="216"></A>        <FONT ID="Int">int</FONT> maxLength;
+<A NAME="217"></A>        
+<A NAME="218"></A>        <FONT ID="If">if</FONT> (cmd.equals(<FONT ID="StringLiteral">"#original"</FONT>)) {
+<A NAME="219"></A>            
+<A NAME="220"></A>            <FONT ID="SingleLineComment">// Keine Veraenderung notwendig
+<A NAME="221"></A></FONT>            <FONT ID="Return">return</FONT> origUID;
+<A NAME="222"></A>            
+<A NAME="223"></A>        } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (cmd.equals(<FONT ID="StringLiteral">"#new"</FONT>)) {
+<A NAME="224"></A>            
+<A NAME="225"></A>            <FONT ID="SingleLineComment">// Neue UID generieren
+<A NAME="226"></A></FONT>            <FONT ID="Return">return</FONT> UIDGenerator.getInstance().createUID();
+<A NAME="227"></A>            
+<A NAME="228"></A>        } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (cmd.equals(<FONT ID="StringLiteral">"#newroot"</FONT>)) {
+<A NAME="229"></A>            
+<A NAME="230"></A>            <FONT ID="If">if</FONT> ((rootUID.length() + origUID.length() + <FONT ID="IntegerLiteral">1</FONT>) &lt;= <FONT ID="IntegerLiteral">64</FONT>) {
+<A NAME="231"></A>                <FONT ID="Return">return</FONT> rootUID + <FONT ID="StringLiteral">"."</FONT> + origUID;
+<A NAME="232"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="233"></A>                maxLength = <FONT ID="IntegerLiteral">64</FONT> - rootUID.length() - <FONT ID="IntegerLiteral">1</FONT>;
+<A NAME="234"></A>                remainder = origUID.substring(origUID.length() - maxLength);
+<A NAME="235"></A>                
+<A NAME="236"></A>                <FONT ID="If">if</FONT> (remainder.charAt(<FONT ID="IntegerLiteral">0</FONT>) == <FONT ID="CharacerLiteral">'.'</FONT>) {
+<A NAME="237"></A>                    remainder = remainder.substring(<FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="238"></A>                }
+<A NAME="239"></A>                
+<A NAME="240"></A>                <FONT ID="Return">return</FONT> rootUID + <FONT ID="StringLiteral">"."</FONT> + remainder;
+<A NAME="241"></A>            }
+<A NAME="242"></A>            
+<A NAME="243"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="244"></A>            <FONT ID="SingleLineComment">// Unbekanntes Kommandos
+<A NAME="245"></A></FONT>            log.warn(<FONT ID="StringLiteral">"UID not changed. Unknown command: "</FONT> + cmd);
+<A NAME="246"></A>            
+<A NAME="247"></A>            <FONT ID="Return">return</FONT> origUID;
+<A NAME="248"></A>        }
+<A NAME="249"></A>    }
+<A NAME="250"></A>}
+<A NAME="251"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">UIDModifyPlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

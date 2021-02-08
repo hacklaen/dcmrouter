@@ -1,0 +1,128 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.plugin.NullPlugin (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">NullPlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  NullPlugin.java
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Copyright (c) 2003 by
+<A NAME="5"></A> *
+<A NAME="6"></A> *  IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="7"></A> *  VISUS Technology Transfer GmbH
+<A NAME="8"></A> *
+<A NAME="9"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="10"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="11"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="12"></A> *  (at your option) any later version.
+<A NAME="13"></A> *
+<A NAME="14"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="15"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="16"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="17"></A> *  Lesser General Public License for more details.
+<A NAME="18"></A> *
+<A NAME="19"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="20"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="21"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="22"></A> *
+<A NAME="23"></A> *
+<A NAME="24"></A> *****************************************************************************/</FONT>
+<A NAME="25"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.plugin.index.html" target="packageFrame">de.iftm.dcm4che.router.plugin</A>;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">de.iftm.dcm4che.router.property.DicomRouterProperties</A>;
+<A NAME="28"></A>
+<A NAME="29"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="30"></A>
+<A NAME="31"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="32"></A>
+<A NAME="33"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.*;
+<A NAME="34"></A>
+<A NAME="35"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="36"></A>
+<A NAME="37"></A>
+<A NAME="38"></A><FONT ID="FormalComment">/**
+<A NAME="39"></A> * This plugin does nothing. It can be used as a placeholder in the chain of plugins.&lt;br&gt;
+<A NAME="40"></A> * &lt;br&gt;
+<A NAME="41"></A> * It supports no properties.
+<A NAME="42"></A> *
+<A NAME="43"></A> * @author Thomas Hacklaender
+<A NAME="44"></A> * @version 2003.11.14
+<A NAME="45"></A> */</FONT>
+<A NAME="46"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> NullPlugin <FONT ID="Extends">extends</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">DicomRouterPlugin</A> {
+<A NAME="47"></A>    <FONT ID="FormalComment">/** The version string */</FONT>
+<A NAME="48"></A>    <FONT ID="Final">final</FONT> String VERSION = <FONT ID="StringLiteral">"2003.11.14"</FONT>;
+<A NAME="49"></A>
+<A NAME="50"></A>    <FONT ID="FormalComment">/** The logger for this plugin */</FONT>
+<A NAME="51"></A>    Logger log = Logger.getLogger(<A HREF="../../../../../de/iftm/dcm4che/router/plugin/NullPlugin.java.html">NullPlugin</A>.<FONT ID="Class">class</FONT>);
+<A NAME="52"></A>
+<A NAME="53"></A>    <FONT ID="FormalComment">/**
+<A NAME="54"></A> * Constructor.
+<A NAME="55"></A> */</FONT>
+<A NAME="56"></A>    <FONT ID="Public">public</FONT> NullPlugin() {
+<A NAME="57"></A>        <FONT ID="SingleLineComment">// Nichts zu tun.
+<A NAME="58"></A></FONT>    }
+<A NAME="59"></A>
+<A NAME="60"></A>    <FONT ID="FormalComment">/**
+<A NAME="61"></A> * Inits the DicomRouterPlugin with the specified Properties.
+<A NAME="62"></A> * @param p  Properties containing the configuration of the plugin
+<A NAME="63"></A> */</FONT>
+<A NAME="64"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> init(<A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">Properties</A> p) {
+<A NAME="65"></A>        <FONT ID="SingleLineComment">// Fuer das Plugin sind keine Properties definiert
+<A NAME="66"></A></FONT>    }
+<A NAME="67"></A>
+<A NAME="68"></A>    <FONT ID="FormalComment">/**
+<A NAME="69"></A> * Returns a version string.
+<A NAME="70"></A> *
+<A NAME="71"></A> * @return The version string
+<A NAME="72"></A> */</FONT>
+<A NAME="73"></A>    <FONT ID="Public">public</FONT> String getVersion() {
+<A NAME="74"></A>        <FONT ID="Return">return</FONT> VERSION;
+<A NAME="75"></A>    }
+<A NAME="76"></A>
+<A NAME="77"></A>    
+<A NAME="78"></A>    <FONT ID="FormalComment">/**
+<A NAME="79"></A> * Closes the Plugin.
+<A NAME="80"></A> */</FONT>
+<A NAME="81"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> close() {
+<A NAME="82"></A>        <FONT ID="SingleLineComment">// Nichts zu tun.
+<A NAME="83"></A></FONT>    }
+<A NAME="84"></A>
+<A NAME="85"></A>    <FONT ID="FormalComment">/**
+<A NAME="86"></A>     * Contains the proccesing of this plugin. This implementation handels all
+<A NAME="87"></A>     * exeptions inside the method and sends logging information about the
+<A NAME="88"></A>     * exeption.
+<A NAME="89"></A>     * 
+<A NAME="90"></A>     * 
+<A NAME="91"></A>     * @param dataset The Dataset to process.
+<A NAME="92"></A>     * @return If succesfull CONTINUE, ABORT_DICOM_OBJECT_SET otherwise
+<A NAME="93"></A>     */</FONT>
+<A NAME="94"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> process(Dataset dataset) {
+<A NAME="95"></A>        <FONT ID="SingleLineComment">// Nichts zu tun.
+<A NAME="96"></A></FONT>        <FONT ID="SingleLineComment">// Plugin ohne schwerwiegende Fehler beendet
+<A NAME="97"></A></FONT>        <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="98"></A>    }
+<A NAME="99"></A>}
+<A NAME="100"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">NullPlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

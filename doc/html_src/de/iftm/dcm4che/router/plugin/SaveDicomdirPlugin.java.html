@@ -1,0 +1,451 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.plugin.SaveDicomdirPlugin (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">SaveDicomdirPlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  SaveDicomdirPlugin.java
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Copyright (c) 2003 by
+<A NAME="5"></A> *
+<A NAME="6"></A> *  IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="7"></A> *  VISUS Technology Transfer GmbH
+<A NAME="8"></A> *
+<A NAME="9"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="10"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="11"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="12"></A> *  (at your option) any later version.
+<A NAME="13"></A> *
+<A NAME="14"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="15"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="16"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="17"></A> *  Lesser General Public License for more details.
+<A NAME="18"></A> *
+<A NAME="19"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="20"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="21"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="22"></A> *
+<A NAME="23"></A> *
+<A NAME="24"></A> *****************************************************************************/</FONT>
+<A NAME="25"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.plugin.index.html" target="packageFrame">de.iftm.dcm4che.router.plugin</A>;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.property.index.html" target="packageFrame">de.iftm.dcm4che.router.property.*</A>;
+<A NAME="28"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.util.index.html" target="packageFrame">de.iftm.dcm4che.router.util.*</A>;
+<A NAME="29"></A><FONT ID="Import">import</FONT> de.iftm.dcm4che.services.ConfigProperties;
+<A NAME="30"></A>
+<A NAME="31"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="32"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.*;
+<A NAME="33"></A><FONT ID="Import">import</FONT> org.dcm4che.media.*;
+<A NAME="34"></A><FONT ID="Import">import</FONT> org.dcm4che.util.*;
+<A NAME="35"></A>
+<A NAME="36"></A><FONT ID="Import">import</FONT> java.io.*;
+<A NAME="37"></A><FONT ID="Import">import</FONT> java.net.*;
+<A NAME="38"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="39"></A>
+<A NAME="40"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="41"></A>
+<A NAME="42"></A>
+<A NAME="43"></A><FONT ID="FormalComment">/**
+<A NAME="44"></A> * This plugins saves the given Dataset as a file to the local filesystem
+<A NAME="45"></A> * and stores a reference to this file in a DICOMDIR index file according
+<A NAME="46"></A> * DICOM Part 10. It supports the properties which start with the key
+<A NAME="47"></A> * SaveFilesystemPlugin. For description of the subkeys (= properties) see
+<A NAME="48"></A> * the user manual.&lt;br&gt;
+<A NAME="49"></A> * &lt;br&gt;
+<A NAME="50"></A> * The file uses the "resources/SaveDicomdirPlugin.cfg" for configuration.&lt;br&gt;
+<A NAME="51"></A> * &lt;br&gt;
+<A NAME="52"></A> * 2005.08.17, th: Loading of conifuration parameters by class DicomRouterProperties.
+<A NAME="53"></A> *
+<A NAME="54"></A> * @author Thomas Hacklaender
+<A NAME="55"></A> * @version 2005.08.17
+<A NAME="56"></A> */</FONT>
+<A NAME="57"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> SaveDicomdirPlugin <FONT ID="Extends">extends</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">DicomRouterPlugin</A> {
+<A NAME="58"></A>    <FONT ID="FormalComment">/** The version string */</FONT>
+<A NAME="59"></A>    <FONT ID="Final">final</FONT> String VERSION = <FONT ID="StringLiteral">"2006.11.10"</FONT>;
+<A NAME="60"></A>    
+<A NAME="61"></A>    <FONT ID="FormalComment">/** The logger for this plugin */</FONT>
+<A NAME="62"></A>    Logger log = Logger.getLogger(<A HREF="../../../../../de/iftm/dcm4che/router/plugin/SaveDicomdirPlugin.java.html">SaveDicomdirPlugin</A>.<FONT ID="Class">class</FONT>);
+<A NAME="63"></A>    
+<A NAME="64"></A>    
+<A NAME="65"></A>    <FONT ID="SingleLineComment">// &gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;  Local fields defined by properties: &gt;&gt;&gt;&gt;&gt;&gt;&gt;
+<A NAME="66"></A></FONT>    
+<A NAME="67"></A>    
+<A NAME="68"></A>    <FONT ID="FormalComment">/** The working directory to save the Dataset. */</FONT>
+<A NAME="69"></A>    File directory = Util.uriToFile(<FONT ID="StringLiteral">"./"</FONT>);
+<A NAME="70"></A>    
+<A NAME="71"></A>    <FONT ID="FormalComment">/** If true, write files in the subdirectory "$PatientName_$PatientBirthDate/&lt;directory&gt;/" */</FONT>
+<A NAME="72"></A>    <FONT ID="Boolean">boolean</FONT> separate_patients = <FONT ID="False">false</FONT>;
+<A NAME="73"></A>    
+<A NAME="74"></A>    <FONT ID="FormalComment">/** Write files in the subdirectory "[$PatientName_$PatientBirthDate/]&lt;directory&gt;/&lt;use_subdirectory&gt;/". */</FONT>
+<A NAME="75"></A>    String use_subdirectory = <FONT ID="StringLiteral">""</FONT>;
+<A NAME="76"></A>    
+<A NAME="77"></A>    <FONT ID="FormalComment">/** If true:
+<A NAME="78"></A>     * Construct the the file ID of the file to save from the following file ID
+<A NAME="79"></A>     * components:&lt;br&gt;
+<A NAME="80"></A>     * 1. First letter of family name followed by first letter of given name
+<A NAME="81"></A>     * followed by date of birth, 6 character. Example: HT570522&lt;br&gt;
+<A NAME="82"></A>     * 2. Study date, 6 character. Example: 043012&lt;br&gt;
+<A NAME="83"></A>     * 3. Modality, 2 character followed by study time, 4 character. Example: MR1531&lt;br&gt;
+<A NAME="84"></A>     * 4. Study ID. Example: 4711&lt;br&gt;
+<A NAME="85"></A>     * 5. Series number. Example: 3&lt;br&gt;
+<A NAME="86"></A>     * 6. Instance number. Example: 54&lt;br&gt;
+<A NAME="87"></A>     * If false:&lt;br&gt;
+<A NAME="88"></A>     * Use a random string of 8 characters (containing 'A'..'Z', '0'..'9') as the file ID.
+<A NAME="89"></A>     */</FONT>
+<A NAME="90"></A>    <FONT ID="Boolean">boolean</FONT> write_dir_tree = <FONT ID="True">true</FONT>;
+<A NAME="91"></A>    
+<A NAME="92"></A>    <FONT ID="FormalComment">/** Transfersyntax of the saved file. One of the strings ImplicitVRLittleEndian,
+<A NAME="93"></A>     * ExplicitVRLittleEndian, ExplicitVRBigEndian. The string may start with
+<A NAME="94"></A>     * the praefix-character '$'.
+<A NAME="95"></A>     */</FONT>
+<A NAME="96"></A>    String transfersyntax = <FONT ID="StringLiteral">"ImplicitVRLittleEndian"</FONT>;
+<A NAME="97"></A>    
+<A NAME="98"></A>    
+<A NAME="99"></A>    <FONT ID="SingleLineComment">// &lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+<A NAME="100"></A></FONT>    
+<A NAME="101"></A>    
+<A NAME="102"></A>    <FONT ID="FormalComment">/** The DICOMDIR file */</FONT>
+<A NAME="103"></A>    <FONT ID="Protected">protected</FONT> File dicomdir = <FONT ID="Null">null</FONT>;
+<A NAME="104"></A>    
+<A NAME="105"></A>    <FONT ID="FormalComment">/** DirBuilder preferences extracted from properties */</FONT>
+<A NAME="106"></A>    <FONT ID="Protected">protected</FONT> DirBuilderPref dirBuilderPref = <FONT ID="Null">null</FONT>;
+<A NAME="107"></A>    
+<A NAME="108"></A>    <FONT ID="FormalComment">/** Default configuration loaded from resource file. */</FONT>
+<A NAME="109"></A>    <FONT ID="Protected">protected</FONT> ConfigProperties cfg = <FONT ID="Null">null</FONT>;
+<A NAME="110"></A>    
+<A NAME="111"></A>    
+<A NAME="112"></A>    <FONT ID="FormalComment">/**
+<A NAME="113"></A>     * Constructor.
+<A NAME="114"></A>     */</FONT>
+<A NAME="115"></A>    <FONT ID="Public">public</FONT> SaveDicomdirPlugin() {
+<A NAME="116"></A>    }
+<A NAME="117"></A>    
+<A NAME="118"></A>    
+<A NAME="119"></A>    <FONT ID="FormalComment">/**
+<A NAME="120"></A>     * Inits the DicomRouterPlugin with the specified Properties.
+<A NAME="121"></A>     * @param p  Properties containing the configuration of the plugin
+<A NAME="122"></A>     */</FONT>
+<A NAME="123"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> init(Properties p) {
+<A NAME="124"></A>        String s;
+<A NAME="125"></A>        File newDirectory;
+<A NAME="126"></A>        
+<A NAME="127"></A>        <FONT ID="SingleLineComment">// Read the configuration properties for the working class DcmSnd
+<A NAME="128"></A></FONT>        URL url = <FONT ID="This">this</FONT>.getClass().getResource(<FONT ID="StringLiteral">"resources/SaveDicomdirPlugin.cfg"</FONT>);
+<A NAME="129"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="130"></A>            cfg = <FONT ID="New">new</FONT> ConfigProperties(url);
+<A NAME="131"></A>        } <FONT ID="Catch">catch</FONT> (IOException e) {
+<A NAME="132"></A>            log.error(<FONT ID="StringLiteral">"Can't load default configuration file from resource."</FONT>);
+<A NAME="133"></A>        }
+<A NAME="134"></A>        
+<A NAME="135"></A>        <FONT ID="SingleLineComment">// dirBuider aus Konfigurationswerten erzeugen
+<A NAME="136"></A></FONT>        dirBuilderPref = getDirBuilderPref();
+<A NAME="137"></A>        
+<A NAME="138"></A>        <FONT ID="SingleLineComment">// User Properties auswerten
+<A NAME="139"></A></FONT>        
+<A NAME="140"></A>        <FONT ID="If">if</FONT> (p == <FONT ID="Null">null</FONT>) {
+<A NAME="141"></A>            <FONT ID="SingleLineComment">// nichts zu tun
+<A NAME="142"></A></FONT>            <FONT ID="Return">return</FONT>;
+<A NAME="143"></A>        }
+<A NAME="144"></A>        
+<A NAME="145"></A>        <FONT ID="SingleLineComment">// Directory
+<A NAME="146"></A></FONT>        s = p.getProperty(<FONT ID="StringLiteral">"directory"</FONT>);
+<A NAME="147"></A>        
+<A NAME="148"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="149"></A>            <FONT ID="If">if</FONT> ((newDirectory = Util.uriToFile(s)) != <FONT ID="Null">null</FONT>) {
+<A NAME="150"></A>                directory = newDirectory;
+<A NAME="151"></A>            }
+<A NAME="152"></A>        }
+<A NAME="153"></A>        
+<A NAME="154"></A>        <FONT ID="SingleLineComment">// Separate_patients-Option nach Properties aendern
+<A NAME="155"></A></FONT>        s = p.getProperty(<FONT ID="StringLiteral">"separate-patients"</FONT>);
+<A NAME="156"></A>        
+<A NAME="157"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="158"></A>            <FONT ID="If">if</FONT> (s.toLowerCase().charAt(<FONT ID="IntegerLiteral">0</FONT>) == <FONT ID="CharacerLiteral">'t'</FONT>) {
+<A NAME="159"></A>                separate_patients = <FONT ID="True">true</FONT>;
+<A NAME="160"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="161"></A>                separate_patients = <FONT ID="False">false</FONT>;
+<A NAME="162"></A>            }
+<A NAME="163"></A>        }
+<A NAME="164"></A>        
+<A NAME="165"></A>        <FONT ID="SingleLineComment">// Transfersyntax
+<A NAME="166"></A></FONT>        s = p.getProperty(<FONT ID="StringLiteral">"transfersyntax"</FONT>);
+<A NAME="167"></A>        
+<A NAME="168"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="169"></A>            <FONT ID="If">if</FONT> (s.charAt(<FONT ID="IntegerLiteral">0</FONT>) == <FONT ID="CharacerLiteral">'$'</FONT>) {
+<A NAME="170"></A>                transfersyntax = s.substring(<FONT ID="IntegerLiteral">1</FONT>);
+<A NAME="171"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="172"></A>                transfersyntax = s;
+<A NAME="173"></A>            }
+<A NAME="174"></A>        }
+<A NAME="175"></A>        
+<A NAME="176"></A>        <FONT ID="SingleLineComment">// Use_subdirectory-Option nach Properties aendern
+<A NAME="177"></A></FONT>        s = p.getProperty(<FONT ID="StringLiteral">"use-subdirectory"</FONT>);
+<A NAME="178"></A>        
+<A NAME="179"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="180"></A>            use_subdirectory = s;
+<A NAME="181"></A>        }
+<A NAME="182"></A>        
+<A NAME="183"></A>        <FONT ID="SingleLineComment">// Write_dir_tree-Option nach Properties aendern
+<A NAME="184"></A></FONT>        s = p.getProperty(<FONT ID="StringLiteral">"write-dir-tree"</FONT>);
+<A NAME="185"></A>        
+<A NAME="186"></A>        <FONT ID="If">if</FONT> (s != <FONT ID="Null">null</FONT>) {
+<A NAME="187"></A>            <FONT ID="If">if</FONT> (s.toLowerCase().charAt(<FONT ID="IntegerLiteral">0</FONT>) == <FONT ID="CharacerLiteral">'t'</FONT>) {
+<A NAME="188"></A>                write_dir_tree = <FONT ID="True">true</FONT>;
+<A NAME="189"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="190"></A>                write_dir_tree = <FONT ID="False">false</FONT>;
+<A NAME="191"></A>            }
+<A NAME="192"></A>        }
+<A NAME="193"></A>    }
+<A NAME="194"></A>    
+<A NAME="195"></A>    
+<A NAME="196"></A>    <FONT ID="FormalComment">/**
+<A NAME="197"></A>     * Returns a version string.
+<A NAME="198"></A>     *
+<A NAME="199"></A>     * @return The version string
+<A NAME="200"></A>     */</FONT>
+<A NAME="201"></A>    <FONT ID="Public">public</FONT> String getVersion() {
+<A NAME="202"></A>        <FONT ID="Return">return</FONT> VERSION;
+<A NAME="203"></A>    }
+<A NAME="204"></A>    
+<A NAME="205"></A>    
+<A NAME="206"></A>    <FONT ID="FormalComment">/**
+<A NAME="207"></A>     * Closes the Plugin.
+<A NAME="208"></A>     */</FONT>
+<A NAME="209"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> close() {
+<A NAME="210"></A>        <FONT ID="SingleLineComment">// Nichts zu tun.
+<A NAME="211"></A></FONT>    }
+<A NAME="212"></A>    
+<A NAME="213"></A>    <FONT ID="FormalComment">/**
+<A NAME="214"></A>     * Contains the proccesing of this plugin. This implementation handels all
+<A NAME="215"></A>     * exeptions inside the method and sends logging information about the exeption.
+<A NAME="216"></A>     *
+<A NAME="217"></A>     *
+<A NAME="218"></A>     *
+<A NAME="219"></A>     * @param dataset The Dataset to process.
+<A NAME="220"></A>     * @return if succesfull CONTINUE, REQUEST_ABORT_RECEIVER otherwise
+<A NAME="221"></A>     */</FONT>
+<A NAME="222"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> process(Dataset dataset) {
+<A NAME="223"></A>        File                parent;
+<A NAME="224"></A>        File                imageFile;
+<A NAME="225"></A>        FileOutputStream    fos = <FONT ID="Null">null</FONT>;
+<A NAME="226"></A>        FileMetaInfo        fmi;
+<A NAME="227"></A>        DcmEncodeParam      param = <FONT ID="Null">null</FONT>;
+<A NAME="228"></A>        DirBuilder          dirBuilder = <FONT ID="Null">null</FONT>;
+<A NAME="229"></A>        String              uid;
+<A NAME="230"></A>        DirWriter           dirWriter = <FONT ID="Null">null</FONT>;
+<A NAME="231"></A>        
+<A NAME="232"></A>        <FONT ID="SingleLineComment">// Nur dann weitermachen, wenn ein Datset vorhanden ist
+<A NAME="233"></A></FONT>        <FONT ID="If">if</FONT> (dataset == <FONT ID="Null">null</FONT>) {
+<A NAME="234"></A>            log.warn(<FONT ID="StringLiteral">"No Dataset given."</FONT>);
+<A NAME="235"></A>            
+<A NAME="236"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="237"></A>        }
+<A NAME="238"></A>        
+<A NAME="239"></A>        <FONT ID="SingleLineComment">// Das Working Directory festlegen
+<A NAME="240"></A></FONT>        parent = directory;
+<A NAME="241"></A>        <FONT ID="If">if</FONT> (separate_patients) {
+<A NAME="242"></A>            parent = Util.addPatientDirectory(parent, dataset);
+<A NAME="243"></A>        }
+<A NAME="244"></A>        
+<A NAME="245"></A>        <FONT ID="SingleLineComment">// DICOMDIR als Indexfile definieren
+<A NAME="246"></A></FONT>        dicomdir = <FONT ID="New">new</FONT> File(parent, <FONT ID="StringLiteral">"DICOMDIR"</FONT>);
+<A NAME="247"></A>        
+<A NAME="248"></A>        <FONT ID="Try">try</FONT> {
+<A NAME="249"></A>            <FONT ID="SingleLineComment">// Einen DirWriter und DirBuilder oeffnen
+<A NAME="250"></A></FONT>            <FONT ID="If">if</FONT> (dicomdir.exists()) {
+<A NAME="251"></A>                
+<A NAME="252"></A>                <FONT ID="SingleLineComment">// DICOMDIR besteht schon
+<A NAME="253"></A></FONT>                <FONT ID="SingleLineComment">// Instanz eines DirWriter mit diesem DICOMDIR erzeugen
+<A NAME="254"></A></FONT>                dirWriter = DirBuilderFactory.getInstance().newDirWriter(dicomdir, <FONT ID="Null">null</FONT>);
+<A NAME="255"></A>                
+<A NAME="256"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="257"></A>                
+<A NAME="258"></A>                <FONT ID="SingleLineComment">// DICOMDIR besteht noch nicht.
+<A NAME="259"></A></FONT>                <FONT ID="SingleLineComment">// Es muss ein neuer File mit eigener UID erzeugt werden
+<A NAME="260"></A></FONT>                
+<A NAME="261"></A>                <FONT ID="If">if</FONT> (!dicomdir.getParentFile().exists()) {
+<A NAME="262"></A>                    <FONT ID="SingleLineComment">// Directory Pfad zum DICOMDIR existiert noch nicht, erstellen
+<A NAME="263"></A></FONT>                    dicomdir.getParentFile().mkdirs();
+<A NAME="264"></A>                }
+<A NAME="265"></A>                
+<A NAME="266"></A>                <FONT ID="SingleLineComment">// Neue UID erzeugen:
+<A NAME="267"></A></FONT>                uid = UIDGenerator.getInstance().createUID();
+<A NAME="268"></A>                
+<A NAME="269"></A>                <FONT ID="SingleLineComment">// Instanz eines DirWriter mit neuem DICOMDIR erzeugen
+<A NAME="270"></A></FONT>                dirWriter = DirBuilderFactory.getInstance().newDirWriter(dicomdir, uid, <FONT ID="Null">null</FONT>, <FONT ID="Null">null</FONT>, <FONT ID="Null">null</FONT>, <FONT ID="Null">null</FONT>);
+<A NAME="271"></A>            }
+<A NAME="272"></A>            
+<A NAME="273"></A>            <FONT ID="SingleLineComment">// DirBuilder erzeugen
+<A NAME="274"></A></FONT>            dirBuilder = DirBuilderFactory.getInstance().newDirBuilder(dirWriter, dirBuilderPref);
+<A NAME="275"></A>            
+<A NAME="276"></A>            <FONT ID="SingleLineComment">// File fuer die Bilddatei erzeugen
+<A NAME="277"></A></FONT>            imageFile = createFilePathToSave(parent, dataset);
+<A NAME="278"></A>            
+<A NAME="279"></A>            <FONT ID="If">if</FONT> (imageFile.exists()) {
+<A NAME="280"></A>                
+<A NAME="281"></A>                <FONT ID="SingleLineComment">// File besteht bereits:
+<A NAME="282"></A></FONT>                <FONT ID="SingleLineComment">// Erst loeschen, dann neu erstellen
+<A NAME="283"></A></FONT>                imageFile.delete();
+<A NAME="284"></A>                imageFile.createNewFile();
+<A NAME="285"></A>                
+<A NAME="286"></A>            } <FONT ID="Else">else</FONT> {
+<A NAME="287"></A>                
+<A NAME="288"></A>                <FONT ID="SingleLineComment">// File besteht noch nicht:
+<A NAME="289"></A></FONT>                <FONT ID="If">if</FONT> (!imageFile.getParentFile().exists()) {
+<A NAME="290"></A>                    <FONT ID="SingleLineComment">// Directory Pfad auf den File existiert noch nicht
+<A NAME="291"></A></FONT>                    <FONT ID="SingleLineComment">// Erzeugen
+<A NAME="292"></A></FONT>                    imageFile.getParentFile().mkdirs();
+<A NAME="293"></A>                }
+<A NAME="294"></A>            }
+<A NAME="295"></A>            
+<A NAME="296"></A>            <FONT ID="SingleLineComment">// Outputstream zum schreiben des Files erzeugen
+<A NAME="297"></A></FONT>            fos = <FONT ID="New">new</FONT> FileOutputStream(imageFile);
+<A NAME="298"></A>            <FONT ID="SingleLineComment">// Parameterblock mit Transfersyntax erzeugen
+<A NAME="299"></A></FONT>            param = DcmEncodeParam.valueOf(UIDs.forName(transfersyntax));
+<A NAME="300"></A>            <FONT ID="SingleLineComment">// File mit File Meta Information Block schreiben
+<A NAME="301"></A></FONT>            fmi = DcmObjectFactory.getInstance().newFileMetaInfo(dataset, UIDs.forName(transfersyntax));
+<A NAME="302"></A>            dataset.setFileMetaInfo(fmi);
+<A NAME="303"></A>            dataset.writeFile(fos, param);
+<A NAME="304"></A>            
+<A NAME="305"></A>            <FONT ID="SingleLineComment">// Referenz auf den Image-File dem DICOMDIR hinzufuegen
+<A NAME="306"></A></FONT>            dirBuilder.addFileRef(imageFile);
+<A NAME="307"></A>            
+<A NAME="308"></A>        } <FONT ID="Catch">catch</FONT> (Exception e) {
+<A NAME="309"></A>            log.error(<FONT ID="StringLiteral">"Can't save Dataset to DICOMDIR - Exception: "</FONT> + e.getMessage());
+<A NAME="310"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="311"></A>        } <FONT ID="Finally">finally</FONT> {
+<A NAME="312"></A>            <FONT ID="SingleLineComment">// DirBuilder und implizit DirWriter schliessen
+<A NAME="313"></A></FONT>            <FONT ID="Try">try</FONT> {
+<A NAME="314"></A>                dirBuilder.close();
+<A NAME="315"></A>            } <FONT ID="Catch">catch</FONT> (Exception ignore) {
+<A NAME="316"></A>            }
+<A NAME="317"></A>        }
+<A NAME="318"></A>        
+<A NAME="319"></A>        <FONT ID="SingleLineComment">// Plugin ohne Fehler beendet
+<A NAME="320"></A></FONT>        <FONT ID="If">if</FONT> (log.isInfoEnabled()) {
+<A NAME="321"></A>            log.info(<FONT ID="StringLiteral">"Dataset saved to DICOMDIR: "</FONT> + dicomdir.toString());
+<A NAME="322"></A>        }
+<A NAME="323"></A>        
+<A NAME="324"></A>        <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="325"></A>    }
+<A NAME="326"></A>    
+<A NAME="327"></A>    <FONT ID="FormalComment">/**
+<A NAME="328"></A>     * Create the file path of the file to save in the directory parent
+<A NAME="329"></A>     * depending of the property use_subdirectory.
+<A NAME="330"></A>     * @param parent the working directory.
+<A NAME="331"></A>     * @param ds the dataset to analyse.
+<A NAME="332"></A>     * @return the file.
+<A NAME="333"></A>     */</FONT>
+<A NAME="334"></A>    <FONT ID="Protected">protected</FONT> File createFilePathToSave(File parent, Dataset ds) {
+<A NAME="335"></A>        File path;
+<A NAME="336"></A>        
+<A NAME="337"></A>        <FONT ID="If">if</FONT> (use_subdirectory != <FONT ID="Null">null</FONT>) {
+<A NAME="338"></A>            <FONT ID="If">if</FONT> (! use_subdirectory.equals(<FONT ID="StringLiteral">""</FONT>)) {
+<A NAME="339"></A>                parent = <FONT ID="New">new</FONT> File(parent, use_subdirectory);
+<A NAME="340"></A>            }
+<A NAME="341"></A>        }
+<A NAME="342"></A>        
+<A NAME="343"></A>        <FONT ID="If">if</FONT> (write_dir_tree) {
+<A NAME="344"></A>            path = <FONT ID="New">new</FONT> File(parent, Util.datasetToTreeFileID(ds));
+<A NAME="345"></A>        } <FONT ID="Else">else</FONT> {
+<A NAME="346"></A>            path = <FONT ID="New">new</FONT> File(parent, randomUniqueFileID(parent));
+<A NAME="347"></A>        }
+<A NAME="348"></A>        
+<A NAME="349"></A>        <FONT ID="Return">return</FONT> path;
+<A NAME="350"></A>    }
+<A NAME="351"></A>    
+<A NAME="352"></A>    <FONT ID="FormalComment">/**
+<A NAME="353"></A>     * Create a unique random file ID containing 8 hexadecimal uppercase digits.
+<A NAME="354"></A>     * @param parent the directory where the file should be created.
+<A NAME="355"></A>     * @return the file ID.
+<A NAME="356"></A>     */</FONT>
+<A NAME="357"></A>    <FONT ID="Protected">protected</FONT> String randomUniqueFileID(File parent) {
+<A NAME="358"></A>        String fileID;
+<A NAME="359"></A>        File file;
+<A NAME="360"></A>        
+<A NAME="361"></A>        <FONT ID="Do">do</FONT> {
+<A NAME="362"></A>            fileID = randomFileID();
+<A NAME="363"></A>            file = <FONT ID="New">new</FONT> File(parent, fileID);
+<A NAME="364"></A>        } <FONT ID="While">while</FONT>(file.exists());
+<A NAME="365"></A>        
+<A NAME="366"></A>        <FONT ID="Return">return</FONT> fileID;
+<A NAME="367"></A>    }
+<A NAME="368"></A>    
+<A NAME="369"></A>    <FONT ID="FormalComment">/**
+<A NAME="370"></A>     * Create a random file name containing 8 hexadecimal uppercase digits.
+<A NAME="371"></A>     * @return the file ID string.
+<A NAME="372"></A>     */</FONT>
+<A NAME="373"></A>    <FONT ID="Protected">protected</FONT> String randomFileID() {
+<A NAME="374"></A>        Random RND = <FONT ID="New">new</FONT> Random();
+<A NAME="375"></A>        
+<A NAME="376"></A>        <FONT ID="Return">return</FONT> Util.stringToFileIDComponentString(Integer.toHexString(RND.nextInt()).toString());
+<A NAME="377"></A>    }
+<A NAME="378"></A>    
+<A NAME="379"></A>    
+<A NAME="380"></A>    <FONT ID="SingleLineComment">//&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt;&gt; Aus dcm4che Version 1.1.4, /samples/media/DcmDir.java
+<A NAME="381"></A></FONT>    
+<A NAME="382"></A>    <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> DcmObjectFactory dof = DcmObjectFactory.getInstance();
+<A NAME="383"></A>    <FONT ID="Private">private</FONT> <FONT ID="Final">final</FONT> <FONT ID="Static">static</FONT> DirBuilderFactory fact = DirBuilderFactory.getInstance();
+<A NAME="384"></A>    
+<A NAME="385"></A>    <FONT ID="FormalComment">/**
+<A NAME="386"></A>     * Adds all lines with property key starting with "dir." to DirBuilderPref.
+<A NAME="387"></A>     * starting with "dir.".
+<A NAME="388"></A>     * @return the DirBuilderPref.
+<A NAME="389"></A>     */</FONT>
+<A NAME="390"></A>    <FONT ID="Private">private</FONT> DirBuilderPref getDirBuilderPref() {
+<A NAME="391"></A>        HashMap map = <FONT ID="New">new</FONT> HashMap();
+<A NAME="392"></A>        <FONT ID="For">for</FONT> (Enumeration en = cfg.keys(); en.hasMoreElements();) {
+<A NAME="393"></A>            addDirBuilderPrefElem(map, (String) en.nextElement());
+<A NAME="394"></A>        }
+<A NAME="395"></A>        DirBuilderPref pref = fact.newDirBuilderPref();
+<A NAME="396"></A>        <FONT ID="For">for</FONT> (Iterator it = map.entrySet().iterator(); it.hasNext();) {
+<A NAME="397"></A>            Map.Entry entry = (Map.Entry) it.next();
+<A NAME="398"></A>            pref.setFilterForRecordType((String) entry.getKey(), (Dataset) entry.getValue());
+<A NAME="399"></A>        }
+<A NAME="400"></A>        <FONT ID="Return">return</FONT> pref;
+<A NAME="401"></A>    }
+<A NAME="402"></A>    
+<A NAME="403"></A>    <FONT ID="FormalComment">/**
+<A NAME="404"></A>     * Add one line of preferences (key starting with "dir.") to map.
+<A NAME="405"></A>     * @param map the map to add to.
+<A NAME="406"></A>     * @param key the key of the preference entry.
+<A NAME="407"></A>     */</FONT>
+<A NAME="408"></A>    <FONT ID="Private">private</FONT> <FONT ID="Void">void</FONT> addDirBuilderPrefElem(HashMap map, String key) {
+<A NAME="409"></A>        <FONT ID="If">if</FONT> (!key.startsWith(<FONT ID="StringLiteral">"dir."</FONT>)) { <FONT ID="Return">return</FONT>; }
+<A NAME="410"></A>        
+<A NAME="411"></A>        <FONT ID="Int">int</FONT> pos2 = key.lastIndexOf(<FONT ID="CharacerLiteral">'.'</FONT>);
+<A NAME="412"></A>        String type = key.substring(<FONT ID="IntegerLiteral">4</FONT>, pos2).replace(<FONT ID="CharacerLiteral">'_'</FONT>, <FONT ID="CharacerLiteral">' '</FONT>);
+<A NAME="413"></A>        Dataset ds = (Dataset) map.get(type);
+<A NAME="414"></A>        <FONT ID="If">if</FONT> (ds == <FONT ID="Null">null</FONT>) {
+<A NAME="415"></A>            map.put(type, ds = dof.newDataset());
+<A NAME="416"></A>        }
+<A NAME="417"></A>        <FONT ID="Int">int</FONT> tag = Tags.forName(key.substring(pos2 + <FONT ID="IntegerLiteral">1</FONT>));
+<A NAME="418"></A>        ds.putXX(tag, VRMap.DEFAULT.lookup(tag));
+<A NAME="419"></A>    }
+<A NAME="420"></A>    
+<A NAME="421"></A>    <FONT ID="SingleLineComment">//&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;
+<A NAME="422"></A></FONT>}
+<A NAME="423"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">SaveDicomdirPlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>

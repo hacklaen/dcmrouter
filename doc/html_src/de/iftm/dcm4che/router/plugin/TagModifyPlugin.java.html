@@ -1,0 +1,221 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0//EN">
+<HTML>
+<HEAD>
+<LINK REL=STYLESHEET TYPE="text/css" HREF="../../../../../stylesheet.css" TITLE="Style">
+<META NAME="GENERATOR" CONTENT="Java2HTML Version 1.0.9">
+<TITLE>de.iftm.dcm4che.router.plugin.TagModifyPlugin (Java2HTML)</TITLE>
+</HEAD>
+<BODY><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">TagModifyPlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+<pre ID="Classes">
+<A NAME="1"></A><FONT ID="MultiLineComment">/*
+<A NAME="2"></A> *  TagModifyPlugin.java
+<A NAME="3"></A> *
+<A NAME="4"></A> *  Copyright (c) 2003 by
+<A NAME="5"></A> *
+<A NAME="6"></A> *  IFTM Institut für Telematik in der Medizn GmbH
+<A NAME="7"></A> *  VISUS Technology Transfer GmbH
+<A NAME="8"></A> *
+<A NAME="9"></A> *  This library is free software; you can redistribute it and/or modify it
+<A NAME="10"></A> *  under the terms of the GNU Lesser General Public License as published
+<A NAME="11"></A> *  by the Free Software Foundation; either version 2 of the License, or
+<A NAME="12"></A> *  (at your option) any later version.
+<A NAME="13"></A> *
+<A NAME="14"></A> *  This library is distributed in the hope that it will be useful,
+<A NAME="15"></A> *  but  WITHOUT ANY WARRANTY; without even the implied warranty of
+<A NAME="16"></A> *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+<A NAME="17"></A> *  Lesser General Public License for more details.
+<A NAME="18"></A> *
+<A NAME="19"></A> *  You should have received a copy of the GNU Lesser General Public
+<A NAME="20"></A> *  License along with this library; if not, write to the Free Software
+<A NAME="21"></A> *  Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA 02111-1307 USA
+<A NAME="22"></A> *
+<A NAME="23"></A> *
+<A NAME="24"></A> *****************************************************************************/</FONT>
+<A NAME="25"></A><FONT ID="Package">package</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.plugin.index.html" target="packageFrame">de.iftm.dcm4che.router.plugin</A>;
+<A NAME="26"></A>
+<A NAME="27"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">de.iftm.dcm4che.router.property.DicomRouterProperties</A>;
+<A NAME="28"></A><FONT ID="Import">import</FONT> <A HREF="../../../../../de.iftm.dcm4che.router.util.index.html" target="packageFrame">de.iftm.dcm4che.router.util.*</A>;
+<A NAME="29"></A>
+<A NAME="30"></A><FONT ID="Import">import</FONT> org.apache.log4j.*;
+<A NAME="31"></A>
+<A NAME="32"></A><FONT ID="Import">import</FONT> org.dcm4che.data.*;
+<A NAME="33"></A>
+<A NAME="34"></A><FONT ID="Import">import</FONT> org.dcm4che.dict.*;
+<A NAME="35"></A>
+<A NAME="36"></A><FONT ID="Import">import</FONT> java.util.*;
+<A NAME="37"></A>
+<A NAME="38"></A>
+<A NAME="39"></A><FONT ID="FormalComment">/**
+<A NAME="40"></A> * This plugin modifies named elements of the submitted Dataset. It
+<A NAME="41"></A> * supports the properties which start with the key &lt;span
+<A NAME="42"></A> * style="font-style: italic;"&gt;TagModifyPlugin &lt;/span&gt;and  a subkeys,
+<A NAME="43"></A> * which is the name of a DICOM element as given in  the Tag-dictionary.
+<A NAME="44"></A> * The name may start with the escape-character '$',  which is ignored.&lt;br&gt;
+<A NAME="45"></A> * The properties have no default values.&lt;br&gt;
+<A NAME="46"></A> * &lt;br&gt;
+<A NAME="47"></A> * If the value of the property starts with the character '#' the&amp;nbsp;
+<A NAME="48"></A> * value is interpreted as a command. Supported command are:&lt;br&gt;
+<A NAME="49"></A> * &lt;br&gt;
+<A NAME="50"></A> * &lt;span style="font-style: italic;"&gt; #remove&lt;/span&gt;&lt;br&gt;
+<A NAME="51"></A> * The named element is removed from the dataset.&lt;br&gt;
+<A NAME="52"></A> * &lt;br&gt;
+<A NAME="53"></A> * &lt;span style="font-style: italic;"&gt; #clear&lt;/span&gt;&lt;br&gt;
+<A NAME="54"></A> * The contents of the named element is cleared.&lt;br&gt;
+<A NAME="55"></A> * &lt;br&gt;
+<A NAME="56"></A> * &lt;br&gt;
+<A NAME="57"></A> * If the value of the property starts with the character '$' the value is
+<A NAME="58"></A> * interpreted as a name of a DICOM element. The contents of the element
+<A NAME="59"></A> * named in the key is replaced by the contents of the element named in
+<A NAME="60"></A> * the value field.&lt;br&gt;
+<A NAME="61"></A> * &lt;br&gt;
+<A NAME="62"></A> * If the value of the property does not starts with the character&amp;nbsp;
+<A NAME="63"></A> * '#', '@' or '$' its contents is replaced by the value string.&lt;br&gt;
+<A NAME="64"></A> * &lt;br&gt;
+<A NAME="65"></A> * @author Thomas Hacklaender
+<A NAME="66"></A> * @version 2005.01.27
+<A NAME="67"></A> */</FONT>
+<A NAME="68"></A><FONT ID="Public">public</FONT> <FONT ID="Class">class</FONT> TagModifyPlugin <FONT ID="Extends">extends</FONT> <A HREF="../../../../../de/iftm/dcm4che/router/plugin/DicomRouterPlugin.java.html">DicomRouterPlugin</A> {
+<A NAME="69"></A>    <FONT ID="FormalComment">/** The version string */</FONT>
+<A NAME="70"></A>    <FONT ID="Final">final</FONT> String VERSION = <FONT ID="StringLiteral">"2006.11.10"</FONT>;
+<A NAME="71"></A>    
+<A NAME="72"></A>    <FONT ID="FormalComment">/** The logger for this plugin */</FONT>
+<A NAME="73"></A>    Logger log = Logger.getLogger(<A HREF="../../../../../de/iftm/dcm4che/router/plugin/TagModifyPlugin.java.html">TagModifyPlugin</A>.<FONT ID="Class">class</FONT>);
+<A NAME="74"></A>    
+<A NAME="75"></A>    <FONT ID="FormalComment">/** The properties of this plugin */</FONT>
+<A NAME="76"></A>    <A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">Properties</A> props = <FONT ID="Null">null</FONT>;
+<A NAME="77"></A>    
+<A NAME="78"></A>    <FONT ID="FormalComment">/**
+<A NAME="79"></A>     * Constructor.
+<A NAME="80"></A>     */</FONT>
+<A NAME="81"></A>    <FONT ID="Public">public</FONT> TagModifyPlugin() {
+<A NAME="82"></A>        <FONT ID="SingleLineComment">// Nichts zu tun.
+<A NAME="83"></A></FONT>    }
+<A NAME="84"></A>    
+<A NAME="85"></A>    <FONT ID="FormalComment">/**
+<A NAME="86"></A>     * Inits the DicomRouterPlugin with the specified Properties.
+<A NAME="87"></A>     * @param p  Properties containing the configuration of the plugin
+<A NAME="88"></A>     */</FONT>
+<A NAME="89"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> init(<A HREF="../../../../../de/iftm/dcm4che/router/property/DicomRouterProperties.java.html">Properties</A> p) {
+<A NAME="90"></A>        <FONT ID="SingleLineComment">// Properties lokal speichern
+<A NAME="91"></A></FONT>        props = p;
+<A NAME="92"></A>        
+<A NAME="93"></A>        <FONT ID="SingleLineComment">// Alle Properties koennen vom aktuellen Dataset abhaengig sein und
+<A NAME="94"></A></FONT>        <FONT ID="SingleLineComment">// werden deshlab direkt in handleProcessNext ausgewertet.
+<A NAME="95"></A></FONT>    }
+<A NAME="96"></A>    
+<A NAME="97"></A>    <FONT ID="FormalComment">/**
+<A NAME="98"></A>     * Returns a version string.
+<A NAME="99"></A>     *
+<A NAME="100"></A>     * @return The version string
+<A NAME="101"></A>     */</FONT>
+<A NAME="102"></A>    <FONT ID="Public">public</FONT> String getVersion() {
+<A NAME="103"></A>        <FONT ID="Return">return</FONT> VERSION;
+<A NAME="104"></A>    }
+<A NAME="105"></A>
+<A NAME="106"></A>    
+<A NAME="107"></A>    <FONT ID="FormalComment">/**
+<A NAME="108"></A>     * Closes the Plugin.
+<A NAME="109"></A>     */</FONT>
+<A NAME="110"></A>    <FONT ID="Public">public</FONT> <FONT ID="Void">void</FONT> close() {
+<A NAME="111"></A>        <FONT ID="SingleLineComment">// Nichts zu tun.
+<A NAME="112"></A></FONT>    }
+<A NAME="113"></A>    
+<A NAME="114"></A>    <FONT ID="FormalComment">/**
+<A NAME="115"></A>     * Contains the proccesing of this plugin. This implementation handels all
+<A NAME="116"></A>     * exeptions inside the method and sends logging information about the exeption.
+<A NAME="117"></A>     * 
+<A NAME="118"></A>     * 
+<A NAME="119"></A>     * 
+<A NAME="120"></A>     * @param dataset The Dataset to process.
+<A NAME="121"></A>     * @return If succesfullCONTINUEN, REQUEST_ABORT_RECEIVER otherwise
+<A NAME="122"></A>     */</FONT>
+<A NAME="123"></A>    <FONT ID="Protected">protected</FONT> <FONT ID="Int">int</FONT> process(Dataset dataset) {
+<A NAME="124"></A>        String  key;
+<A NAME="125"></A>        String  value;
+<A NAME="126"></A>        String  s;
+<A NAME="127"></A>        <FONT ID="Int">int</FONT>     tag = <FONT ID="IntegerLiteral">0</FONT>;
+<A NAME="128"></A>        
+<A NAME="129"></A>        <FONT ID="SingleLineComment">// Nur dann weitermachen, wenn ein Datset vorhanden ist
+<A NAME="130"></A></FONT>        <FONT ID="If">if</FONT> (dataset == <FONT ID="Null">null</FONT>) {
+<A NAME="131"></A>            log.warn(<FONT ID="StringLiteral">"No Dataset given."</FONT>);
+<A NAME="132"></A>            
+<A NAME="133"></A>            <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="134"></A>        }
+<A NAME="135"></A>        
+<A NAME="136"></A>        <FONT ID="SingleLineComment">// Alle Properties bearbeiten
+<A NAME="137"></A></FONT>        <FONT ID="For">for</FONT> (Enumeration p = props.propertyNames(); p.hasMoreElements();) {
+<A NAME="138"></A>            key = (String) p.nextElement();
+<A NAME="139"></A>            value = props.getProperty(key);
+<A NAME="140"></A>            
+<A NAME="141"></A>            <FONT ID="SingleLineComment">// Zu modifizierden Tag festlegen
+<A NAME="142"></A></FONT>            tag = Util.getTagFromPropertyString(key);
+<A NAME="143"></A>            <FONT ID="If">if</FONT> (tag &lt;= <FONT ID="IntegerLiteral">0</FONT>) {
+<A NAME="144"></A>                log.error(<FONT ID="StringLiteral">"Can't find tag in property key: "</FONT> + key);
+<A NAME="145"></A>                <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="146"></A>            }
+<A NAME="147"></A>            
+<A NAME="148"></A>            <FONT ID="SingleLineComment">// Kommandos in value auswerten
+<A NAME="149"></A></FONT>            <FONT ID="If">if</FONT> (value.charAt(<FONT ID="IntegerLiteral">0</FONT>) == <FONT ID="CharacerLiteral">'#'</FONT>) {
+<A NAME="150"></A>                
+<A NAME="151"></A>                <FONT ID="SingleLineComment">// Value ist ein Kommando
+<A NAME="152"></A></FONT>                <FONT ID="If">if</FONT> (value.equals(<FONT ID="StringLiteral">"#clear"</FONT>)) {
+<A NAME="153"></A>                    <FONT ID="SingleLineComment">// Element entfernen
+<A NAME="154"></A></FONT>                    dataset.remove(tag);
+<A NAME="155"></A>                    
+<A NAME="156"></A>                    <FONT ID="SingleLineComment">// Leeres Element einfuegen
+<A NAME="157"></A></FONT>                    dataset.putXX(tag);
+<A NAME="158"></A>                    
+<A NAME="159"></A>                    <FONT ID="If">if</FONT> (log.isInfoEnabled()) {
+<A NAME="160"></A>                        log.info(<FONT ID="StringLiteral">"Value of tag "</FONT> + <FONT ID="StringLiteral">" ("</FONT> + Tags.toHexString(tag, <FONT ID="IntegerLiteral">8</FONT>) + <FONT ID="StringLiteral">") cleared."</FONT>);
+<A NAME="161"></A>                    }
+<A NAME="162"></A>                } <FONT ID="Else">else</FONT> <FONT ID="If">if</FONT> (value.equals(<FONT ID="StringLiteral">"#remove"</FONT>)) {
+<A NAME="163"></A>                    <FONT ID="SingleLineComment">// Element entfernen
+<A NAME="164"></A></FONT>                    dataset.remove(tag);
+<A NAME="165"></A>                    
+<A NAME="166"></A>                    <FONT ID="If">if</FONT> (log.isInfoEnabled()) {
+<A NAME="167"></A>                        log.info(<FONT ID="StringLiteral">"Value of tag "</FONT> + <FONT ID="StringLiteral">" ("</FONT> + Tags.toHexString(tag, <FONT ID="IntegerLiteral">8</FONT>) + <FONT ID="StringLiteral">") removed."</FONT>);
+<A NAME="168"></A>                    }
+<A NAME="169"></A>                } <FONT ID="Else">else</FONT> {
+<A NAME="170"></A>                    <FONT ID="SingleLineComment">// Unbekanntes Kommandos
+<A NAME="171"></A></FONT>                    log.warn(<FONT ID="StringLiteral">"Unknown command: "</FONT> + value);
+<A NAME="172"></A>                    <FONT ID="Return">return</FONT> REQUEST_ABORT_RECEIVER;
+<A NAME="173"></A>                }
+<A NAME="174"></A>                
+<A NAME="175"></A>                <FONT ID="Continue">continue</FONT>;
+<A NAME="176"></A>            }
+<A NAME="177"></A>            
+<A NAME="178"></A>            <FONT ID="SingleLineComment">// Inhalt soll durch neuen Inhalt ersetzt werden
+<A NAME="179"></A></FONT>            
+<A NAME="180"></A>            s = Util.getTagStringOrValue(value, dataset);
+<A NAME="181"></A>            dataset.putXX(tag, s);
+<A NAME="182"></A>            
+<A NAME="183"></A>            <FONT ID="If">if</FONT> (log.isInfoEnabled()) {
+<A NAME="184"></A>                log.info(<FONT ID="StringLiteral">"Value of tag "</FONT> + <FONT ID="StringLiteral">" ("</FONT> + Tags.toHexString(tag, <FONT ID="IntegerLiteral">8</FONT>) + <FONT ID="StringLiteral">") replaced with "</FONT> + value);
+<A NAME="185"></A>            }
+<A NAME="186"></A>            
+<A NAME="187"></A>        }
+<A NAME="188"></A>        
+<A NAME="189"></A>        <FONT ID="SingleLineComment">// Plugin ohne Fehler beendet
+<A NAME="190"></A></FONT>        <FONT ID="Return">return</FONT> CONTINUE;
+<A NAME="191"></A>    }
+<A NAME="192"></A>}
+<A NAME="193"></A></pre><TABLE id="Header" border="0" cellpadding="0" cellspacing="0" width="100%">
+<tr>
+<td colspan="2" width="33%">&nbsp;</td>
+<td align="center" colspan="2" width="33%">
+<font size="4">TagModifyPlugin</font>
+</td>
+<td align="right" colspan="2" width="33%"></td>
+</tr>
+</TABLE>
+
+</BODY>
+</HTML>
